@@ -1,0 +1,65 @@
+{
+  "name": "@vulppi/kit",
+  "version": "0.0.1",
+  "description": "Backend kit make by Vulppi",
+  "author": {
+    "name": "Renato Rodrigues",
+    "email": "renato@vulppi.dev"
+  },
+  "type": "module",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "types/index.d.ts",
+  "bin": {
+    "vulppi": "./bin/index.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./types/*": {
+      "types": "./types/*"
+    }
+  },
+  "scripts": {
+    "dev": "nodemon --watch src -e js,cjs,mjs,ts,json scripts/build.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "run-s build test:start",
+    "test:start": "uvu -r dotenv-expand/config -r esbuild-register"
+  },
+  "dependencies": {
+    "@vulppi/toolbelt": "^0.6.3",
+    "chalk": "^5.3.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "dotenv-expand": "^10.0.0",
+    "esbuild": "^0.18.11",
+    "express": "^4.18.2",
+    "glob": "^10.3.2",
+    "http-status-codes": "^2.2.0",
+    "inquirer": "^9.2.7",
+    "jsonwebtoken": "^9.0.1",
+    "lodash": "^4.17.21",
+    "multer": "1.4.5-lts.1",
+    "yargs": "^17.7.2",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/inquirer": "^9.0.3",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/lodash": "^4.14.195",
+    "@types/multer": "^1.4.7",
+    "@types/node": "^20.4.1",
+    "@types/yargs": "^17.0.24",
+    "nodemon": "^2.0.22",
+    "npm-run-all": "^4.1.5",
+    "supertest": "^6.3.3",
+    "typescript": "^5.1.6",
+    "uvu": "^0.5.6"
+  }
+}
