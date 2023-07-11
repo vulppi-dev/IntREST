@@ -1,7 +1,6 @@
 {
   "include": [
-    "src/**/*.ts",
-    "types/**/*.ts",
+    "**/*.ts",
   ],
   "exclude": [
     "node_modules"
@@ -20,6 +19,11 @@
     "emitDeclarationOnly": true,
     "allowJs": true,
     "checkJs": false,
-    "baseUrl": "src",
+    "baseUrl": "app",
+    "paths": {
+      "@vulppi/kit": [
+        "../../.."
+      ]
+    }
   }
 }

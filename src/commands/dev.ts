@@ -1,12 +1,13 @@
 import ck from 'chalk'
 import dotenv from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
-import { rmSync, watch } from 'fs'
+import { existsSync, rmSync, watch } from 'fs'
 import _ from 'lodash'
 import { dirname, resolve } from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
+import { fileURLToPath } from 'url'
 import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
+import { getConfigModule } from '../utils/modules'
 import {
   escapePath,
   globFind,
@@ -34,17 +35,10 @@ export async function handler(): Promise<void> {
   console.log('Starting the application in %s mode...', ck.bold('development'))
 
   let configPath = await globFind(projectPath, globPatterns.config)
-  let envPath: string | undefined = await getEnvPath(projectPath)
+  let envPath = await getEnvPath(projectPath)
 
   let configChecksum = configPath ? await getChecksum(configPath) : ''
   let envChecksum = envPath ? await getChecksum(envPath) : ''
-
-  if (!configPath) {
-    console.log(ck.red('No config file found. Please create a config file.'))
-    console.log(ck.red('You can use the following command:'))
-    console.log(ck.yellow.bold('  vulppi init'))
-    return
-  }
 
   restartServer(projectPath, configPath, envPath)
 
@@ -102,7 +96,7 @@ export async function handler(): Promise<void> {
       }
     }
     if (changeConfig || changeEnv) {
-      restartServer(projectPath, configPath!, envPath)
+      restartServer(projectPath, configPath, envPath)
     }
   })
 }
@@ -111,7 +105,7 @@ let app: Worker | null = null
 let debounceApp: NodeJS.Timeout | null = null
 async function restartServer(
   projectPath: string,
-  configPath: string,
+  configPath?: string,
   envPath?: string,
 ) {
   let first = true
@@ -134,12 +128,7 @@ async function restartServer(
       await startRouterBuilder(projectPath)
     }
 
-    const configURL = pathToFileURL(configPath)
-    configURL.searchParams.set('update', Date.now().toString())
-    const config = await import(configURL.toString()).then(
-      (m) => m.default as Vulppi.KitConfig,
-    )
-
+    const config = await getConfigModule(configPath)
     const envObject = Object.assign(
       structuredClone(process.env),
       _.get(config, 'env', {}),
@@ -154,7 +143,7 @@ async function restartServer(
           parsed: envObject,
         }
     dotenvExpand.expand(myEnv)
-    app = new Worker(join(__dirname, 'lib', 'worker-app.mjs'), {
+    app = new Worker(join(__dirname, defaultPaths.workerApp), {
       workerData: { config, basePath: projectPath },
       env: envObject,
     })
@@ -189,11 +178,11 @@ async function startRouterBuilder(basePath: string) {
     }
   })
 
-  const appFiles = await globFindAll(
-    appFolder,
-    '**/{route,middleware,validation}.ts',
-  )
-  rmSync(join(basePath, defaultPaths.compiledApp), { recursive: true })
+  const appFiles = await globFindAll(appFolder, globPatterns.route)
+  const compiledAppFolder = join(basePath, defaultPaths.compiledApp)
+  if (existsSync(compiledAppFolder))
+    rmSync(compiledAppFolder, { recursive: true })
+
   return Promise.all(
     appFiles.map(async (filename) => {
       const escapedPath = escapePath(filename, appFolder)
@@ -213,7 +202,7 @@ async function findEnvPaths(basePath: string) {
 }
 
 async function getEnvPath(basePath: string) {
-  return (await findEnvPaths(basePath))[0]
+  return (await findEnvPaths(basePath))[0] as string | undefined
 }
 
 async function getAppPath(basePath: string) {

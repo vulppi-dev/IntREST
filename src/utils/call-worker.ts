@@ -7,7 +7,7 @@ export async function callWorker({
   data,
   config,
 }: CallWorkerProps) {
-  const wFile = resolveModule('./worker-router.mjs')
+  const wFile = resolveModule('./router.mjs')
 
   return new Promise<Vulppi.ResponseMessage>((resolve, reject) => {
     const worker = new Worker(wFile, {

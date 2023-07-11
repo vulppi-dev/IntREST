@@ -118,9 +118,9 @@ declare global {
     }
 
     interface ResponseMessage {
-      data?: string | Record<string, any> | Blob | ArrayBuffer | Uint8Array
+      body?: string | Record<string, any> | Blob | ArrayBuffer | Uint8Array
       status?: number
-      headers?: Record<string, string>
+      headers?: Record<string, string> & import('http').IncomingHttpHeaders
     }
 
     type Primitive = string | number | boolean

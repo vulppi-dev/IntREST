@@ -4,8 +4,9 @@ import cors from 'cors'
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { workerData } from 'worker_threads'
-import { callWorker } from './call-worker'
-import { parseStringBytesToNumber, recursiveParse } from './app-tools'
+import { callWorker } from '../utils/call-worker'
+import { parseStringBytesToNumber, recursiveParse } from '../utils/app-tools'
+import { isBuffer } from '../utils/buffer'
 
 const { basePath, config } = workerData as StartApplicationProps
 const env = process.env as Record<string, string>
@@ -59,7 +60,11 @@ app.all('*', async (req, res) => {
       })
     }
 
-    const { data, headers, status } = await callWorker({
+    const {
+      body: data,
+      headers,
+      status,
+    } = await callWorker({
       route: req.path,
       basePath,
       config,
@@ -75,7 +80,11 @@ app.all('*', async (req, res) => {
     res
       .status(status || StatusCodes.OK)
       .set(headers || {})
-      .end(typeof data === 'object' ? JSON.stringify(data) : data)
+      .end(
+        typeof data === 'object' && !isBuffer(data)
+          ? JSON.stringify(data)
+          : data,
+      )
   } catch (err) {
     console.error(err)
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

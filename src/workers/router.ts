@@ -6,7 +6,7 @@ import {
   findMiddlewarePathnames,
   findRoutePathname,
   sendResponse,
-} from './router-tools'
+} from '../utils/router-tools'
 import _ from 'lodash'
 
 const { config, basePath, route, data } = workerData as CallWorkerProps
@@ -14,7 +14,7 @@ const routePathnames = await findRoutePathname(basePath, route)
 if (!routePathnames.length) {
   sendResponse({
     status: StatusCodes.NOT_FOUND,
-    data: {
+    body: {
       message: config.messages?.NOT_FOUND || 'Not found Route',
     },
     headers: {
@@ -41,7 +41,7 @@ const countRouteMethods = routeFiltered.reduce<number>(
 if (countRouteMethods > 1) {
   sendResponse({
     status: StatusCodes.INTERNAL_SERVER_ERROR,
-    data: {
+    body: {
       message: config.messages?.MULTIPLE_ROUTES || 'Multiple routes found',
       details: routeFiltered.map((r) => escapePath(r.path, basePath)),
     },
@@ -54,7 +54,7 @@ if (countRouteMethods > 1) {
 if (!countRouteMethods) {
   sendResponse({
     status: StatusCodes.METHOD_NOT_ALLOWED,
-    data: {
+    body: {
       message: config.messages?.METHOD_NOT_ALLOWED || 'Method not allowed',
     },
     headers: {
@@ -70,7 +70,7 @@ const requestHandler: Vulppi.RequestHandler | undefined =
 if (typeof requestHandler !== 'function') {
   sendResponse({
     status: StatusCodes.INTERNAL_SERVER_ERROR,
-    data: {
+    body: {
       message:
         config.messages?.INTERNAL_SERVER_ERROR || 'Internal server error',
     },
@@ -135,7 +135,7 @@ try {
   if (error instanceof Error) {
     sendResponse({
       status: StatusCodes.INTERNAL_SERVER_ERROR,
-      data: {
+      body: {
         message: error.message,
       },
       headers: {

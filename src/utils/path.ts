@@ -1,6 +1,5 @@
 import { glob } from 'glob'
 import path, { dirname, isAbsolute, resolve } from 'path'
-import { lstatSync } from 'fs'
 import { fileURLToPath } from 'url'
 
 export function resolveModule(path: string, parent = import.meta.url) {
@@ -10,15 +9,6 @@ export function resolveModule(path: string, parent = import.meta.url) {
   }
   const p = dirname(fileURLToPath(parent))
   return resolve(p, safePath)
-}
-
-export function getDirname() {
-  const res = resolveModule('.')
-  const stats = lstatSync(res)
-  if (stats.isDirectory()) {
-    return res
-  }
-  return dirname(res)
 }
 
 export function join(...paths: string[]) {
