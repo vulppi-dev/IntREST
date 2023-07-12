@@ -95,8 +95,41 @@ declare global {
       cookies: Record<string, string>
       headers: import('http').IncomingHttpHeaders
       body: Record<string, any> | string | undefined
-      buffer: Buffer | undefined
+      reader: import('stream').Readable
       custom?: CustomRequestData
+    }
+
+    interface ResponseMessage {
+      body?:
+        | string
+        | Record<string, any>
+        | Blob
+        | ArrayBuffer
+        | Uint8Array
+        | import('stream').Writable
+      status?: number
+      headers?: Record<string, string | string[] | undefined> &
+        import('http').IncomingHttpHeaders
+      cookies?: Record<string, ValueCookie>
+      clearCookies?: Record<string, CookieOptions>
+    }
+
+    type CookieOptions = import('express').CookieOptions
+
+    interface SetCookie {
+      name: string
+      value: string
+      options?: CookieOptions
+    }
+
+    interface ValueCookie {
+      value: string
+      options?: CookieOptions
+    }
+
+    interface ClearCookie {
+      name: string
+      options?: CookieOptions
     }
 
     interface RequestHandler {
@@ -115,12 +148,6 @@ declare global {
 
     interface MiddlewareNext {
       (custom?: CustomRequestData): void
-    }
-
-    interface ResponseMessage {
-      body?: string | Record<string, any> | Blob | ArrayBuffer | Uint8Array
-      status?: number
-      headers?: Record<string, string> & import('http').IncomingHttpHeaders
     }
 
     type Primitive = string | number | boolean

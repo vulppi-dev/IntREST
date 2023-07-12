@@ -1,15 +1,13 @@
 import { Worker } from 'worker_threads'
 import { resolveModule } from '../utils/path'
 
-export async function callWorker({
-  route,
-  basePath,
-  data,
-  config,
-}: CallWorkerProps) {
-  const wFile = resolveModule('./router.mjs')
+const wFile = resolveModule('./router.mjs')
 
-  return new Promise<Vulppi.ResponseMessage>((resolve, reject) => {
+export async function callWorker(
+  { reader, route, basePath, data, config }: CallWorkerProps,
+  cb: (state: ResponseState, data: ResponseData) => void,
+) {
+  return new Promise<void>((resolve, reject) => {
     const worker = new Worker(wFile, {
       workerData: {
         data,
@@ -19,7 +17,6 @@ export async function callWorker({
       },
       env: process.env,
     })
-    let result: Vulppi.ResponseMessage | null = null
 
     worker.on('error', function (err) {
       reject(err)
@@ -27,8 +24,20 @@ export async function callWorker({
     worker.on('exit', (code) => {
       if (code !== 0)
         return reject(new Error(`Worker stopped with exit code ${code}`))
-      resolve(result!)
+      cb('end', undefined)
+      resolve()
     })
-    worker.on('message', (r) => (result = r))
+    worker.on('message', (r: TransferResponseCore) => {
+      if (r.state === 'read') {
+        const size = r.data as number | undefined
+        const data = reader.read(size)
+        worker.postMessage({
+          state: 'read',
+          data,
+        })
+      } else {
+        cb(r.state, r.data)
+      }
+    })
   })
 }

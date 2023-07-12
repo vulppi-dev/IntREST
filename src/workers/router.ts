@@ -1,26 +1,30 @@
 import { StatusCodes } from 'http-status-codes'
+import _ from 'lodash'
 import { pathToFileURL } from 'url'
 import { workerData } from 'worker_threads'
 import { escapePath } from '../utils/path'
 import {
   findMiddlewarePathnames,
   findRoutePathname,
-  sendResponse,
+  getRouteReader,
+  sendResponseAll,
 } from '../utils/router-tools'
-import _ from 'lodash'
 
-const { config, basePath, route, data } = workerData as CallWorkerProps
+const { config, basePath, route, data } = workerData as WorkerProps
 const routePathnames = await findRoutePathname(basePath, route)
 if (!routePathnames.length) {
-  sendResponse({
-    status: StatusCodes.NOT_FOUND,
-    body: {
-      message: config.messages?.NOT_FOUND || 'Not found Route',
+  await sendResponseAll(
+    {
+      status: StatusCodes.NOT_FOUND,
+      body: {
+        message: config.messages?.NOT_FOUND || 'Not found Route',
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    data.headers,
+  )
 }
 
 const method = data.method?.toUpperCase() || 'GET'
@@ -39,28 +43,34 @@ const countRouteMethods = routeFiltered.reduce<number>(
 )
 
 if (countRouteMethods > 1) {
-  sendResponse({
-    status: StatusCodes.INTERNAL_SERVER_ERROR,
-    body: {
-      message: config.messages?.MULTIPLE_ROUTES || 'Multiple routes found',
-      details: routeFiltered.map((r) => escapePath(r.path, basePath)),
+  await sendResponseAll(
+    {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: {
+        message: config.messages?.MULTIPLE_ROUTES || 'Multiple routes found',
+        details: routeFiltered.map((r) => escapePath(r.path, basePath)),
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    data.headers,
+  )
 }
 
 if (!countRouteMethods) {
-  sendResponse({
-    status: StatusCodes.METHOD_NOT_ALLOWED,
-    body: {
-      message: config.messages?.METHOD_NOT_ALLOWED || 'Method not allowed',
+  await sendResponseAll(
+    {
+      status: StatusCodes.METHOD_NOT_ALLOWED,
+      body: {
+        message: config.messages?.METHOD_NOT_ALLOWED || 'Method not allowed',
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    data.headers,
+  )
 }
 
 const { module: routeModule, path: routePathname } = routeFiltered[0]
@@ -68,16 +78,19 @@ const requestHandler: Vulppi.RequestHandler | undefined =
   routeModule[method] || routeModule.default?.[method]
 
 if (typeof requestHandler !== 'function') {
-  sendResponse({
-    status: StatusCodes.INTERNAL_SERVER_ERROR,
-    body: {
-      message:
-        config.messages?.INTERNAL_SERVER_ERROR || 'Internal server error',
+  await sendResponseAll(
+    {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: {
+        message:
+          config.messages?.INTERNAL_SERVER_ERROR || 'Internal server error',
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    data.headers,
+  )
 }
 
 const middlewarePathnames = await findMiddlewarePathnames(
@@ -95,55 +108,64 @@ const middlewareList = (
 ).filter((m) => !!m) as Vulppi.MiddlewareHandler[]
 
 try {
-  const middlewareResult = await middlewareList.reduce(
-    async (promise, middleware) => {
-      const data = await promise
-      return new Promise<Vulppi.RequestContext>(async (resolve, reject) => {
-        try {
-          let resolved = false
-          const res = await middleware(data, (c) => {
-            if (data.custom) {
-              _.merge(data.custom, c)
-            } else {
-              data.custom = c
-            }
-            resolved = true
-            resolve(data)
-          })
+  const reader = getRouteReader()
+  let response: Vulppi.ResponseMessage | null = null
 
-          if (!resolved && res) {
-            reject(res)
-          }
+  for (const middleware of middlewareList) {
+    response = await new Promise<Vulppi.ResponseMessage | null>(
+      async (resolve, reject) => {
+        let resolved = false
+        try {
+          const res =
+            (await middleware({ ...data, reader }, (c) => {
+              if (data.custom) {
+                _.merge(data.custom, c)
+              } else {
+                data.custom = c
+              }
+              resolved = true
+            })) ?? null
+
+          if (res || resolved) resolve(res)
         } catch (error) {
           reject(error)
         }
-      })
-    },
-    Promise.resolve(data),
-  )
-
-  const response = await requestHandler(middlewareResult)
-
-  if (response) {
-    sendResponse(response)
+      },
+    )
+    if (response) {
+      break
+    }
   }
 
-  sendResponse({
-    status: StatusCodes.OK,
-  })
+  if (!response) {
+    response = (await requestHandler!({ ...data, reader })) ?? null
+  }
+
+  if (response) {
+    await sendResponseAll(response, data.headers)
+  }
+  await sendResponseAll(
+    {
+      status: StatusCodes.OK,
+    },
+    data.headers,
+  )
 } catch (error) {
   if (error instanceof Error) {
-    sendResponse({
-      status: StatusCodes.INTERNAL_SERVER_ERROR,
-      body: {
-        message: error.message,
+    await sendResponseAll(
+      {
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        body: {
+          message: error.message,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+      data.headers,
+    )
   } else if (typeof error === 'object' && error != null) {
-    sendResponse(error)
+    await sendResponseAll(error, data.headers)
   }
 
   throw error

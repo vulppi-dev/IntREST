@@ -4,9 +4,8 @@ import cors from 'cors'
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { workerData } from 'worker_threads'
-import { callWorker } from '../utils/call-worker'
 import { parseStringBytesToNumber, recursiveParse } from '../utils/app-tools'
-import { isBuffer } from '../utils/buffer'
+import { callWorker } from '../utils/call-worker'
 
 const { basePath, config } = workerData as StartApplicationProps
 const env = process.env as Record<string, string>
@@ -59,32 +58,40 @@ app.all('*', async (req, res) => {
           config.messages?.REQUEST_TOO_LONG || 'Request entity too large',
       })
     }
-
-    const {
-      body: data,
-      headers,
-      status,
-    } = await callWorker({
-      route: req.path,
-      basePath,
-      config,
-      data: {
-        method: req.method as any,
-        query: recursiveParse(req.query),
-        cookies: req.cookies,
-        headers: req.headers,
-        body: req.body,
-        buffer: req.read(),
+    await callWorker(
+      {
+        reader: req,
+        route: req.path,
+        basePath,
+        config,
+        data: {
+          method: req.method as any,
+          query: recursiveParse(req.query),
+          cookies: req.cookies,
+          headers: req.headers,
+          body: req.body,
+        },
       },
-    })
-    res
-      .status(status || StatusCodes.OK)
-      .set(headers || {})
-      .end(
-        typeof data === 'object' && !isBuffer(data)
-          ? JSON.stringify(data)
-          : data,
-      )
+      (state, data) => {
+        if (state === 'cookie') {
+          const { name, value, options } = data as ResponseDataMap['cookie']
+          res.cookie(name, value, options || {})
+        } else if (state === 'clear-cookie') {
+          const { name, options } = data as ResponseDataMap['clear-cookie']
+          res.clearCookie(name, options || {})
+        } else if (state === 'set') {
+          const [name, value] = data as ResponseDataMap['set']
+          res.set(name, value)
+        } else if (state === 'write') {
+          const buffer = data as ResponseDataMap['write']
+          res.write(buffer)
+        } else if (state === 'status') {
+          res.status(data as ResponseDataMap['status'])
+        } else if (state === 'end') {
+          res.end()
+        }
+      },
+    )
   } catch (err) {
     console.error(err)
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
