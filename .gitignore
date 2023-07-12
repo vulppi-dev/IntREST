@@ -25,6 +25,7 @@ pnpm-lock.yaml
 yarn.lock
 
 # build
+.vulppi/
 build/
 dist/
 *.gem

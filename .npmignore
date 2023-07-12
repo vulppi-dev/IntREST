@@ -30,6 +30,7 @@ scripts/
 examples/
 
 # temporary
+.vulppi/
 *.swp
 *temp/
 *tmp/

@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/kit",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -36,7 +36,12 @@
     "worker-threads",
     "worker-thread",
     "thread",
-    "threads"
+    "threads",
+    "stream",
+    "streams",
+    "streaming",
+    "streaming-api",
+    "stream-api"
   ],
   "main": "dist/lib/index.mjs",
   "module": "dist/lib/index.mjs",
