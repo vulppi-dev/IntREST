@@ -47,8 +47,9 @@
   "module": "dist/lib/index.mjs",
   "types": "types/index.d.ts",
   "bin": {
-    ".": "./bin/index.mjs",
-    "vulppi": "./bin/index.mjs"
+    "@vulppi/kit": "./bin/index.mjs",
+    "vulppi": "./bin/index.mjs",
+    "vp": "./bin/index.mjs"
   },
   "exports": {
     ".": {

@@ -58,7 +58,7 @@ export async function globFindAllList(
   ...pattern: string[][]
 ): Promise<string[]> {
   const list = pattern.map((p) => join(...p))
-  const res = await glob(list, {
+  const res = await glob(list.reverse(), {
     ignore: ['**/node_modules/**'],
     windowsPathsNoEscape: true,
   })
@@ -76,5 +76,5 @@ export function normalizePath(path: string) {
 }
 
 export function clearExtension(path: string) {
-  return normalizePath(path).replace(/\.[a-z0-9]+$/, '')
+  return normalizePath(path).replace(/\.[a-z0-9]+$/i, '')
 }

@@ -100,10 +100,13 @@ declare global {
 
     type RequestMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
-    interface RequestContext {
+    interface RequestContext<
+      Params extends Record<string, string> = Record<string, string>,
+    > {
       method: RequestMethods
       query: URLSearchParams
       cookies: Record<string, string>
+      params: Params
       headers: import('http').IncomingHttpHeaders
       body: Record<string, any> | string | undefined
       fileStream: (path: string) => import('fs').ReadStream
@@ -182,7 +185,9 @@ export type ValueCookie = Vulppi.ValueCookie
 export type ClearCookie = Vulppi.ClearCookie
 export type RequestMethods = Vulppi.RequestMethods
 
-export type RequestContext = Vulppi.RequestContext
+export type RequestContext<
+  Params extends Record<string, string> = Record<string, string>,
+> = Vulppi.RequestContext<Params>
 export type ResponseMessage = Vulppi.ResponseMessage
 
 export type MiddlewareNext = Vulppi.MiddlewareNext

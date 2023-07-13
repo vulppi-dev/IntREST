@@ -12,10 +12,9 @@ import {
   join,
   normalizePath,
 } from '../utils/path'
-import { parseStringBytesToNumber } from './parser'
 import { isBuffer } from './buffer'
-
-const maxChunkSize = parseStringBytesToNumber('1mb')
+import { existsSync } from 'fs'
+import { pathToFileURL } from 'url'
 
 function isRange(
   range?: rangeParser.Result | rangeParser.Ranges,
@@ -60,17 +59,27 @@ export async function sendResponseAll(
   const lengthHeaderKey = Object.keys(res.headers || {}).find((k) =>
     /^content-length$/i.test(k),
   )
-  const length = _.get(
+  const typeHeaderKey = Object.keys(res.headers || {}).find((k) =>
+    /^content-type$/i.test(k),
+  )
+  const contentLength = _.get(
     res.headers || {},
     lengthHeaderKey || 'Content-Length',
     Infinity,
   )
+  const contentType = _.get(res.headers || {}, typeHeaderKey || 'Content-Type')
   const range = reqHeaders.range
-    ? rangeParser(+length, reqHeaders.range, { combine: true })
+    ? rangeParser(+contentLength, reqHeaders.range, { combine: true })
     : undefined
 
   if (res.body) {
     if (typeof res.body === 'string' || isBuffer(res.body)) {
+      if (!contentType) {
+        sendResponse({
+          state: 'set',
+          data: ['Content-Type', 'text/plain'],
+        })
+      }
       const data = Buffer.from(res.body)
       if (isRange(range)) {
         sendResponse({
@@ -84,6 +93,12 @@ export async function sendResponseAll(
         })
       }
     } else if (res.body instanceof Readable) {
+      if (!contentType) {
+        sendResponse({
+          state: 'set',
+          data: ['Content-Type', 'application/octet-stream'],
+        })
+      }
       sendResponse({
         state: 'set',
         data: ['Accept-Ranges', 'bytes'],
@@ -136,6 +151,26 @@ export async function sendResponseAll(
           })
         })
       }
+    } else {
+      if (!contentType) {
+        sendResponse({
+          state: 'set',
+          data: ['Content-Type', 'application/json'],
+        })
+      }
+      const body = JSON.stringify(res.body)
+      const data = Buffer.from(body)
+      if (isRange(range)) {
+        sendResponse({
+          state: 'write',
+          data: data.subarray(range[0].start, range[0].end + 1),
+        })
+      } else {
+        sendResponse({
+          state: 'write',
+          data,
+        })
+      }
     }
   }
 
@@ -171,10 +206,14 @@ export async function findMiddlewarePathnames(
   )
   const directories = recursiveDirectoryList(dir)
   const searchList = directories.map((r) =>
-    [basePath, defaultPaths.compiledApp, r, 'middleware.mjs'].filter(Boolean),
+    join(
+      ...[basePath, defaultPaths.compiledApp, r, 'middleware.mjs'].filter(
+        Boolean,
+      ),
+    ),
   )
-
-  return await globFindAllList(...searchList)
+  const middlewarePaths = searchList.filter((r) => existsSync(r))
+  return middlewarePaths
 }
 
 export async function findRoutePathname(basePath: string, route: string) {
@@ -183,18 +222,57 @@ export async function findRoutePathname(basePath: string, route: string) {
     defaultPaths.compiledApp,
     '**/route.mjs',
   )
-  const routes = routesPathnames.map((r) => {
-    const escapedRoute = escapePath(r, join(basePath, defaultPaths.compiledApp))
-    return escapedRoute
-      .replace(/[\/\\]?\([a-z0-1]+\)/gi, '')
-      .replace(/route\.mjs$/, '')
-      .replace(/\/*$/, '')
-      .replace(/^\/*/, '/')
-  })
-  const indexes = routes.map((r, i) => (r === route ? i : -1))
-  return routesPathnames
-    .map((r, i) => (indexes[i] >= 0 ? r : null))
-    .filter(Boolean) as string[]
+  const maps = routesPathnames
+    .map((r) => {
+      const escapedRoute = escapePath(
+        r,
+        join(basePath, defaultPaths.compiledApp),
+      )
+      const cleanedRoute = escapedRoute
+        .replace(/[\/\\]?\([a-z0-1]+\)/gi, '')
+        .replace(/route\.mjs$/, '')
+        .replace(/\/*$/, '')
+        .replace(/^\/*/, '/')
+
+      if (/\[\.\.\.[a-z0-1]+\].+$/.test(cleanedRoute)) {
+        throw new Error(`Invalid route path: ${escapedRoute}`)
+      }
+      const singleParam = Array.from(
+        cleanedRoute.matchAll(/\[([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
+      ).map((m) => m[1])
+      const catchParam = Array.from(
+        cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
+      ).map((m) => m[1])
+
+      return {
+        pathname: r,
+        route: cleanedRoute,
+        weight: singleParam.length + catchParam.length * 2,
+        vars: Array.from(
+          cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
+        ).map((m) => m[1]),
+        paramRegexp: new RegExp(
+          cleanedRoute
+            .replace(/\[([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/, '([A-zÀ-ú0-9-_]+)')
+            .replace(
+              /\[\.{3,3}([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/,
+              '([A-zÀ-ú0-9-_/]+)',
+            )
+            .replace(/[\/\\]/, '\\/')
+            .replace(/^\^*/, '^')
+            .replace(/\$*$/, '$'),
+        ),
+      }
+    })
+    .sort((a, b) => {
+      if (b.weight === a.weight) {
+        if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
+        if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
+        return b.pathname.length - a.pathname.length
+      }
+      return a.weight - b.weight
+    })
+  return maps.filter((m) => m.paramRegexp.test(route))
 }
 
 export function recursiveDirectoryList(path: string) {
@@ -203,29 +281,4 @@ export function recursiveDirectoryList(path: string) {
     .map((_, i, arr) => arr.slice(0, i + 1).join('/'))
   if (!dirs.includes('')) dirs.unshift('')
   return dirs
-}
-
-export function getRouteReader() {
-  const reader = new Readable({
-    read(size) {
-      parentPort?.postMessage({
-        state: 'read',
-        data: size,
-      })
-    },
-  })
-  return reader
-}
-
-export function getRouteWriter() {
-  const writer = new Writable({
-    write(chunk, encoding, callback) {
-      parentPort?.postMessage({
-        state: 'write',
-        data: Buffer.from(chunk),
-      })
-      callback()
-    },
-  })
-  return writer
 }

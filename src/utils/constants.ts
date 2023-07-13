@@ -8,7 +8,7 @@ export const globPatterns = {
 export const regexpPatterns = {
   env: /^([a-z-_]*.env(\.[a-z-_]*)?)$/,
   config: /^vulppi.config.[mc]?js$/,
-  route: /\/?(route|middleware).ts$/,
+  route: /(^|\/)(route|middleware).ts$/,
 } as const
 
 export const defaultPaths = {

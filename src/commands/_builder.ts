@@ -1,7 +1,14 @@
-import { build } from 'esbuild'
-import { clearExtension, join } from '../utils/path'
 import ck from 'chalk'
-import { existsSync, rm, rmSync } from 'fs'
+import { build } from 'esbuild'
+import { existsSync, rmSync } from 'fs'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
+import { clearExtension, join } from '../utils/path'
+
+const urlPath = import.meta.url
+// Url in dist/commands folder
+const basePath = resolve(fileURLToPath(urlPath), '../..')
+const typeDef = join(dirname(basePath), 'types/index.d.ts')
 
 interface CallBuildProps {
   input: string
@@ -36,9 +43,11 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
         }
 
         console.log('Building %s', ck.bold.green(entry))
+
+        const absoluteEntry = join(input, entry)
         await build({
           entryPoints: {
-            [clearExtension(entry)]: join(input, entry),
+            [clearExtension(entry)]: absoluteEntry,
           },
           bundle: true,
           minify: false,

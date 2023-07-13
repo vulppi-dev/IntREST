@@ -127,9 +127,21 @@ app
 ├── my-route
 │   ├── route.ts
 │   └── middleware.ts
-└── my-other-route
-    ├── route.ts
-    └── middleware.ts
+├── my-other-route
+│   ├── route.ts
+│   └── middleware.ts
+├── [param]
+│   ├── route.ts
+│   └── middleware.ts
+├── [...catchParam]
+│   ├── route.ts
+│   └── middleware.ts
+├── (my-reader-group)
+│   └── group
+│       └── route.ts (GET)
+└── (my-writer-group)
+    └── group
+        └── route.ts (POST, PUT, DELETE)
 ```
 
 The `app` folder is the default folder for your routes. You can change this folder for `src/app` and the framework will automatically detect it.

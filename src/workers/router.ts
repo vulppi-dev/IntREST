@@ -1,3 +1,4 @@
+import { createReadStream } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { pathToFileURL } from 'url'
@@ -6,14 +7,13 @@ import { escapePath, join } from '../utils/path'
 import {
   findMiddlewarePathnames,
   findRoutePathname,
-  getRouteReader,
   sendResponseAll,
 } from '../utils/router-tools'
-import { createReadStream } from 'fs'
 
 const { config, basePath, route, data } = workerData as WorkerProps
 const context = {
   ...data,
+  params: {},
   query: new URLSearchParams(data.query || ''),
   fileStream: (path: string) => {
     return createReadStream(join(basePath, 'assets', path))
@@ -21,6 +21,7 @@ const context = {
 } as Vulppi.RequestContext
 
 const routePathnames = await findRoutePathname(basePath, route)
+
 if (!routePathnames.length) {
   await sendResponseAll(
     {
@@ -39,25 +40,21 @@ if (!routePathnames.length) {
 const method = context.method
 const routeModules = await Promise.all(
   routePathnames.map(async (r) => ({
-    module: await import(pathToFileURL(r).toString()),
-    path: r,
+    module: await import(pathToFileURL(r.pathname).toString()),
+    paramRegexp: r.paramRegexp,
+    vars: r.vars,
+    pathname: r.pathname,
   })),
 )
-const routeFiltered = routeModules.filter(
-  (r) => !!(r.module[method] || r.module.default?.[method]),
-)
-const countRouteMethods = routeFiltered.reduce<number>(
-  (acc, handler) => (handler ? acc + 1 : acc),
-  0,
-)
+const routeFiltered = routeModules.filter((r) => !!r.module[method])
 
-if (countRouteMethods > 1) {
+if (routeFiltered.length > 1) {
   await sendResponseAll(
     {
       status: StatusCodes.INTERNAL_SERVER_ERROR,
       body: {
         message: config.messages?.MULTIPLE_ROUTES || 'Multiple routes found',
-        details: routeFiltered.map((r) => escapePath(r.path, basePath)),
+        details: routeFiltered.map((r) => escapePath(r.pathname, basePath)),
       },
       headers: {
         'Content-Type': 'application/json',
@@ -67,7 +64,7 @@ if (countRouteMethods > 1) {
   )
 }
 
-if (!countRouteMethods) {
+if (!routeFiltered.length) {
   await sendResponseAll(
     {
       status: StatusCodes.METHOD_NOT_ALLOWED,
@@ -82,9 +79,8 @@ if (!countRouteMethods) {
   )
 }
 
-const { module: routeModule, path: routePathname } = routeFiltered[0]
-const requestHandler: Vulppi.RequestHandler | undefined =
-  routeModule[method] || routeModule.default?.[method]
+const { module, pathname, paramRegexp, vars } = routeFiltered[0]
+const requestHandler: Vulppi.RequestHandler | undefined = module[method]
 
 if (typeof requestHandler !== 'function') {
   await sendResponseAll(
@@ -102,22 +98,24 @@ if (typeof requestHandler !== 'function') {
   )
 }
 
-const middlewarePathnames = await findMiddlewarePathnames(
-  basePath,
-  routePathname,
-)
+const paramsValues = Array.from(route.match(paramRegexp) || []).slice(1)
+context.params = _.zipObject(vars, paramsValues)
+
+const middlewarePathnames = await findMiddlewarePathnames(basePath, pathname)
 
 const middlewareList = (
   await Promise.all(
     middlewarePathnames.map(async (r) => {
       const m = await import(pathToFileURL(r).toString())
-      return m.default || m['middleware']
+      return {
+        handler: m['middleware'] as Vulppi.MiddlewareHandler,
+        pathname: r,
+      }
     }),
   )
-).filter((m) => !!m) as Vulppi.MiddlewareHandler[]
+).filter((m) => !!m.handler)
 
 try {
-  const reader = getRouteReader()
   let response: Vulppi.ResponseMessage | null = null
 
   for (const middleware of middlewareList) {
@@ -126,7 +124,7 @@ try {
         let resolved = false
         try {
           const res =
-            (await middleware(context, (c) => {
+            (await middleware.handler(context, (c) => {
               if (context.custom) {
                 _.merge(context.custom, c)
               } else {
