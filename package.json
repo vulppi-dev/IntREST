@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -67,13 +67,13 @@
   },
   "dependencies": {
     "@vulppi/toolbelt": "^0.6.3",
+    "busboy": "^1.6.0",
     "chalk": "^5.3.0",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
+    "concat-stream": "^2.0.0",
+    "cookie": "^0.5.0",
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0",
     "esbuild": "^0.18.11",
-    "express": "^4.18.2",
     "glob": "^10.3.3",
     "http-status-codes": "^2.2.0",
     "inquirer": "^9.2.7",
@@ -82,9 +82,9 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.3",
-    "@types/cors": "^2.8.13",
-    "@types/express": "^4.17.17",
+    "@types/busboy": "^1.5.0",
+    "@types/concat-stream": "^2.0.0",
+    "@types/cookie": "^0.5.1",
     "@types/inquirer": "^9.0.3",
     "@types/lodash": "^4.14.195",
     "@types/node": "^20.4.1",

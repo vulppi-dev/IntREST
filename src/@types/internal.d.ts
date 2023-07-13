@@ -7,11 +7,7 @@ declare interface WorkerProps {
   route: string
   basePath: string
   config: Vulppi.KitConfig
-  data: Omit<Vulppi.RequestContext, 'reader'>
-}
-
-declare interface CallWorkerProps extends WorkerProps {
-  reader: import('stream').Readable
+  data: Omit<Vulppi.RequestContext, 'query' | 'fileStream'> & { query: string }
 }
 
 declare type ResponseState =
@@ -32,7 +28,7 @@ declare type ResponseDataMap = {
     name: string
     options?: Vulppi.CookieOptions
   }
-  set: [string, string | string[] | undefined]
+  set: [string, number | string | readonly string[] | undefined]
   status: number
   write: Uint8Array
   read?: number
@@ -44,9 +40,4 @@ declare type ResponseData = ResponseDataMap[ResponseState]
 declare interface TransferResponse {
   state: ResponseState
   data: ResponseData
-}
-
-declare interface TransferResponseCore {
-  state: ResponseState | 'read'
-  data: ResponseData & ResponseDataMap['read']
 }

@@ -7,9 +7,9 @@ import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
-import { getConfigModule } from '../utils/modules'
 import {
   escapePath,
+  getConfigModule,
   globFind,
   globFindAll,
   globFindAllList,

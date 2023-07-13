@@ -4,7 +4,7 @@ import { resolveModule } from '../utils/path'
 const wFile = resolveModule('./router.mjs')
 
 export async function callWorker(
-  { reader, route, basePath, data, config }: CallWorkerProps,
+  { route, basePath, data, config }: WorkerProps,
   cb: (state: ResponseState, data: ResponseData) => void,
 ) {
   return new Promise<void>((resolve, reject) => {
@@ -27,17 +27,8 @@ export async function callWorker(
       cb('end', undefined)
       resolve()
     })
-    worker.on('message', (r: TransferResponseCore) => {
-      if (r.state === 'read') {
-        const size = r.data as number | undefined
-        const data = reader.read(size)
-        worker.postMessage({
-          state: 'read',
-          data,
-        })
-      } else {
-        cb(r.state, r.data)
-      }
+    worker.on('message', (r: TransferResponse) => {
+      cb(r.state, r.data)
     })
   })
 }

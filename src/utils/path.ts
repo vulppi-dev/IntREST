@@ -1,9 +1,19 @@
 import { glob } from 'glob'
 import path, { dirname, isAbsolute, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
+
+export async function getConfigModule(configPath?: string) {
+  if (!configPath) return {} as Vulppi.KitConfig
+  const configURL = pathToFileURL(configPath)
+  configURL.searchParams.set('update', Date.now().toString())
+  return await import(configURL.toString()).then(
+    (m) => m.default as Vulppi.KitConfig,
+  )
+}
 
 export function resolveModule(path: string, parent = import.meta.url) {
   const safePath = /^[a-z]+:\/\//.test(path) ? fileURLToPath(path) : path
+
   if (isAbsolute(safePath)) {
     return resolve(safePath)
   }

@@ -19,12 +19,6 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "allowJs": true,
-    "checkJs": false,
-    "baseUrl": "app",
-    "paths": {
-      "@vulppi/kit": [
-        "../../.."
-      ]
-    }
+    "checkJs": false
   }
 }

@@ -2,15 +2,24 @@ import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { pathToFileURL } from 'url'
 import { workerData } from 'worker_threads'
-import { escapePath } from '../utils/path'
+import { escapePath, join } from '../utils/path'
 import {
   findMiddlewarePathnames,
   findRoutePathname,
   getRouteReader,
   sendResponseAll,
 } from '../utils/router-tools'
+import { createReadStream } from 'fs'
 
 const { config, basePath, route, data } = workerData as WorkerProps
+const context = {
+  ...data,
+  query: new URLSearchParams(data.query || ''),
+  fileStream: (path: string) => {
+    return createReadStream(join(basePath, 'assets', path))
+  },
+} as Vulppi.RequestContext
+
 const routePathnames = await findRoutePathname(basePath, route)
 if (!routePathnames.length) {
   await sendResponseAll(
@@ -23,11 +32,11 @@ if (!routePathnames.length) {
         'Content-Type': 'application/json',
       },
     },
-    data.headers,
+    context.headers,
   )
 }
 
-const method = data.method?.toUpperCase() || 'GET'
+const method = context.method
 const routeModules = await Promise.all(
   routePathnames.map(async (r) => ({
     module: await import(pathToFileURL(r).toString()),
@@ -54,7 +63,7 @@ if (countRouteMethods > 1) {
         'Content-Type': 'application/json',
       },
     },
-    data.headers,
+    context.headers,
   )
 }
 
@@ -69,7 +78,7 @@ if (!countRouteMethods) {
         'Content-Type': 'application/json',
       },
     },
-    data.headers,
+    context.headers,
   )
 }
 
@@ -89,7 +98,7 @@ if (typeof requestHandler !== 'function') {
         'Content-Type': 'application/json',
       },
     },
-    data.headers,
+    context.headers,
   )
 }
 
@@ -117,11 +126,11 @@ try {
         let resolved = false
         try {
           const res =
-            (await middleware({ ...data, reader }, (c) => {
-              if (data.custom) {
-                _.merge(data.custom, c)
+            (await middleware(context, (c) => {
+              if (context.custom) {
+                _.merge(context.custom, c)
               } else {
-                data.custom = c
+                context.custom = c
               }
               resolved = true
             })) ?? null
@@ -138,17 +147,17 @@ try {
   }
 
   if (!response) {
-    response = (await requestHandler!({ ...data, reader })) ?? null
+    response = (await requestHandler!(context)) ?? null
   }
 
   if (response) {
-    await sendResponseAll(response, data.headers)
+    await sendResponseAll(response, context.headers)
   }
   await sendResponseAll(
     {
       status: StatusCodes.OK,
     },
-    data.headers,
+    context.headers,
   )
 } catch (error) {
   if (error instanceof Error) {
@@ -162,10 +171,10 @@ try {
           'Content-Type': 'application/json',
         },
       },
-      data.headers,
+      context.headers,
     )
   } else if (typeof error === 'object' && error != null) {
-    await sendResponseAll(error, data.headers)
+    await sendResponseAll(error, context.headers)
   }
 
   throw error

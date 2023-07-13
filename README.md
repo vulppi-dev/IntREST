@@ -100,10 +100,10 @@ If you want to serve a ReadableStream (e.g., for streaming video or large files)
 
 ```typescript
 import type { RequestContext, ResponseMessage } from '@vulppi/kit'
-import { createReadStream } from 'fs'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
-  const stream = createReadStream('assets/video.mp4')
+  // in ${projectRoot}/assets/video.mp4
+  const stream = ctx.fileStream('video.mp4')
 
   return {
     status: 200,
@@ -115,7 +115,7 @@ export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
 }
 ```
 
-The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `createReadStream` function from the `fs` module to create the stream.
+The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `fileStream` function from the `fs` module to create the stream.
 
 The routes above are just examples of how to use Vulppi Kit.
 You can use them as a starting point for your own routes.

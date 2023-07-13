@@ -12,7 +12,7 @@ import {
   join,
   normalizePath,
 } from '../utils/path'
-import { parseStringBytesToNumber } from './app-tools'
+import { parseStringBytesToNumber } from './parser'
 import { isBuffer } from './buffer'
 
 const maxChunkSize = parseStringBytesToNumber('1mb')

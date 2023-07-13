@@ -13,6 +13,8 @@ declare global {
         /**
          * The folder where the application will be store temporary files
          * when the request is uploading files
+         *
+         * @default '.tmp'
          */
         uploadTemp?: string
       }
@@ -89,13 +91,22 @@ declare global {
       env?: Record<string, string>
     }
 
+    interface FileMetadata {
+      absolutePath: string
+      filename: string
+      mimetype: string
+      encoding: string
+    }
+
+    type RequestMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+
     interface RequestContext {
-      method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-      query: Record<string, any>
+      method: RequestMethods
+      query: URLSearchParams
       cookies: Record<string, string>
       headers: import('http').IncomingHttpHeaders
       body: Record<string, any> | string | undefined
-      reader: import('stream').Readable
+      fileStream: (path: string) => import('fs').ReadStream
       custom?: CustomRequestData
     }
 
@@ -114,7 +125,7 @@ declare global {
       clearCookies?: Record<string, CookieOptions>
     }
 
-    type CookieOptions = import('express').CookieOptions
+    type CookieOptions = import('cookie').CookieSerializeOptions
 
     interface SetCookie {
       name: string
@@ -163,9 +174,18 @@ declare global {
 }
 
 export type KitConfig = Vulppi.KitConfig
+export type FileMetadata = Vulppi.FileMetadata
+export type CookieOptions = Vulppi.CookieOptions
+export type QueryData = Vulppi.QueryData
+export type SetCookie = Vulppi.SetCookie
+export type ValueCookie = Vulppi.ValueCookie
+export type ClearCookie = Vulppi.ClearCookie
+export type RequestMethods = Vulppi.RequestMethods
+
 export type RequestContext = Vulppi.RequestContext
+export type ResponseMessage = Vulppi.ResponseMessage
+
+export type MiddlewareNext = Vulppi.MiddlewareNext
+
 export type RequestHandler = Vulppi.RequestHandler
 export type MiddlewareHandler = Vulppi.MiddlewareHandler
-export type MiddlewareNext = Vulppi.MiddlewareNext
-export type ResponseMessage = Vulppi.ResponseMessage
-export type QueryData = Vulppi.QueryData
