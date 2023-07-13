@@ -13,6 +13,24 @@ In the meantime, you are welcome to explore and experiment with the alpha versio
 
 Thank you for your understanding and support as we work towards delivering a high-quality framework for your programming needs.
 
+## Table of Contents
+
+1. [Introduction](#Introduction)
+   1. [Key Features](#Key%20Features)
+2. [Getting Started](#Getting%20Started)
+   1. [Prerequisites](#Prerequisites)
+   2. [Automatic Installation](#Automatic%20Installation)
+   3. [Manual Installation](#Manual%20Installation)
+3. [Core Concepts](#Core%20Concepts)
+   1. [Routes](#Routes)
+   2. [Middleware](#Middleware)
+4. Usage Guide
+5. Configuration
+6. API Reference
+7. Troubleshooting
+8. Best Practices and Tips
+9. Contributing and Community
+
 ## Introduction
 
 Vulppi Kit is a versatile backend framework written in TypeScript, specifically tailored for Node.js (version >= 18.0.0). It provides a range of tools and utilities that streamline the development of RESTful APIs. By employing a file-system-based approach, Vulppi Kit simplifies route handling by mapping the application's routes to its file structure, enhancing code organization and promoting simplicity.
@@ -276,7 +294,7 @@ With these steps, you've manually installed Vulppi Kit, configured TypeScript, a
 
 <!-- TODO: -->
 
-### Creating directories
+## Core Concepts
 
 Vulppi Kit uses file-system routing, which means how you structure your files determines the routes in your application.
 
