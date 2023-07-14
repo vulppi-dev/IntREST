@@ -1,16 +1,8 @@
 import ck from 'chalk'
-import { build, type Plugin } from 'esbuild'
-import { cpSync, existsSync, readFileSync, rmSync } from 'fs'
-import { dirname, resolve, basename } from 'path'
-import { fileURLToPath } from 'url'
-import { clearExtension, escapePath, join } from '../utils/path'
+import { build } from 'esbuild'
+import { existsSync, rmSync } from 'fs'
 import { defaultPaths } from '../utils/constants'
-import { execSync } from 'child_process'
-
-const urlPath = import.meta.url
-// Url in dist/commands folder
-const basePath = resolve(fileURLToPath(urlPath), '../..')
-const typeDef = join(dirname(basePath), 'types/index.d.ts')
+import { clearExtension, join } from '../utils/path'
 
 interface CallBuildProps {
   input: string
@@ -67,12 +59,6 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
           format: 'esm',
           outExtension: { '.js': '.mjs' },
           outdir: appPath,
-          // plugins: [
-          //   transformValidationPlugin(
-          //     join(generatedPath, dirname(entry)),
-          //     join(appPath, dirname(entry)),
-          //   ),
-          // ],
         })
         console.log('Done %s', ck.bold.green(entry))
         resolve()
@@ -80,20 +66,3 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
     )
   })
 }
-
-// function transformValidationPlugin(generatedPath: string, appPath: string) {
-//   return {
-//     name: 'transform-validation',
-//     async setup(build) {
-//       build.onLoad({ filter: /\.ts$/ }, async (args) => {
-//         const generated = join(generatedPath, basename(args.path))
-//         cpSync(args.path, generated, {
-//           force: true,
-//           recursive: true,
-//         })
-//         execSync(`typia generate --input "${generated}" --output ${generated}`)
-//         return { contents: readFileSync(generated) }
-//       })
-//     },
-//   } as Plugin
-// }

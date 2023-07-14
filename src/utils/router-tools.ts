@@ -21,8 +21,8 @@ function isRange(
 }
 
 export async function sendResponseAll(
-  res: IntREST.ResponseMessage,
-  reqHeaders: IntREST.RequestContext['headers'],
+  res: IntREST.IntResponse,
+  reqHeaders: IntREST.IntRequest['headers'],
 ): Promise<never> {
   for (const entry of Object.entries(res.headers || {})) {
     sendResponse({

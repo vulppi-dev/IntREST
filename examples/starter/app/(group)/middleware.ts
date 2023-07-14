@@ -1,5 +1,5 @@
 export function middleware(
-  ctx: IntREST.RequestContext,
+  ctx: IntREST.IntRequest,
   next: IntREST.MiddlewareNext,
 ): void {
   next({

@@ -7,7 +7,7 @@ declare interface WorkerProps {
   route: string
   basePath: string
   config: IntREST.Config
-  data: Omit<IntREST.RequestContext, 'query' | 'assetsStream' | 'params'> & {
+  data: Omit<IntREST.IntRequest, 'query' | 'assetsStream' | 'params'> & {
     query: string
   }
 }

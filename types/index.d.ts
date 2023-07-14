@@ -100,7 +100,7 @@ declare global {
 
     type RequestMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
-    interface RequestContext<
+    interface IntRequest<
       Params extends Record<string, string> = Record<string, string>,
     > {
       method: RequestMethods
@@ -113,7 +113,7 @@ declare global {
       custom?: CustomRequestData
     }
 
-    interface ResponseMessage {
+    interface IntResponse {
       body?:
         | string
         | Record<string, any>
@@ -147,16 +147,13 @@ declare global {
     }
 
     interface RequestHandler {
-      (context: RequestContext):
-        | Promise<ResponseMessage | void>
-        | ResponseMessage
-        | void
+      (context: IntRequest): Promise<IntResponse | void> | IntResponse | void
     }
 
     interface MiddlewareHandler {
-      (context: RequestContext, next: MiddlewareNext):
-        | Promise<ResponseMessage | void>
-        | ResponseMessage
+      (context: IntRequest, next: MiddlewareNext):
+        | Promise<IntResponse | void>
+        | IntResponse
         | void
     }
 
@@ -185,10 +182,10 @@ export type ValueCookie = IntREST.ValueCookie
 export type ClearCookie = IntREST.ClearCookie
 export type RequestMethods = IntREST.RequestMethods
 
-export type RequestContext<
+export type IntRequest<
   Params extends Record<string, string> = Record<string, string>,
-> = IntREST.RequestContext<Params>
-export type ResponseMessage = IntREST.ResponseMessage
+> = IntREST.IntRequest<Params>
+export type IntResponse = IntREST.IntResponse
 
 export type MiddlewareNext = IntREST.MiddlewareNext
 

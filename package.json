@@ -87,7 +87,6 @@
     "lodash": "^4.17.21",
     "range-parser": "^1.2.1",
     "typescript": "^5.1.6",
-    "typia": "^4.1.6",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

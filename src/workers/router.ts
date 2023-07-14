@@ -18,7 +18,7 @@ const context = {
   assetsStream: (path: string) => {
     return createReadStream(join(basePath, 'assets', path))
   },
-} as IntREST.RequestContext
+} as IntREST.IntRequest
 
 const routePathnames = await findRoutePathname(basePath, route)
 
@@ -116,10 +116,10 @@ const middlewareList = (
 ).filter((m) => !!m.handler)
 
 try {
-  let response: IntREST.ResponseMessage | null = null
+  let response: IntREST.IntResponse | null = null
 
   for (const middleware of middlewareList) {
-    response = await new Promise<IntREST.ResponseMessage | null>(
+    response = await new Promise<IntREST.IntResponse | null>(
       async (resolve, reject) => {
         let resolved = false
         try {

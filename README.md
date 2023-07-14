@@ -256,9 +256,9 @@ Open the `route.ts` file and add the following content:
 ```ts
 // ./app/route.ts
 
-import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
+import type { IntRequest, IntResponse } from '@vulppi/intrest'
 
-export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
+export async function GET(ctx: IntRequest): Promise<IntResponse> {
   return {
     status: 200,
     body: 'Hello World!',
@@ -357,9 +357,9 @@ The middleware behavior is different from route handlers. Middleware is executed
 To start using IntREST, you need create routes in app folder. Here's a simple example of routes:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
+import type { IntRequest, IntResponse } from '@vulppi/intrest'
 
-export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
+export async function GET(ctx: IntRequest): Promise<IntResponse> {
   return {
     status: 200,
     body: 'Hello World!',
@@ -372,9 +372,9 @@ The `GET` function above demonstrates an example of a route handler that returns
 Here's another example that returns a JSON object:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
+import type { IntRequest, IntResponse } from '@vulppi/intrest'
 
-export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
+export async function GET(ctx: IntRequest): Promise<IntResponse> {
   return {
     status: 200,
     body: { text: 'Hello World!' },
@@ -387,13 +387,13 @@ In this case, the `body` property of the response is an object.
 If you want to return a response with a Buffer (e.g., for serving images), you can do the following:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
+import type { IntRequest, IntResponse } from '@vulppi/intrest'
 
 const imageBase64 = 'iVBORw0KGgoAAAANSUhEUgAAABg...AAASUVORK5CYII='
 
 const image = Buffer.from(imageBase64, 'base64')
 
-export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
+export async function GET(ctx: IntRequest): Promise<IntResponse> {
   return {
     status: 200,
     headers: {
@@ -410,9 +410,9 @@ The `GET` function above returns a response with a Buffer as the body. Make sure
 If you want to serve a ReadableStream (e.g., for streaming video or large files), you can do the following:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
+import type { IntRequest, IntResponse } from '@vulppi/intrest'
 
-export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
+export async function GET(ctx: IntRequest): Promise<IntResponse> {
   // in ${projectRoot}/assets/video.mp4
   const stream = ctx.assetsStream('video.mp4')
 
@@ -465,13 +465,13 @@ export default {
 
 The IntREST API is simple and easy to use. Has 4 main interfaces:
 
-- `RequestContext`
-- `ResponseMessage`
+- `IntRequest`
+- `IntResponse`
 - `MiddlewareNext`
 
-### RequestContext
+### IntRequest
 
-The `RequestContext` interface is the input interface of IntREST. It contains all the information about the request.
+The `IntRequest` interface is the input interface of IntREST. It contains all the information about the request.
 
 #### Properties
 
@@ -487,9 +487,9 @@ The `RequestContext` interface is the input interface of IntREST. It contains al
 - `cookies`: The object of cookies of the request. Using `cookie` API.
 - `custom`: The object of custom properties of the request. You can use this for share data between middlewares and route handlers.
 
-### ResponseMessage
+### IntResponse
 
-The `ResponseMessage` interface is the output interface of IntREST. It contains all the information about the response.
+The `IntResponse` interface is the output interface of IntREST. It contains all the information about the response.
 
 #### Properties
 
@@ -505,7 +505,7 @@ The `ResponseMessage` interface is the output interface of IntREST. It contains 
 
 ### MiddlewareNext
 
-The `MiddlewareNext` interface call the next middleware or route handler. If you send object in this function, the object will be merged with the property `custom` of the `RequestContext` interface.
+The `MiddlewareNext` interface call the next middleware or route handler. If you send object in this function, the object will be merged with the property `custom` of the `IntRequest` interface.
 
 #### Properties
 
