@@ -1,5 +1,5 @@
 {
-  "name": "@vulppi/intelli-rest",
+  "name": "@vulppi/intrest",
   "version": "0.4.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
@@ -10,7 +10,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vulppi-dev/intelli-rest.git"
+    "url": "https://github.com/vulppi-dev/intrest.git"
   },
   "keywords": [
     "adaptable",
@@ -26,7 +26,7 @@
     "http-status-codes",
     "http-status",
     "http",
-    "intelli-rest",
+    "intrest",
     "intelli",
     "kit",
     "rest-api",
@@ -52,8 +52,8 @@
   "module": "dist/lib/index.mjs",
   "types": "types/index.d.ts",
   "bin": {
-    "@vulppi/intelli-rest": "./bin/index.mjs",
-    "intelli-rest": "./bin/index.mjs",
+    "@vulppi/intrest": "./bin/index.mjs",
+    "intrest": "./bin/index.mjs",
     "irest": "./bin/index.mjs",
     "irst": "./bin/index.mjs"
   },
@@ -86,6 +86,7 @@
     "inquirer": "^9.2.8",
     "lodash": "^4.17.21",
     "range-parser": "^1.2.1",
+    "typescript": "^5.1.6",
     "typia": "^4.1.6",
     "yargs": "^17.7.2"
   },
@@ -99,8 +100,7 @@
     "@types/range-parser": "^1.2.4",
     "@types/yargs": "^17.0.24",
     "nodemon": "^3.0.1",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.1.6"
+    "npm-run-all": "^4.1.5"
   },
   "peerDependencies": {
     "@types/cookie": "^0.5.1"

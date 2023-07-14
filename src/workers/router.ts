@@ -18,7 +18,7 @@ const context = {
   assetsStream: (path: string) => {
     return createReadStream(join(basePath, 'assets', path))
   },
-} as IntelliREST.RequestContext
+} as IntREST.RequestContext
 
 const routePathnames = await findRoutePathname(basePath, route)
 
@@ -80,7 +80,7 @@ if (!routeFiltered.length) {
 }
 
 const { module, pathname, paramRegexp, vars } = routeFiltered[0]
-const requestHandler: IntelliREST.RequestHandler | undefined = module[method]
+const requestHandler: IntREST.RequestHandler | undefined = module[method]
 
 if (typeof requestHandler !== 'function') {
   await sendResponseAll(
@@ -108,7 +108,7 @@ const middlewareList = (
     middlewarePathnames.map(async (r) => {
       const m = await import(pathToFileURL(r).toString())
       return {
-        handler: m['middleware'] as IntelliREST.MiddlewareHandler,
+        handler: m['middleware'] as IntREST.MiddlewareHandler,
         pathname: r,
       }
     }),
@@ -116,10 +116,10 @@ const middlewareList = (
 ).filter((m) => !!m.handler)
 
 try {
-  let response: IntelliREST.ResponseMessage | null = null
+  let response: IntREST.ResponseMessage | null = null
 
   for (const middleware of middlewareList) {
-    response = await new Promise<IntelliREST.ResponseMessage | null>(
+    response = await new Promise<IntREST.ResponseMessage | null>(
       async (resolve, reject) => {
         let resolved = false
         try {

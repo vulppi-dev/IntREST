@@ -1,5 +1,5 @@
 declare global {
-  namespace IntelliREST {
+  namespace IntREST {
     interface Config {
       /**
        * The port where the application will be running
@@ -176,21 +176,21 @@ declare global {
   }
 }
 
-export type Config = IntelliREST.Config
-export type FileMetadata = IntelliREST.FileMetadata
-export type CookieOptions = IntelliREST.CookieOptions
-export type QueryData = IntelliREST.QueryData
-export type SetCookie = IntelliREST.SetCookie
-export type ValueCookie = IntelliREST.ValueCookie
-export type ClearCookie = IntelliREST.ClearCookie
-export type RequestMethods = IntelliREST.RequestMethods
+export type Config = IntREST.Config
+export type FileMetadata = IntREST.FileMetadata
+export type CookieOptions = IntREST.CookieOptions
+export type QueryData = IntREST.QueryData
+export type SetCookie = IntREST.SetCookie
+export type ValueCookie = IntREST.ValueCookie
+export type ClearCookie = IntREST.ClearCookie
+export type RequestMethods = IntREST.RequestMethods
 
 export type RequestContext<
   Params extends Record<string, string> = Record<string, string>,
-> = IntelliREST.RequestContext<Params>
-export type ResponseMessage = IntelliREST.ResponseMessage
+> = IntREST.RequestContext<Params>
+export type ResponseMessage = IntREST.ResponseMessage
 
-export type MiddlewareNext = IntelliREST.MiddlewareNext
+export type MiddlewareNext = IntREST.MiddlewareNext
 
-export type RequestHandler = IntelliREST.RequestHandler
-export type MiddlewareHandler = IntelliREST.MiddlewareHandler
+export type RequestHandler = IntREST.RequestHandler
+export type MiddlewareHandler = IntREST.MiddlewareHandler

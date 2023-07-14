@@ -1,20 +1,13 @@
+import { existsSync } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { dirname } from 'path'
 import rangeParser from 'range-parser'
-import { Readable, Writable } from 'stream'
+import { Readable } from 'stream'
 import { parentPort } from 'worker_threads'
 import { defaultPaths } from '../utils/constants'
-import {
-  escapePath,
-  globFindAll,
-  globFindAllList,
-  join,
-  normalizePath,
-} from '../utils/path'
+import { escapePath, globFindAll, join, normalizePath } from '../utils/path'
 import { isBuffer } from './buffer'
-import { existsSync } from 'fs'
-import { pathToFileURL } from 'url'
 
 function isRange(
   range?: rangeParser.Result | rangeParser.Ranges,
@@ -28,8 +21,8 @@ function isRange(
 }
 
 export async function sendResponseAll(
-  res: IntelliREST.ResponseMessage,
-  reqHeaders: IntelliREST.RequestContext['headers'],
+  res: IntREST.ResponseMessage,
+  reqHeaders: IntREST.RequestContext['headers'],
 ): Promise<never> {
   for (const entry of Object.entries(res.headers || {})) {
     sendResponse({
@@ -202,14 +195,21 @@ export async function findMiddlewarePathnames(
   routeFilePath: string,
 ) {
   const dir = dirname(
-    escapePath(routeFilePath, join(basePath, defaultPaths.compiledApp)),
+    escapePath(
+      routeFilePath,
+      join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
+    ),
   )
   const directories = recursiveDirectoryList(dir)
   const searchList = directories.map((r) =>
     join(
-      ...[basePath, defaultPaths.compiledApp, r, 'middleware.mjs'].filter(
-        Boolean,
-      ),
+      ...[
+        basePath,
+        defaultPaths.compiled,
+        defaultPaths.compiledApp,
+        r,
+        'middleware.mjs',
+      ].filter(Boolean),
     ),
   )
   const middlewarePaths = searchList.filter((r) => existsSync(r))
@@ -219,6 +219,7 @@ export async function findMiddlewarePathnames(
 export async function findRoutePathname(basePath: string, route: string) {
   const routesPathnames = await globFindAll(
     basePath,
+    defaultPaths.compiled,
     defaultPaths.compiledApp,
     '**/route.mjs',
   )
@@ -226,7 +227,7 @@ export async function findRoutePathname(basePath: string, route: string) {
     .map((r) => {
       const escapedRoute = escapePath(
         r,
-        join(basePath, defaultPaths.compiledApp),
+        join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
       )
       const cleanedRoute = escapedRoute
         .replace(/[\/\\]?\([a-z0-1]+\)/gi, '')

@@ -1,16 +1,13 @@
 declare interface StartApplicationProps {
-  config: IntelliREST.Config
+  config: IntREST.Config
   basePath: string
 }
 
 declare interface WorkerProps {
   route: string
   basePath: string
-  config: IntelliREST.Config
-  data: Omit<
-    IntelliREST.RequestContext,
-    'query' | 'assetsStream' | 'params'
-  > & {
+  config: IntREST.Config
+  data: Omit<IntREST.RequestContext, 'query' | 'assetsStream' | 'params'> & {
     query: string
   }
 }
@@ -27,11 +24,11 @@ declare type ResponseDataMap = {
   cookie: {
     name: string
     value: string
-    options?: IntelliREST.CookieOptions
+    options?: IntREST.CookieOptions
   }
   'clear-cookie': {
     name: string
-    options?: IntelliREST.CookieOptions
+    options?: IntREST.CookieOptions
   }
   set: [string, number | string | readonly string[] | undefined]
   status: number

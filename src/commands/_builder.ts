@@ -1,9 +1,11 @@
 import ck from 'chalk'
-import { build } from 'esbuild'
-import { existsSync, rmSync } from 'fs'
-import { dirname, resolve } from 'path'
+import { build, type Plugin } from 'esbuild'
+import { cpSync, existsSync, readFileSync, rmSync } from 'fs'
+import { dirname, resolve, basename } from 'path'
 import { fileURLToPath } from 'url'
-import { clearExtension, join } from '../utils/path'
+import { clearExtension, escapePath, join } from '../utils/path'
+import { defaultPaths } from '../utils/constants'
+import { execSync } from 'child_process'
 
 const urlPath = import.meta.url
 // Url in dist/commands folder
@@ -35,16 +37,24 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
       setTimeout(async () => {
         timeoutMap.delete(entry)
         promiseMap.delete(entry)
-        const existsEntry = existsSync(join(input, entry))
+        const generatedPath = join(output, defaultPaths.compiledGenerated)
+        const appPath = join(output, defaultPaths.compiledApp)
+        const absoluteEntry = join(input, entry)
+
+        const existsEntry = existsSync(absoluteEntry)
         if (!existsEntry) {
-          rmSync(join(output, clearExtension(entry) + '.mjs'))
+          const existsGenerated = existsSync(join(generatedPath, entry))
+          const existsApp = existsSync(
+            join(appPath, clearExtension(entry) + '.mjs'),
+          )
+          existsGenerated && rmSync(join(generatedPath, entry))
+          existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
           console.log('Removed %s', ck.bold.red(entry))
           return resolve()
         }
 
         console.log('Building %s', ck.bold.green(entry))
 
-        const absoluteEntry = join(input, entry)
         await build({
           entryPoints: {
             [clearExtension(entry)]: absoluteEntry,
@@ -56,7 +66,13 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
           platform: 'node',
           format: 'esm',
           outExtension: { '.js': '.mjs' },
-          outdir: output,
+          outdir: appPath,
+          // plugins: [
+          //   transformValidationPlugin(
+          //     join(generatedPath, dirname(entry)),
+          //     join(appPath, dirname(entry)),
+          //   ),
+          // ],
         })
         console.log('Done %s', ck.bold.green(entry))
         resolve()
@@ -64,3 +80,20 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
     )
   })
 }
+
+// function transformValidationPlugin(generatedPath: string, appPath: string) {
+//   return {
+//     name: 'transform-validation',
+//     async setup(build) {
+//       build.onLoad({ filter: /\.ts$/ }, async (args) => {
+//         const generated = join(generatedPath, basename(args.path))
+//         cpSync(args.path, generated, {
+//           force: true,
+//           recursive: true,
+//         })
+//         execSync(`typia generate --input "${generated}" --output ${generated}`)
+//         return { contents: readFileSync(generated) }
+//       })
+//     },
+//   } as Plugin
+// }

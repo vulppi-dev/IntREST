@@ -1,6 +1,6 @@
 export function middleware(
-  ctx: IntelliREST.RequestContext,
-  next: IntelliREST.MiddlewareNext,
+  ctx: IntREST.RequestContext,
+  next: IntREST.MiddlewareNext,
 ): void {
   next({
     catch: 'middleware',

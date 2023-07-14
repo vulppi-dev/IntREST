@@ -1,4 +1,4 @@
-import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
+import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
   const stream = ctx.assetsStream('video.mp4')

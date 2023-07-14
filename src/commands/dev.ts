@@ -171,7 +171,7 @@ async function startRouterBuilder(basePath: string) {
       if (oldChecksum !== newChecksum) {
         await callBuild({
           input: appFolder,
-          output: join(basePath, defaultPaths.compiledApp),
+          output: join(basePath, defaultPaths.compiled),
           entry: normalizedFilename,
         })
       }
@@ -179,9 +179,8 @@ async function startRouterBuilder(basePath: string) {
   })
 
   const appFiles = await globFindAll(appFolder, globPatterns.route)
-  const compiledAppFolder = join(basePath, defaultPaths.compiledApp)
-  if (existsSync(compiledAppFolder))
-    rmSync(compiledAppFolder, { recursive: true })
+  const compiledFolder = join(basePath, defaultPaths.compiled)
+  if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
   return Promise.all(
     appFiles.map(async (filename) => {
@@ -190,7 +189,7 @@ async function startRouterBuilder(basePath: string) {
       appFolderChecksum.set(escapedPath, checksum)
       await callBuild({
         input: appFolder,
-        output: join(basePath, defaultPaths.compiledApp),
+        output: join(basePath, defaultPaths.compiled),
         entry: escapedPath,
       })
     }),

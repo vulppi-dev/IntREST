@@ -30,11 +30,10 @@ const server = createServer(requestHandler)
 
 async function requestHandler(req: IncomingMessage, res: ServerResponse) {
   const contentType = req.headers['content-type']
-  const method = (req.method?.toUpperCase() ||
-    'GET') as IntelliREST.RequestMethods
+  const method = (req.method?.toUpperCase() || 'GET') as IntREST.RequestMethods
 
   if (/^options$/i.test(method)) {
-    res.setHeader('Server', 'IntelliREST')
+    res.setHeader('Server', 'IntREST')
     res.setHeader('Accept', [
       'application/json',
       'x-www-form-urlencoded',
@@ -113,7 +112,7 @@ async function requestHandler(req: IncomingMessage, res: ServerResponse) {
             filename,
             encoding,
             mimetype,
-          } as IntelliREST.FileMetadata
+          } as IntREST.FileMetadata
           _.set(body, name, fileMetadata)
           const fileWriter = createWriteStream(filePath, {
             flags: 'w',

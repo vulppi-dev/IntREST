@@ -4,5 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "irest dev"
+  },
+  "dependencies": {
+    "@vulppi/intrest": "^0.4.0"
   }
 }

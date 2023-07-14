@@ -5,7 +5,7 @@ import yargs from 'yargs/yargs'
 import * as commands from '../dist/commands/index.mjs'
 
 yargs(hideBin(process.argv))
-  .scriptName('intelli-rest')
+  .scriptName('intrest')
   .usage('irest <cmd> [args]')
   .command(Object.values(commands))
   .help()

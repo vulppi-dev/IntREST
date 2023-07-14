@@ -2,9 +2,7 @@ import crypto from 'crypto'
 import fs, { existsSync } from 'fs'
 import _ from 'lodash'
 
-export function normalizeConfig(
-  config: IntelliREST.Config,
-): IntelliREST.Config {
+export function normalizeConfig(config: IntREST.Config): IntREST.Config {
   const normalConfig = structuredClone(config)
 
   if (!_.get(normalConfig, ['folders', 'appFolder'])) {

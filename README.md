@@ -1,9 +1,9 @@
-# Vulppi - IntelliREST
+# Vulppi - IntREST
 
-[![npm version](https://badge.fury.io/js/%40vulppi%2Fintelli-rest.svg)](https://www.npmjs.com/package/@vulppi/intelli-rest)
-[![npm downloads](https://img.shields.io/npm/dm/%40vulppi%2Fintelli-rest.svg)](https://www.npmjs.com/package/@vulppi/intelli-rest)
-[![GitHub issues](https://img.shields.io/github/issues/vulppi-dev/intelli-rest.svg)](https://github.com/vulppi-dev/intelli-rest/issues)
-[![GitHub license](https://img.shields.io/github/license/vulppi-dev/intelli-rest.svg)](https://github.com/vulppi-dev/intelli-rest/blob/main/LICENSE)
+[![npm version](https://badge.fury.io/js/%40vulppi%2Fintrest.svg)](https://www.npmjs.com/package/@vulppi/intrest)
+[![npm downloads](https://img.shields.io/npm/dm/%40vulppi%2Fintrest.svg)](https://www.npmjs.com/package/@vulppi/intrest)
+[![GitHub issues](https://img.shields.io/github/issues/vulppi-dev/intrest.svg)](https://github.com/vulppi-dev/intrest/issues)
+[![GitHub license](https://img.shields.io/github/license/vulppi-dev/intrest.svg)](https://github.com/vulppi-dev/intrest/blob/main/LICENSE)
 
 **Attention:** Please note that the current version of this framework is in the _alpha stage_ and is **not recommended** for production use. We strongly advise against using this version in live environments or critical systems.
 
@@ -35,7 +35,7 @@ Thank you for your understanding and support as we work towards delivering a hig
 
 ## Introduction
 
-IntelliREST is a versatile backend framework written in TypeScript, specifically tailored for Node.js (version >= 18.0.0). It provides a range of tools and utilities that streamline the development of RESTful APIs. By employing a file-system-based approach, IntelliREST simplifies route handling by mapping the application's routes to its file structure, enhancing code organization and promoting simplicity.
+IntREST is a versatile backend framework written in TypeScript, specifically tailored for Node.js (version >= 18.0.0). It provides a range of tools and utilities that streamline the development of RESTful APIs. By employing a file-system-based approach, IntREST simplifies route handling by mapping the application's routes to its file structure, enhancing code organization and promoting simplicity.
 
 ### Key Features
 
@@ -47,7 +47,7 @@ IntelliREST is a versatile backend framework written in TypeScript, specifically
 - **Request Parsing:** Automatically detects and parses JSON and URL-encoded requests, eliminating the need for manual parsing.
 - **Response Type Detection:** Intelligently identifies the response type, supporting JSON, Buffer, String, or ReadableStream, facilitating integration with various client applications.
 
-With IntelliREST, you can expedite your backend development, streamline code organization through file-system-based routing, and deliver high-performance RESTful APIs effortlessly. Let's delve into the details of utilizing this framework to harness its true potential.
+With IntREST, you can expedite your backend development, streamline code organization through file-system-based routing, and deliver high-performance RESTful APIs effortlessly. Let's delve into the details of utilizing this framework to harness its true potential.
 
 ## Getting Started
 
@@ -60,7 +60,7 @@ Before you begin, ensure that your system meets the following requirements:
 
 ### Automatic Installation
 
-Follow the steps below to set up a IntelliREST project using your preferred package manager:
+Follow the steps below to set up a IntREST project using your preferred package manager:
 
 #### 1. Create a Directory
 
@@ -73,24 +73,24 @@ cd <your-project-folder>
 
 #### 2. Initialize the Project
 
-Use your chosen package manager to initialize a new IntelliREST project:
+Use your chosen package manager to initialize a new IntREST project:
 
 With npm:
 
 ```bash
-npx @vulppi/intelli-rest create
+npx @vulppi/intrest create
 ```
 
 With pnpm:
 
 ```bash
-pnpx @vulppi/intelli-rest create
+pnpx @vulppi/intrest create
 ```
 
 With yarn:
 
 ```bash
-npx @vulppi/intelli-rest create --yarn
+npx @vulppi/intrest create --yarn
 ```
 
 This command sets up the necessary project structure and installs the required dependencies.
@@ -117,15 +117,15 @@ With yarn:
 yarn dev
 ```
 
-The development server will spin up, and you can now start building your IntelliREST application.
+The development server will spin up, and you can now start building your IntREST application.
 
-By following these steps, you'll have a IntelliREST project up and running, ready for you to begin developing your RESTful APIs with ease.
+By following these steps, you'll have a IntREST project up and running, ready for you to begin developing your RESTful APIs with ease.
 
 ---
 
 ### Manual Installation
 
-To manually install `@vulppi/intelli-rest`, follow these steps:
+To manually install `@vulppi/intrest`, follow these steps:
 
 #### 1. Create a New Project
 
@@ -176,7 +176,7 @@ Open the `tsconfig.json` file and add the following configuration:
 ```json
 {
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", ".intelli-rest"],
+  "exclude": ["node_modules", ".intrest"],
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
@@ -197,29 +197,29 @@ Open the `tsconfig.json` file and add the following configuration:
 
 This configuration ensures that TypeScript is set up correctly for your project.
 
-#### 4. Install IntelliREST
+#### 4. Install IntREST
 
-Install `@vulppi/intelli-rest` using your chosen package manager:
+Install `@vulppi/intrest` using your chosen package manager:
 
 With npm:
 
 ```bash
-npm install @vulppi/intelli-rest
+npm install @vulppi/intrest
 ```
 
 With pnpm:
 
 ```bash
-pnpm install @vulppi/intelli-rest
+pnpm install @vulppi/intrest
 ```
 
 With yarn:
 
 ```bash
-yarn add @vulppi/intelli-rest
+yarn add @vulppi/intrest
 ```
 
-This will install IntelliREST as a dependency in your project.
+This will install IntREST as a dependency in your project.
 
 #### 5. Add Scripts
 
@@ -256,7 +256,7 @@ Open the `route.ts` file and add the following content:
 ```ts
 // ./app/route.ts
 
-import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
+import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
   return {
@@ -292,13 +292,13 @@ yarn dev
 
 The development server will start, and you can access your application at the specified port.
 
-With these steps, you've manually installed IntelliREST, configured TypeScript, and set up your first route. You can now start building your IntelliREST application and explore the framework's capabilities.
+With these steps, you've manually installed IntREST, configured TypeScript, and set up your first route. You can now start building your IntREST application and explore the framework's capabilities.
 
 ## Core Concepts
 
 ### Application Structure
 
-IntelliREST projects follow a specific structure to ensure that your application is easy to understand and maintain. The following diagram shows the basic structure of a IntelliREST project:
+IntREST projects follow a specific structure to ensure that your application is easy to understand and maintain. The following diagram shows the basic structure of a IntREST project:
 
 ```
 assets
@@ -326,7 +326,7 @@ app
         └── route.ts (POST, PUT, DELETE)
 package.json
 tsconfig.json
-intelli-rest.config.mjs (optional)
+intrest.config.mjs (optional)
 
 ```
 
@@ -354,10 +354,10 @@ The middleware behavior is different from route handlers. Middleware is executed
 
 ## Usage Guide
 
-To start using IntelliREST, you need create routes in app folder. Here's a simple example of routes:
+To start using IntREST, you need create routes in app folder. Here's a simple example of routes:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
+import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
   return {
@@ -372,7 +372,7 @@ The `GET` function above demonstrates an example of a route handler that returns
 Here's another example that returns a JSON object:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
+import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
   return {
@@ -387,7 +387,7 @@ In this case, the `body` property of the response is an object.
 If you want to return a response with a Buffer (e.g., for serving images), you can do the following:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
+import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
 
 const imageBase64 = 'iVBORw0KGgoAAAANSUhEUgAAABg...AAASUVORK5CYII='
 
@@ -410,7 +410,7 @@ The `GET` function above returns a response with a Buffer as the body. Make sure
 If you want to serve a ReadableStream (e.g., for streaming video or large files), you can do the following:
 
 ```typescript
-import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
+import type { RequestContext, ResponseMessage } from '@vulppi/intrest'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
   // in ${projectRoot}/assets/video.mp4
@@ -428,15 +428,15 @@ export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
 
 The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `assetsStream` function from the `fs` module to create the stream.
 
-The routes above are just examples of how to use IntelliREST.
+The routes above are just examples of how to use IntREST.
 
 ## Configuration
 
-IntelliREST uses a configuration file to define the application's settings, but is optional. The configuration file must be named `intelli-rest.config.mjs` and must be located in the root directory of the project. Here's an example of a configuration file:
+IntREST uses a configuration file to define the application's settings, but is optional. The configuration file must be named `intrest.config.mjs` and must be located in the root directory of the project. Here's an example of a configuration file:
 
 ```javascript
 /**
- * @type {import('@vulppi/intelli-rest').Config}
+ * @type {import('@vulppi/intrest').Config}
  */
 export default {
   port: 4000,
@@ -463,7 +463,7 @@ export default {
 
 ## API Reference
 
-The IntelliREST API is simple and easy to use. Has 4 main interfaces:
+The IntREST API is simple and easy to use. Has 4 main interfaces:
 
 - `RequestContext`
 - `ResponseMessage`
@@ -471,7 +471,7 @@ The IntelliREST API is simple and easy to use. Has 4 main interfaces:
 
 ### RequestContext
 
-The `RequestContext` interface is the input interface of IntelliREST. It contains all the information about the request.
+The `RequestContext` interface is the input interface of IntREST. It contains all the information about the request.
 
 #### Properties
 
@@ -489,7 +489,7 @@ The `RequestContext` interface is the input interface of IntelliREST. It contain
 
 ### ResponseMessage
 
-The `ResponseMessage` interface is the output interface of IntelliREST. It contains all the information about the response.
+The `ResponseMessage` interface is the output interface of IntREST. It contains all the information about the response.
 
 #### Properties
 
@@ -521,7 +521,7 @@ No troubleshooting yet. If you have any problems, please contact us.
 
 ## Contributing and Community
 
-Contributions are welcome! If you want to contribute to IntelliREST, please follow these steps:
+Contributions are welcome! If you want to contribute to IntREST, please follow these steps:
 
 1. Fork the repository.
 2. Create a new branch for your feature or bug fix.
@@ -529,13 +529,13 @@ Contributions are welcome! If you want to contribute to IntelliREST, please foll
 4. Push your changes to your forked repository.
 5. Submit a pull request to the main repository.
 6. And that's it! We will review your pull request as soon as possible.
-7. Thank you for contributing to IntelliREST! 🎉
+7. Thank you for contributing to IntREST! 🎉
 8. If you have any questions, feel free to contact us.
 9. If you want to contribute more, you can [Buy Us a Coffee](https://www.buymeacoffee.com/morbden) ☕️
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/vulppi-dev/intelli-rest/blob/main/LICENSE).
+This project is licensed under the [MIT License](https://github.com/vulppi-dev/intrest/blob/main/LICENSE).
 
 ## Contact
 
@@ -546,6 +546,6 @@ Email: renato@vulppi.dev
 
 ---
 
-Thank you for using IntelliREST! We hope it helps you build powerful and scalable Node.js applications. If you have any feedback or suggestions, feel free to let us know.
+Thank you for using IntREST! We hope it helps you build powerful and scalable Node.js applications. If you have any feedback or suggestions, feel free to let us know.
 
 Visit the [Vulppi](https://vulppi.dev) organization site for more information about our projects and services.

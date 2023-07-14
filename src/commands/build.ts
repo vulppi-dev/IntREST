@@ -32,16 +32,15 @@ async function startRouterBuilder(basePath: string) {
     ck.blue.bold(escapePath(appFolder, basePath)),
   )
   const appFiles = await globFindAll(appFolder, globPatterns.route)
-  const compiledAppFolder = join(basePath, defaultPaths.compiledApp)
-  if (existsSync(compiledAppFolder))
-    rmSync(compiledAppFolder, { recursive: true })
+  const compiledFolder = join(basePath, defaultPaths.compiled)
+  if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
   return Promise.all(
     appFiles.map(async (filename) => {
       const escapedPath = escapePath(filename, appFolder)
       await callBuild({
         input: appFolder,
-        output: join(basePath, defaultPaths.compiledApp),
+        output: join(basePath, defaultPaths.compiled),
         entry: escapedPath,
       })
     }),
