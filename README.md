@@ -414,7 +414,7 @@ import type { RequestContext, ResponseMessage } from '@vulppi/intelli-rest'
 
 export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
   // in ${projectRoot}/assets/video.mp4
-  const stream = ctx.fileStream('video.mp4')
+  const stream = ctx.assetsStream('video.mp4')
 
   return {
     status: 200,
@@ -426,7 +426,7 @@ export async function GET(ctx: RequestContext): Promise<ResponseMessage> {
 }
 ```
 
-The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `fileStream` function from the `fs` module to create the stream.
+The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `assetsStream` function from the `fs` module to create the stream.
 
 The routes above are just examples of how to use IntelliREST.
 
@@ -483,7 +483,7 @@ The `RequestContext` interface is the input interface of IntelliREST. It contain
 - `body`: The body of the request. Can be a `string` or `object`.
   - The `body` property is only available if the request has a body and the method is not `GET`.
   - If the request `Content-Type` is `multipart/form-data` and contains upload files, the `body` property will be contains a file metadata stored with name of the field. The metadata interface is `FileMetadata`.
-- `fileStream`: The function to get a file stream from the `assets` folder, fonded in root directory of the project.
+- `assetsStream`: The function to get a file stream from the `assets` folder, fonded in root directory of the project.
 - `cookies`: The object of cookies of the request. Using `cookie` API.
 - `custom`: The object of custom properties of the request. You can use this for share data between middlewares and route handlers.
 

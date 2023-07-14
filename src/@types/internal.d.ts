@@ -7,7 +7,10 @@ declare interface WorkerProps {
   route: string
   basePath: string
   config: IntelliREST.Config
-  data: Omit<IntelliREST.RequestContext, 'query' | 'fileStream' | 'params'> & {
+  data: Omit<
+    IntelliREST.RequestContext,
+    'query' | 'assetsStream' | 'params'
+  > & {
     query: string
   }
 }

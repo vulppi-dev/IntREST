@@ -109,7 +109,7 @@ declare global {
       params: Params
       headers: import('http').IncomingHttpHeaders
       body: Record<string, any> | string | undefined
-      fileStream: (path: string) => import('fs').ReadStream
+      assetsStream: (path: string) => import('fs').ReadStream
       custom?: CustomRequestData
     }
 

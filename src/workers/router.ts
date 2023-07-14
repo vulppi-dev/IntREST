@@ -15,7 +15,7 @@ const context = {
   ...data,
   params: {},
   query: new URLSearchParams(data.query || ''),
-  fileStream: (path: string) => {
+  assetsStream: (path: string) => {
     return createReadStream(join(basePath, 'assets', path))
   },
 } as IntelliREST.RequestContext
