@@ -1,6 +1,6 @@
 export function middleware(
-  ctx: Vulppi.RequestContext,
-  next: Vulppi.MiddlewareNext,
+  ctx: IntelliREST.RequestContext,
+  next: IntelliREST.MiddlewareNext,
 ): void {
   next({
     root: 'middleware',

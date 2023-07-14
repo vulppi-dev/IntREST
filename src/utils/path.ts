@@ -3,11 +3,11 @@ import path, { dirname, isAbsolute, resolve } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 export async function getConfigModule(configPath?: string) {
-  if (!configPath) return {} as Vulppi.KitConfig
+  if (!configPath) return {} as IntelliREST.Config
   const configURL = pathToFileURL(configPath)
   configURL.searchParams.set('update', Date.now().toString())
   return await import(configURL.toString()).then(
-    (m) => m.default as Vulppi.KitConfig,
+    (m) => m.default as IntelliREST.Config,
   )
 }
 

@@ -2,7 +2,9 @@ import crypto from 'crypto'
 import fs, { existsSync } from 'fs'
 import _ from 'lodash'
 
-export function normalizeConfig(config: Vulppi.KitConfig): Vulppi.KitConfig {
+export function normalizeConfig(
+  config: IntelliREST.Config,
+): IntelliREST.Config {
   const normalConfig = structuredClone(config)
 
   if (!_.get(normalConfig, ['folders', 'appFolder'])) {

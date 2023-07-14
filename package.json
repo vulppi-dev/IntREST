@@ -1,6 +1,6 @@
 {
-  "name": "@vulppi/kit",
-  "version": "0.3.1",
+  "name": "@vulppi/intelli-rest",
+  "version": "0.4.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -10,46 +10,52 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vulppi-dev/kit.git"
+    "url": "https://github.com/vulppi-dev/intelli-rest.git"
   },
   "keywords": [
-    "vulppi",
-    "backend",
-    "kit",
-    "express",
-    "typescript",
-    "esbuild",
-    "dotenv",
-    "dotenv-expand",
-    "rest",
-    "api",
-    "rest-api",
+    "adaptable",
     "api-rest",
-    "http",
+    "api",
+    "automatic",
+    "backend",
+    "dotenv-expand",
+    "dotenv",
+    "esbuild",
+    "express",
+    "framework",
     "http-status-codes",
     "http-status",
-    "status-codes",
-    "framework",
+    "http",
+    "intelli-rest",
+    "intelli",
+    "kit",
+    "rest-api",
+    "rest",
+    "restful",
     "scalable",
-    "worker",
-    "workers",
-    "worker-threads",
-    "worker-thread",
+    "status-codes",
+    "stream-api",
+    "stream",
+    "streaming-api",
+    "streaming",
+    "streams",
     "thread",
     "threads",
-    "stream",
-    "streams",
-    "streaming",
-    "streaming-api",
-    "stream-api"
+    "typescript",
+    "vulppi",
+    "worker-thread",
+    "worker-threads",
+    "worker",
+    "workers"
   ],
   "main": "dist/lib/index.mjs",
   "module": "dist/lib/index.mjs",
   "types": "types/index.d.ts",
   "bin": {
-    "@vulppi/kit": "./bin/index.mjs",
-    "vulppi": "./bin/index.mjs",
-    "vp": "./bin/index.mjs"
+    "@vulppi/intelli-rest": "./bin/index.mjs",
+    "intelli-rest": "./bin/index.mjs",
+    "irest": "./bin/index.mjs",
+    "irst": "./bin/index.mjs"
   },
   "exports": {
     ".": {
@@ -80,6 +86,7 @@
     "inquirer": "^9.2.8",
     "lodash": "^4.17.21",
     "range-parser": "^1.2.1",
+    "typia": "^4.1.6",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -94,5 +101,8 @@
     "nodemon": "^3.0.1",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "@types/cookie": "^0.5.1"
   }
 }

@@ -4,7 +4,7 @@
   ],
   "exclude": [
     "node_modules",
-    ".vulppi"
+    ".intelli-rest"
   ],
   "compilerOptions": {
     "module": "ESNext",
@@ -22,7 +22,7 @@
     "checkJs": false,
     "baseUrl": "app",
     "paths": {
-      "@vulppi/kit": [
+      "@vulppi/intelli-rest": [
         "../../.."
       ]
     }

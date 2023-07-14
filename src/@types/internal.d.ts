@@ -1,13 +1,15 @@
 declare interface StartApplicationProps {
-  config: Vulppi.KitConfig
+  config: IntelliREST.Config
   basePath: string
 }
 
 declare interface WorkerProps {
   route: string
   basePath: string
-  config: Vulppi.KitConfig
-  data: Omit<Vulppi.RequestContext, 'query' | 'fileStream'> & { query: string }
+  config: IntelliREST.Config
+  data: Omit<IntelliREST.RequestContext, 'query' | 'fileStream' | 'params'> & {
+    query: string
+  }
 }
 
 declare type ResponseState =
@@ -22,11 +24,11 @@ declare type ResponseDataMap = {
   cookie: {
     name: string
     value: string
-    options?: Vulppi.CookieOptions
+    options?: IntelliREST.CookieOptions
   }
   'clear-cookie': {
     name: string
-    options?: Vulppi.CookieOptions
+    options?: IntelliREST.CookieOptions
   }
   set: [string, number | string | readonly string[] | undefined]
   status: number

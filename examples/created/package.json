@@ -4,15 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "vulppi": "vulppi",
-    "dev": "vulppi dev",
-    "build": "vulppi build",
-    "start": "vulppi start"
+    "irest": "irest",
+    "dev": "irest dev",
+    "build": "irest build",
+    "start": "irest start"
   },
   "dependencies": {
-    "@vulppi/toolbelt": "^0.6.3",
-    "@vulppi/kit": "^0.2.0",
-    "@types/cookie": "^0.5.1"
+    "@vulppi/intelli-rest": "^0.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.4.2",

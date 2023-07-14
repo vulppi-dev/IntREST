@@ -28,8 +28,8 @@ function isRange(
 }
 
 export async function sendResponseAll(
-  res: Vulppi.ResponseMessage,
-  reqHeaders: Vulppi.RequestContext['headers'],
+  res: IntelliREST.ResponseMessage,
+  reqHeaders: IntelliREST.RequestContext['headers'],
 ): Promise<never> {
   for (const entry of Object.entries(res.headers || {})) {
     sendResponse({

@@ -1,6 +1,6 @@
 declare global {
-  namespace Vulppi {
-    interface KitConfig {
+  namespace IntelliREST {
+    interface Config {
       /**
        * The port where the application will be running
        * @default 4000
@@ -176,21 +176,21 @@ declare global {
   }
 }
 
-export type KitConfig = Vulppi.KitConfig
-export type FileMetadata = Vulppi.FileMetadata
-export type CookieOptions = Vulppi.CookieOptions
-export type QueryData = Vulppi.QueryData
-export type SetCookie = Vulppi.SetCookie
-export type ValueCookie = Vulppi.ValueCookie
-export type ClearCookie = Vulppi.ClearCookie
-export type RequestMethods = Vulppi.RequestMethods
+export type Config = IntelliREST.Config
+export type FileMetadata = IntelliREST.FileMetadata
+export type CookieOptions = IntelliREST.CookieOptions
+export type QueryData = IntelliREST.QueryData
+export type SetCookie = IntelliREST.SetCookie
+export type ValueCookie = IntelliREST.ValueCookie
+export type ClearCookie = IntelliREST.ClearCookie
+export type RequestMethods = IntelliREST.RequestMethods
 
 export type RequestContext<
   Params extends Record<string, string> = Record<string, string>,
-> = Vulppi.RequestContext<Params>
-export type ResponseMessage = Vulppi.ResponseMessage
+> = IntelliREST.RequestContext<Params>
+export type ResponseMessage = IntelliREST.ResponseMessage
 
-export type MiddlewareNext = Vulppi.MiddlewareNext
+export type MiddlewareNext = IntelliREST.MiddlewareNext
 
-export type RequestHandler = Vulppi.RequestHandler
-export type MiddlewareHandler = Vulppi.MiddlewareHandler
+export type RequestHandler = IntelliREST.RequestHandler
+export type MiddlewareHandler = IntelliREST.MiddlewareHandler

@@ -30,7 +30,7 @@ scripts/
 examples/
 
 # temporary
-.vulppi/
+.intelli-rest/
 *.swp
 *temp/
 *tmp/
