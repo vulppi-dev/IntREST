@@ -29,6 +29,9 @@ src/
 scripts/
 examples/
 
+# docs
+*.md
+
 # temporary
 .intrest/
 *.swp
