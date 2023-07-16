@@ -6,8 +6,10 @@ export async function getConfigModule(configPath?: string) {
   if (!configPath) return {} as IntREST.Config
   const configURL = pathToFileURL(configPath)
   configURL.searchParams.set('update', Date.now().toString())
-  return await import(configURL.toString()).then(
-    (m) => m.default as IntREST.Config,
+  return (
+    (await import(configURL.toString()).then(
+      (m) => m.default as IntREST.Config,
+    )) || {}
   )
 }
 

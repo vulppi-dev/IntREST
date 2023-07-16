@@ -120,17 +120,18 @@ async function restartServer(
       app = null
       first = false
     }
+    const config = await getConfigModule(configPath)
 
     if (!first) {
       console.log('Restarting the application...')
     } else {
       console.log('Starting the application...')
-      await startRouterBuilder(projectPath)
+      await startRouterBuilder(projectPath, config)
     }
 
-    const config = await getConfigModule(configPath)
     const envObject = Object.assign(
       structuredClone(process.env),
+      { INTREST_BASE_PATH: projectPath },
       _.get(config, 'env', {}),
     ) as Record<string, string>
     const myEnv = envPath
@@ -144,13 +145,12 @@ async function restartServer(
         }
     dotenvExpand.expand(myEnv)
     app = new Worker(join(__dirname, defaultPaths.workerApp), {
-      workerData: { config, basePath: projectPath },
       env: envObject,
     })
   }, 1000)
 }
 
-async function startRouterBuilder(basePath: string) {
+async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   const appFolder = await getAppPath(basePath)
 
   console.log(
@@ -173,6 +173,7 @@ async function startRouterBuilder(basePath: string) {
           input: appFolder,
           output: join(basePath, defaultPaths.compiled),
           entry: normalizedFilename,
+          config,
         })
       }
     }
@@ -191,6 +192,7 @@ async function startRouterBuilder(basePath: string) {
         input: appFolder,
         output: join(basePath, defaultPaths.compiled),
         entry: escapedPath,
+        config,
       })
     }),
   )

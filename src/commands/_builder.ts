@@ -1,19 +1,27 @@
 import ck from 'chalk'
 import { build } from 'esbuild'
-import { existsSync, rmSync } from 'fs'
+import { existsSync, readFileSync, rmSync } from 'fs'
 import { defaultPaths } from '../utils/constants'
 import { clearExtension, join } from '../utils/path'
+import { TsconfigPathsPlugin } from '@esbuild-plugins/tsconfig-paths'
+import { parse } from 'comment-json'
 
 interface CallBuildProps {
   input: string
   output: string
   entry: string
+  config?: IntREST.Config
 }
 
 const timeoutMap: Map<string, NodeJS.Timeout> = new Map()
 const promiseMap: Map<string, VoidFunction> = new Map()
 
-export async function callBuild({ input, output, entry }: CallBuildProps) {
+export async function callBuild({
+  input,
+  output,
+  entry,
+  config,
+}: CallBuildProps) {
   return new Promise<void>((resolve) => {
     if (timeoutMap.has(entry)) {
       clearTimeout(timeoutMap.get(entry)!)
@@ -59,6 +67,18 @@ export async function callBuild({ input, output, entry }: CallBuildProps) {
           format: 'esm',
           outExtension: { '.js': '.mjs' },
           outdir: appPath,
+          plugins: [
+            TsconfigPathsPlugin({
+              tsconfig: parse(
+                readFileSync(
+                  join(
+                    process.cwd(),
+                    config?.paths?.tsConfig || 'tsconfig.json',
+                  ),
+                ).toString(),
+              ) as any,
+            }),
+          ],
         })
         console.log('Done %s', ck.bold.green(entry))
         resolve()

@@ -1,5 +1,5 @@
 declare interface StartApplicationProps {
-  config: IntREST.Config
+  configPath: string
   basePath: string
 }
 

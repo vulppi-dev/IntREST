@@ -1,4 +1,12 @@
 declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      PORT?: string
+      INTREST_BASE_PATH?: string
+      [x: string]: string | undefined
+    }
+  }
+
   namespace IntREST {
     interface Config {
       /**
@@ -7,9 +15,9 @@ declare global {
        */
       port?: number
       /**
-       * If you want change the default folder for the application
+       * If you want change the default paths for the application
        */
-      folders?: {
+      paths?: {
         /**
          * The folder where the application will be store temporary files
          * when the request is uploading files
@@ -17,6 +25,12 @@ declare global {
          * @default '.tmp'
          */
         uploadTemp?: string
+        /**
+         * The custom path for the `tsconfig.json`
+         *
+         * @default 'tsconfig.json'
+         */
+        tsConfig?: string
       }
       /**
        * The limits for the application

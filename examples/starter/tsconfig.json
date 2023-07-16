@@ -20,11 +20,6 @@
     "emitDeclarationOnly": true,
     "allowJs": true,
     "checkJs": false,
-    "baseUrl": "app",
-    "paths": {
-      "@vulppi/intrest": [
-        "../../.."
-      ]
-    }
+    "baseUrl": "app"
   }
 }

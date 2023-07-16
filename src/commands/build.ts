@@ -6,6 +6,8 @@ import type { Options } from 'yargs'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import {
   escapePath,
+  getConfigModule,
+  globFind,
   globFindAll,
   globFindAllList,
   join,
@@ -21,11 +23,13 @@ export const builder: Record<string, Options> = {}
 
 export async function handler(): Promise<void> {
   const projectPath = normalizePath(process.cwd())
+  const configPath = await globFind(projectPath, globPatterns.config)
+  const config = await getConfigModule(configPath)
   console.log('Building application...')
-  await startRouterBuilder(projectPath)
+  await startRouterBuilder(projectPath, config)
 }
 
-async function startRouterBuilder(basePath: string) {
+async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   const appFolder = await getAppPath(basePath)
   console.log(
     'Application path: %s',
@@ -42,6 +46,7 @@ async function startRouterBuilder(basePath: string) {
         input: appFolder,
         output: join(basePath, defaultPaths.compiled),
         entry: escapedPath,
+        config,
       })
     }),
   )
