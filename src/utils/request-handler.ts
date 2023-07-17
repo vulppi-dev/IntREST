@@ -148,9 +148,10 @@ export async function requestHandler(
   }
 
   try {
+    const [route, query] = (req.url || '/').split('?')
     await callWorker(
       {
-        route: req.url || '/',
+        route,
         basePath,
         config,
         data: {
@@ -158,7 +159,7 @@ export async function requestHandler(
           headers: req.headers,
           cookies: cookie.parse(req.headers.cookie || ''),
           body,
-          query: req.url?.split('?')[1] || '',
+          query: query || '',
         },
       },
       (state, data) => {
