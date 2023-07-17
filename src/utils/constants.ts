@@ -6,7 +6,7 @@ export const globPatterns = {
 } as const
 
 export const regexpPatterns = {
-  env: /^\.env(\.[a-z-_]*)?)$/,
+  env: /^\.env(?:\.[a-z-_]*)?$/,
   config: /^intrest.config.[mc]?js$/,
   route: /(^|\/)(route|middleware).ts$/,
 } as const
