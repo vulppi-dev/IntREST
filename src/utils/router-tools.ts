@@ -172,7 +172,7 @@ export async function sendResponseAll(
     data:
       isRange(range) && res.status === 200
         ? StatusCodes.PARTIAL_CONTENT
-        : res.status,
+        : res.status || StatusCodes.OK,
   })
   return sendResponse({
     state: 'end',
