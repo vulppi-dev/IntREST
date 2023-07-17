@@ -1,7 +1,7 @@
 import ck from 'chalk'
 import dotenv from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
-import { existsSync, rmSync, watch } from 'fs'
+import { existsSync, lstatSync, rmSync, watch } from 'fs'
 import _ from 'lodash'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -56,27 +56,13 @@ export async function handler(): Promise<void> {
         console.log(
           ck.red(configFiles.map((p) => escapePath(p, projectPath)).join('\n')),
         )
-        return
+        return process.exit(1)
       } else if (!configFiles.length) {
         console.log(ck.red('The config file has removed.'))
-        return
       }
       configPath = configFiles[0]
     } else if (regexpPatterns.env.test(filename)) {
-      const envFiles = await findEnvPaths(projectPath)
-      if (envFiles.length > 1) {
-        console.log(ck.red('Multiple env files found.'))
-        console.log(
-          ck.red('Please leave one and remove the rest following files:'),
-        )
-        console.log(
-          ck.red(envFiles.map((p) => escapePath(p, projectPath)).join('\n')),
-        )
-        return
-      } else if (envPath && !envFiles.length) {
-        console.log(ck.red('The env file has removed.'))
-      }
-      envPath = envFiles[0]
+      envPath = await getEnvPath(projectPath)
     }
     let changeConfig = false
     let changeEnv = false
@@ -163,6 +149,12 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   watch(appFolder, { recursive: true }, async (state, filename) => {
     if (!filename || state === 'change') return
     const normalizedFilename = normalizePath(filename)
+    const absolute = join(appFolder, normalizedFilename)
+    const exists = existsSync(absolute)
+    if (exists) {
+      const stat = lstatSync(absolute)
+      if (stat.isDirectory()) return
+    }
 
     if (regexpPatterns.route.test(normalizedFilename)) {
       await startWatchBuild({
