@@ -17,6 +17,7 @@ Thank you for your understanding and support as we work towards delivering a hig
 
 1. [Introduction](#introduction)
    1. [Key Features](#key-features)
+   1. [Future Features](#future-features)
 2. Documentation
    1. [Getting Started](./docs/GET_START.md)
    2. [Core Concepts](./docs/CORE_CONCEPTS.md)
@@ -44,6 +45,26 @@ IntREST is a versatile backend framework written in TypeScript, specifically tai
 - **Response Type Detection:** Intelligently identifies the response type, supporting JSON, Buffer, String, or ReadableStream, facilitating integration with various client applications.
 
 With IntREST, you can expedite your backend development, streamline code organization through file-system-based routing, and deliver high-performance RESTful APIs effortlessly. Let's delve into the details of utilizing this framework to harness its true potential.
+
+### Future Features
+
+- Authentication and Authorization
+  - JWT
+  - OAuth
+  - Providers (Google, Facebook, Twitter, Github, etc.)
+  - FIDO2
+- Auto validation
+  - Request Validation
+  - Response Validation
+- Auto documentation
+  - OpenAPI
+- Swagger UI for testing
+- Performance monitoring
+- Logging
+- Error handling
+- Caching
+- HTTP2.0
+- CronJobs
 
 ## Contributing and Community
 
