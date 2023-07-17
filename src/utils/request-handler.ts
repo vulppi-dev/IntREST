@@ -115,7 +115,6 @@ export async function requestHandler(
           })
         })
         bb.on('field', (name, val) => {
-          console.log(name, val)
           _.set(body, name, parseStringToAutoDetectValue(val))
         })
         bb.on('close', resolve)
