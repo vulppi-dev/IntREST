@@ -9,14 +9,16 @@ import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
 import {
   escapePath,
+  findEnvPaths,
+  getAppPath,
   getConfigModule,
+  getEnvPath,
   globFind,
   globFindAll,
-  globFindAllList,
   join,
   normalizePath,
 } from '../utils/path'
-import { callBuild } from './_builder'
+import { startWatchBuild } from './_builder'
 import { getChecksum } from './_common'
 
 const urlPath = import.meta.url
@@ -158,24 +160,17 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
     ck.blue.bold(escapePath(appFolder, basePath)),
   )
 
-  const appFolderChecksum: Map<string, string> = new Map()
-
   watch(appFolder, { recursive: true }, async (state, filename) => {
-    if (!filename) return
+    if (!filename || state === 'change') return
     const normalizedFilename = normalizePath(filename)
 
     if (regexpPatterns.route.test(normalizedFilename)) {
-      const oldChecksum = appFolderChecksum.get(normalizedFilename)
-      const newChecksum = await getChecksum(join(appFolder, normalizedFilename))
-      appFolderChecksum.set(normalizedFilename, newChecksum)
-      if (oldChecksum !== newChecksum) {
-        await callBuild({
-          input: appFolder,
-          output: join(basePath, defaultPaths.compiled),
-          entry: normalizedFilename,
-          config,
-        })
-      }
+      await startWatchBuild({
+        input: appFolder,
+        output: join(basePath, defaultPaths.compiled),
+        entry: normalizedFilename,
+        config,
+      })
     }
   })
 
@@ -186,29 +181,12 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   return Promise.all(
     appFiles.map(async (filename) => {
       const escapedPath = escapePath(filename, appFolder)
-      const checksum = await getChecksum(filename)
-      appFolderChecksum.set(escapedPath, checksum)
-      await callBuild({
+      await startWatchBuild({
         input: appFolder,
         output: join(basePath, defaultPaths.compiled),
         entry: escapedPath,
         config,
       })
     }),
-  )
-}
-
-async function findEnvPaths(basePath: string) {
-  return globFindAllList(...globPatterns.env.map((p) => [basePath, p]))
-}
-
-async function getEnvPath(basePath: string) {
-  return (await findEnvPaths(basePath))[0] as string | undefined
-}
-
-async function getAppPath(basePath: string) {
-  return (
-    (await globFindAllList(...globPatterns.app.map((p) => [basePath, p])))[0] ||
-    'app'
   )
 }

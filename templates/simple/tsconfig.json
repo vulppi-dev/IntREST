@@ -19,6 +19,12 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "*"
+      ]
+    },
   }
 }

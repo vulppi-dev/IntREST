@@ -1,7 +1,5 @@
 import ck from 'chalk'
 import { existsSync, rmSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
 import type { Options } from 'yargs'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import {

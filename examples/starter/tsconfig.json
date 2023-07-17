@@ -20,6 +20,11 @@
     "emitDeclarationOnly": true,
     "allowJs": true,
     "checkJs": false,
-    "baseUrl": "app"
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "*"
+      ]
+    },
   }
 }

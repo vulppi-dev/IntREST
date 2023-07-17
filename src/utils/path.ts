@@ -1,6 +1,7 @@
 import { glob } from 'glob'
 import path, { dirname, isAbsolute, resolve } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { globPatterns } from './constants'
 
 export async function getConfigModule(configPath?: string) {
   if (!configPath) return {} as IntREST.Config
@@ -79,4 +80,19 @@ export function normalizePath(path: string) {
 
 export function clearExtension(path: string) {
   return normalizePath(path).replace(/\.[a-z0-9]+$/i, '')
+}
+
+export async function findEnvPaths(basePath: string) {
+  return globFindAllList(...globPatterns.env.map((p) => [basePath, p]))
+}
+
+export async function getEnvPath(basePath: string) {
+  return (await findEnvPaths(basePath))[0] as string | undefined
+}
+
+export async function getAppPath(basePath: string) {
+  return (
+    (await globFindAllList(...globPatterns.app.map((p) => [basePath, p])))[0] ||
+    'app'
+  )
 }

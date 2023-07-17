@@ -1,88 +1,118 @@
+import { TsconfigPathsPlugin } from '@esbuild-plugins/tsconfig-paths'
 import ck from 'chalk'
-import { build } from 'esbuild'
-import { existsSync, readFileSync, rmSync } from 'fs'
+import { build, context, type BuildContext } from 'esbuild'
+import { getTsconfig } from 'get-tsconfig'
 import { defaultPaths } from '../utils/constants'
 import { clearExtension, join } from '../utils/path'
-import { TsconfigPathsPlugin } from '@esbuild-plugins/tsconfig-paths'
-import { parse } from 'comment-json'
+import { existsSync, rmSync } from 'fs'
 
-interface CallBuildProps {
+interface StartBuildProps {
   input: string
   output: string
   entry: string
   config?: IntREST.Config
 }
 
-const timeoutMap: Map<string, NodeJS.Timeout> = new Map()
-const promiseMap: Map<string, VoidFunction> = new Map()
-
 export async function callBuild({
   input,
   output,
   entry,
   config,
-}: CallBuildProps) {
-  return new Promise<void>((resolve) => {
-    if (timeoutMap.has(entry)) {
-      clearTimeout(timeoutMap.get(entry)!)
-      timeoutMap.delete(entry)
-    }
-    if (promiseMap.has(entry)) {
-      promiseMap.get(entry)!()
-      promiseMap.delete(entry)
-    }
-    promiseMap.set(entry, resolve)
-    timeoutMap.set(
-      entry,
-      setTimeout(async () => {
-        timeoutMap.delete(entry)
-        promiseMap.delete(entry)
-        const generatedPath = join(output, defaultPaths.compiledGenerated)
-        const appPath = join(output, defaultPaths.compiledApp)
-        const absoluteEntry = join(input, entry)
+}: StartBuildProps) {
+  const appPath = join(output, defaultPaths.compiledApp)
+  const absoluteEntry = join(input, entry)
 
-        const existsEntry = existsSync(absoluteEntry)
-        if (!existsEntry) {
-          const existsGenerated = existsSync(join(generatedPath, entry))
-          const existsApp = existsSync(
-            join(appPath, clearExtension(entry) + '.mjs'),
-          )
-          existsGenerated && rmSync(join(generatedPath, entry))
-          existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
-          console.log('Removed %s', ck.bold.red(entry))
-          return resolve()
-        }
-
-        console.log('Building %s', ck.bold.green(entry))
-
-        await build({
-          entryPoints: {
-            [clearExtension(entry)]: absoluteEntry,
-          },
-          bundle: true,
-          minify: false,
-          packages: 'external',
-          target: 'node18',
-          platform: 'node',
-          format: 'esm',
-          outExtension: { '.js': '.mjs' },
-          outdir: appPath,
-          plugins: [
-            TsconfigPathsPlugin({
-              tsconfig: parse(
-                readFileSync(
-                  join(
-                    process.cwd(),
-                    config?.paths?.tsConfig || 'tsconfig.json',
-                  ),
-                ).toString(),
-              ) as any,
-            }),
-          ],
-        })
-        console.log('Done %s', ck.bold.green(entry))
-        resolve()
-      }, 250),
-    )
+  await build({
+    entryPoints: {
+      [clearExtension(entry)]: absoluteEntry,
+    },
+    bundle: true,
+    minify: false,
+    packages: 'external',
+    target: 'node18',
+    platform: 'node',
+    format: 'esm',
+    outExtension: { '.js': '.mjs' },
+    outdir: appPath,
+    plugins: [
+      TsconfigPathsPlugin({
+        tsconfig: getTsconfig(
+          join(process.cwd(), config?.paths?.tsConfig || 'tsconfig.json'),
+        )?.config,
+      }),
+      {
+        name: 'InteREST',
+        setup(build) {
+          build.onStart(() => {
+            console.log('Building %s', ck.bold.green(entry))
+          })
+          build.onEnd(() => {
+            console.log('Done %s', ck.bold.green(entry))
+          })
+        },
+      },
+    ],
   })
+}
+
+const contextMap = new Map<string, BuildContext>()
+
+export async function startWatchBuild({
+  input,
+  output,
+  entry,
+  config,
+}: StartBuildProps) {
+  const appPath = join(output, defaultPaths.compiledApp)
+  const absoluteEntry = join(input, entry)
+  if (contextMap.has(absoluteEntry)) {
+    return
+  }
+
+  const ctx = await context({
+    entryPoints: {
+      [clearExtension(entry)]: absoluteEntry,
+    },
+    bundle: true,
+    minify: false,
+    packages: 'external',
+    target: 'node18',
+    platform: 'node',
+    format: 'esm',
+    outExtension: { '.js': '.mjs' },
+    outdir: appPath,
+    logLevel: 'silent',
+    plugins: [
+      TsconfigPathsPlugin({
+        tsconfig: getTsconfig(
+          join(process.cwd(), config?.paths?.tsConfig || 'tsconfig.json'),
+        )?.config,
+      }),
+      {
+        name: 'InteREST',
+        setup(build) {
+          build.onStart(() => {
+            console.log('Building %s', ck.bold.green(entry))
+          })
+          build.onEnd((res) => {
+            const existsEntry = existsSync(absoluteEntry)
+            if (!existsEntry) {
+              contextMap.get(absoluteEntry)?.dispose()
+            } else {
+              console.log('Done %s', ck.bold.green(entry))
+            }
+          })
+          build.onDispose(() => {
+            const existsApp = existsSync(
+              join(appPath, clearExtension(entry) + '.mjs'),
+            )
+            existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
+            console.log('Removed %s', ck.bold.red(entry))
+          })
+        },
+      },
+    ],
+  })
+  contextMap.set(absoluteEntry, ctx)
+  ctx.watch()
 }

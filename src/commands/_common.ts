@@ -2,16 +2,6 @@ import crypto from 'crypto'
 import fs, { existsSync } from 'fs'
 import _ from 'lodash'
 
-export function normalizeConfig(config: IntREST.Config): IntREST.Config {
-  const normalConfig = structuredClone(config)
-
-  if (!_.get(normalConfig, ['folders', 'appFolder'])) {
-    _.set(normalConfig, ['folders', 'appFolder'], 'app')
-  }
-
-  return normalConfig
-}
-
 export function getChecksum(path: string) {
   return new Promise<string>(function (resolve, reject) {
     if (!existsSync(path)) return resolve('')
