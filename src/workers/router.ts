@@ -13,6 +13,7 @@ import {
 const { config, basePath, route, data } = workerData as WorkerProps
 const context = {
   ...data,
+  custom: {},
   params: {},
   query: new URLSearchParams(data.query || ''),
   assetsStream: (path: string) => {
@@ -125,11 +126,7 @@ try {
         try {
           const res =
             (await middleware.handler(context, (c) => {
-              if (context.custom) {
-                _.merge(context.custom, c)
-              } else {
-                context.custom = c
-              }
+              _.merge(context.custom, c)
               resolved = true
             })) ?? null
 

@@ -125,7 +125,7 @@ declare global {
       headers: import('http').IncomingHttpHeaders
       body: Record<string, any> | string | undefined
       assetsStream: (path: string) => import('fs').ReadStream
-      custom?: CustomRequestData
+      custom: CustomRequestData
     }
 
     interface IntResponse {
