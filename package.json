@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/intrest",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -69,6 +69,7 @@
   "scripts": {
     "dev": "nodemon --watch src -e js,cjs,mjs,ts,json scripts/build.mjs",
     "build": "node scripts/build.mjs",
+    "bench": "node scripts/bench.mjs",
     "test": "run-s build test:start",
     "test:start": "uvu -r dotenv-expand/config -r esbuild-register"
   },

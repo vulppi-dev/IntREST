@@ -23,15 +23,18 @@ function isRange(
 export async function sendResponseAll(
   res: IntREST.IntResponse,
   reqHeaders: IntREST.IntRequest['headers'],
-): Promise<never> {
+  requestId: string,
+) {
   for (const entry of Object.entries(res.headers || {})) {
     sendResponse({
+      requestId,
       state: 'set',
       data: entry,
     })
   }
   for (const entry of Object.entries(res.cookies || {})) {
     sendResponse({
+      requestId,
       state: 'cookie',
       data: {
         name: entry[0],
@@ -42,6 +45,7 @@ export async function sendResponseAll(
   }
   for (const entry of Object.entries(res.clearCookies || {})) {
     sendResponse({
+      requestId,
       state: 'clear-cookie',
       data: {
         name: entry[0],
@@ -69,6 +73,7 @@ export async function sendResponseAll(
     if (typeof res.body === 'string' || isBuffer(res.body)) {
       if (!contentType) {
         sendResponse({
+          requestId,
           state: 'set',
           data: ['Content-Type', 'text/plain'],
         })
@@ -76,11 +81,13 @@ export async function sendResponseAll(
       const data = Buffer.from(res.body)
       if (isRange(range)) {
         sendResponse({
+          requestId,
           state: 'write',
           data: data.subarray(range[0].start, range[0].end + 1),
         })
       } else {
         sendResponse({
+          requestId,
           state: 'write',
           data,
         })
@@ -88,11 +95,13 @@ export async function sendResponseAll(
     } else if (res.body instanceof Readable) {
       if (!contentType) {
         sendResponse({
+          requestId,
           state: 'set',
           data: ['Content-Type', 'application/octet-stream'],
         })
       }
       sendResponse({
+        requestId,
         state: 'set',
         data: ['Accept-Ranges', 'bytes'],
       })
@@ -117,6 +126,7 @@ export async function sendResponseAll(
             }
             const data = chunk.subarray(offset, offset + length)
             sendResponse({
+              requestId,
               state: 'write',
               data,
             })
@@ -132,6 +142,7 @@ export async function sendResponseAll(
         await new Promise<void>((resolve, reject) => {
           reader.on('data', (chunk) => {
             sendResponse({
+              requestId,
               state: 'write',
               data: chunk,
             })
@@ -147,6 +158,7 @@ export async function sendResponseAll(
     } else {
       if (!contentType) {
         sendResponse({
+          requestId,
           state: 'set',
           data: ['Content-Type', 'application/json'],
         })
@@ -155,11 +167,13 @@ export async function sendResponseAll(
       const data = Buffer.from(body)
       if (isRange(range)) {
         sendResponse({
+          requestId,
           state: 'write',
           data: data.subarray(range[0].start, range[0].end + 1),
         })
       } else {
         sendResponse({
+          requestId,
           state: 'write',
           data,
         })
@@ -168,26 +182,22 @@ export async function sendResponseAll(
   }
 
   sendResponse({
+    requestId,
     state: 'status',
     data:
       isRange(range) && res.status === 200
         ? StatusCodes.PARTIAL_CONTENT
         : res.status || StatusCodes.OK,
   })
-  return sendResponse({
+  sendResponse({
+    requestId,
     state: 'end',
     data: undefined,
   })
 }
 
-export function sendResponse<R extends TransferResponse>(
-  res: R,
-): R['state'] extends 'end' ? never : void {
+export function sendResponse<R extends TransferResponse>(res: R) {
   parentPort?.postMessage(res)
-  if (res.state === 'end') {
-    return process.exit(0)
-  }
-  return undefined as any
 }
 
 export async function findMiddlewarePathnames(

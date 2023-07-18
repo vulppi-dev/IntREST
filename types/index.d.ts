@@ -60,6 +60,18 @@ declare global {
          * @default undefined
          */
         cors?: undefined | null | false | string | string[]
+        /**
+         * The minimum number of workers to keep alive
+         *
+         * @default 5
+         */
+        minWorkerPoolSize?: number
+        /**
+         * The maximum number of workers to keep alive
+         *
+         * @default 20
+         */
+        maxWorkerPoolSize?: number
       }
       messages?: {
         /**
@@ -80,12 +92,6 @@ declare global {
          * @default 'Method not allowed'
          */
         METHOD_NOT_ALLOWED?: string
-        /**
-         * The message for the status code 400
-         *
-         * @default 'Multiple routes found'
-         */
-        MULTIPLE_ROUTES?: string
         /**
          * The message for the status code 413
          *

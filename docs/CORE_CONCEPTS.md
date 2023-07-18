@@ -53,7 +53,7 @@ You can define catch-all routes by creating a folder with the parameter name pre
 
 #### Route Groups
 
-You can define route groups by creating a folder with the group name prefixed with parentheses inside the `app` folder. For example, the `app/(my-group)/group/route.ts` file defines the `/group` route. **Note:** If multiple routes conflict because groups, if the system finds multiple methods, it will throw an error.
+You can define route groups by creating a folder with the group name prefixed with parentheses inside the `app` folder. For example, the `app/(my-group)/group/route.ts` file defines the `/group` route. **Note:** If multiple routes conflict because groups and the system finds multiple methods, it will use the first one found.
 
 ### Middleware
 

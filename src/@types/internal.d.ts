@@ -11,7 +11,7 @@ type OmittedRequest =
   | 'assetsContent'
 
 declare interface WorkerProps {
-  route: string
+  requestId: string
   basePath: string
   config: IntREST.Config
   data: Omit<IntREST.IntRequest, OmittedRequest> & {
@@ -47,6 +47,7 @@ declare type ResponseDataMap = {
 declare type ResponseData = ResponseDataMap[ResponseState]
 
 declare interface TransferResponse {
+  requestId: string
   state: ResponseState
   data: ResponseData
 }

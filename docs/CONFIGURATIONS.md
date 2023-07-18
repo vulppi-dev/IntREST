@@ -16,12 +16,13 @@ export default {
   limits: {
     bodyMaxSize: '1mb',
     cors: ['*'],
+    minWorkerPoolSize: 5
+    maxWorkerPoolSize: 20,
   },
   messages: {
     INTERNAL_SERVER_ERROR: 'Internal Server Error',
     NOT_FOUND: 'Not Found',
     METHOD_NOT_ALLOWED: 'Method Not Allowed',
-    MULTIPLE_ROUTES: 'Multiple routes found',
     REQUEST_TOO_LONG: 'Request entity too large',
   },
   env: {

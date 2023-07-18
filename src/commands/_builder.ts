@@ -96,7 +96,11 @@ export async function startWatchBuild({
         name: 'InteREST',
         setup(build) {
           build.onStart(() => {
-            console.info('%s Building - %s', ck.green('◉'), ck.bold.blue(entry))
+            console.info(
+              '%s Building - %s',
+              ck.yellow('◉'),
+              ck.bold.blue(entry),
+            )
           })
           build.onEnd((res) => {
             const existsEntry = existsSync(absoluteEntry)

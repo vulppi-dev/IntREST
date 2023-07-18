@@ -148,16 +148,15 @@ export async function requestHandler(
   }
 
   try {
-    const [route, query] = (req.url || '/').split('?')
-    console.debug('\n\t %s - %s', ck.yellow(method), ck.bold(route))
+    const [path, query] = (req.url || '/').split('?')
+    console.debug('%s - %s', ck.yellow(method), ck.bold(path))
     await callWorker(
       {
-        route,
         basePath,
         config,
         data: {
           method,
-          path: route,
+          path,
           custom: {},
           headers: req.headers,
           cookies: cookie.parse(req.headers.cookie || ''),
