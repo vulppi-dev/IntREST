@@ -63,7 +63,6 @@ With IntREST, you can expedite your backend development, streamline code organiz
 - Logging
 - Error handling
 - HTTP2.0
-- CronJobs
 - Deployment
   - Edge functions
   - Serverless functions

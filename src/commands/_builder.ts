@@ -44,10 +44,14 @@ export async function callBuild({
         name: 'InteREST',
         setup(build) {
           build.onStart(() => {
-            console.log('Building %s', ck.bold.green(entry))
+            console.info(
+              '%s Building - %s',
+              ck.yellow('◉'),
+              ck.bold.blue(entry),
+            )
           })
           build.onEnd(() => {
-            console.log('Done %s', ck.bold.green(entry))
+            console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
           })
         },
       },
@@ -92,14 +96,14 @@ export async function startWatchBuild({
         name: 'InteREST',
         setup(build) {
           build.onStart(() => {
-            console.log('Building %s', ck.bold.green(entry))
+            console.info('%s Building - %s', ck.green('◉'), ck.bold.blue(entry))
           })
           build.onEnd((res) => {
             const existsEntry = existsSync(absoluteEntry)
             if (!existsEntry) {
               contextMap.get(absoluteEntry)?.dispose()
             } else {
-              console.log('Done %s', ck.bold.green(entry))
+              console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
             }
           })
           build.onDispose(() => {
@@ -107,7 +111,7 @@ export async function startWatchBuild({
               join(appPath, clearExtension(entry) + '.mjs'),
             )
             existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
-            console.log('Removed %s', ck.bold.red(entry))
+            console.info('%s Removed - %s', ck.red('◉'), ck.bold.blue(entry))
           })
         },
       },

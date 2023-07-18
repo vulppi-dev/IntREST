@@ -18,5 +18,5 @@ mkdirSync(appTempPath, { recursive: true })
 
 const server = createServer(requestHandler)
 server.listen(appPort, () => {
-  console.log(`Server running on port %s`, ck.yellow(appPort))
+  console.log(`\nServer running on port %s\n`, ck.yellow(appPort))
 })

@@ -20,5 +20,5 @@ export const handler = async (): Promise<void> => {
   cpSync(templateFolder, projectPath, {
     recursive: true,
   })
-  console.log('Project created successfully!')
+  console.log('\nProject created successfully! 🤩🎉\n')
 }

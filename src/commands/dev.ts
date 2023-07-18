@@ -34,7 +34,10 @@ export const describe = 'Start the development server'
 
 export async function handler(): Promise<void> {
   const projectPath = normalizePath(process.cwd())
-  console.log('Starting the application in %s mode...', ck.bold('development'))
+  console.log(
+    '\nStarting the application in %s mode...\n',
+    ck.bold.blue('development'),
+  )
 
   let configPath = await globFind(projectPath, globPatterns.config)
   let envPath = await getEnvPath(projectPath)
@@ -49,16 +52,17 @@ export async function handler(): Promise<void> {
     if (regexpPatterns.config.test(filename)) {
       const configFiles = await globFindAll(projectPath, globPatterns.config)
       if (configFiles.length > 1) {
-        console.log(ck.red('Multiple config files found.'))
-        console.log(
-          ck.red('Please leave one and remove the rest following files:'),
+        console.error(ck.red('Multiple config files found.'))
+        console.error(
+          ck.red('Please leave one and remove the rest following files:\n'),
         )
-        console.log(
+        console.error(
           ck.red(configFiles.map((p) => escapePath(p, projectPath)).join('\n')),
         )
+        console.error('\n')
         return process.exit(1)
       } else if (!configFiles.length) {
-        console.log(ck.red('The config file has removed.'))
+        console.info(ck.red('The config file has removed.\n'))
       }
       configPath = configFiles[0]
     } else if (regexpPatterns.env.test(filename)) {
@@ -72,7 +76,7 @@ export async function handler(): Promise<void> {
       if (configChecksum !== newConfigChecksum) {
         configChecksum = newConfigChecksum
         changeConfig = true
-        console.log('Config file changed.')
+        console.info('Config file changed.')
       }
     }
     if (envPath) {
@@ -80,7 +84,7 @@ export async function handler(): Promise<void> {
       if (envChecksum !== newEnvChecksum) {
         envChecksum = newEnvChecksum
         changeEnv = true
-        console.log('Env file changed.')
+        console.info('Env file changed.')
       }
     }
     if (changeConfig || changeEnv) {
@@ -111,9 +115,9 @@ async function restartServer(
     const config = await getConfigModule(configPath)
 
     if (!first) {
-      console.log('Restarting the application...')
+      console.info('Restarting the application...\n')
     } else {
-      console.log('Starting the application...')
+      console.info('Starting the application...\n')
       await startRouterBuilder(projectPath, config)
     }
 
@@ -141,7 +145,7 @@ async function restartServer(
 async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   const appFolder = await getAppPath(basePath)
 
-  console.log(
+  console.info(
     'Application path: %s',
     ck.blue.bold(escapePath(appFolder, basePath)),
   )

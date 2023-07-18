@@ -145,7 +145,12 @@ Open the `tsconfig.json` file and add the following configuration:
     "declaration": true,
     "emitDeclarationOnly": true,
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    // optional
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"]
+    }
   }
 }
 ```
@@ -197,11 +202,12 @@ These scripts will enable you to run the development server, build your project,
 
 #### 6. Create Your First Route
 
-Create a file called `route.ts` inside a folder named `app` in your project directory:
+Create a file called `route.ts` inside a folder named `src/app` or `app` in your project directory:
 
 ```
-app
-└── route.ts
+src
+└── app
+    └── route.ts
 package.json
 tsconfig.json
 ```
@@ -209,7 +215,7 @@ tsconfig.json
 Open the `route.ts` file and add the following content:
 
 ```ts
-// ./app/route.ts
+// src/app/route.ts
 
 import type { IntRequest, IntResponse } from '@vulppi/intrest'
 

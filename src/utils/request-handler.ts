@@ -13,6 +13,7 @@ import {
   parseStringToAutoDetectValue,
 } from './parser'
 import { getConfigModule, globFind, join } from './path'
+import ck from 'chalk'
 
 export async function requestHandler(
   req: IncomingMessage,
@@ -148,6 +149,7 @@ export async function requestHandler(
 
   try {
     const [route, query] = (req.url || '/').split('?')
+    console.debug('\n\t %s - %s', ck.yellow(method), ck.bold(route))
     await callWorker(
       {
         route,

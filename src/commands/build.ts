@@ -23,14 +23,14 @@ export async function handler(): Promise<void> {
   const projectPath = normalizePath(process.cwd())
   const configPath = await globFind(projectPath, globPatterns.config)
   const config = await getConfigModule(configPath)
-  console.log('Building application...')
+  console.info('\nBuilding application...\n')
   await startRouterBuilder(projectPath, config)
 }
 
 async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   const appFolder = await getAppPath(basePath)
-  console.log(
-    'Application path: %s',
+  console.info(
+    '\tApplication path: %s',
     ck.blue.bold(escapePath(appFolder, basePath)),
   )
   const appFiles = await globFindAll(appFolder, globPatterns.route)

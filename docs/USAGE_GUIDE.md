@@ -74,7 +74,7 @@ export async function GET(ctx: IntRequest): Promise<IntResponse> {
 }
 ```
 
-The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `assetsStream` function from the `fs` module to create the stream.
+The `GET` function above returns a response with a ReadableStream as the body (you can use other types of `Readable`, as long as it is an extension of the `import('stream').Readable` class). You can use the `assetsStream` function from the `fs` module to create the stream. The stream is automatically read, partial(`Range` in header) or completely, and sent to the client.
 
 The routes above are just examples of how to use IntREST.
 

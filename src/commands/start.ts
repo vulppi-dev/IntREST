@@ -17,7 +17,10 @@ export const aliases = ['serve', 'server']
 export const describe = 'Start the server'
 
 export async function handler(): Promise<void> {
-  console.log('Starting the application in %s mode...', ck.bold('production'))
+  console.log(
+    '\nStarting the application in %s mode...\n',
+    ck.bold('production'),
+  )
   restartServer()
 }
 
