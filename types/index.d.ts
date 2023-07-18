@@ -119,12 +119,15 @@ declare global {
       Params extends Record<string, string> = Record<string, string>,
     > {
       method: RequestMethods
+      path: string
       query: URLSearchParams
       cookies: Record<string, string>
       params: Params
       headers: import('http').IncomingHttpHeaders
       body: Record<string, any> | string | undefined
       assetsStream: (path: string) => import('fs').ReadStream
+      assetsRawContent: (path: string) => Buffer
+      assetsContent: (path: string) => string
       custom: CustomRequestData
     }
 

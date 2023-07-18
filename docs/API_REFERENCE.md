@@ -23,6 +23,8 @@ The `IntRequest` interface is the input interface of IntREST. It contains all th
   - The `body` property is only available if the request has a body and the method is not `GET`.
   - If the request `Content-Type` is `multipart/form-data` and contains upload files, the `body` property will be contains a file metadata stored with name of the field. The metadata interface is `FileMetadata`.
 - `assetsStream`: The function to get a file stream from the `assets` folder, fonded in root directory of the project.
+- `assetsRawContent`: The function to get a file raw content (`Buffer`) from the `assets` folder, fonded in root directory of the project.
+- `assetsContent`: The function to get a file content (`string`) from the `assets` folder, fonded in root directory of the project.
 - `cookies`: The object of cookies of the request. Using `cookie` API.
 - `custom`: The object of custom properties of the request. You can use this for share data between middlewares and route handlers.
 

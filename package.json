@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/intrest",
-  "version": "0.5.8",
+  "version": "0.6.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -81,7 +81,7 @@
     "cookie": "^0.5.0",
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0",
-    "esbuild": "^0.18.13",
+    "esbuild": "^0.18.14",
     "get-tsconfig": "^4.6.2",
     "glob": "^10.3.3",
     "http-status-codes": "^2.2.0",

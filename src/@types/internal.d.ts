@@ -3,11 +3,18 @@ declare interface StartApplicationProps {
   basePath: string
 }
 
+type OmittedRequest =
+  | 'query'
+  | 'params'
+  | 'assetsStream'
+  | 'assetsRawContent'
+  | 'assetsContent'
+
 declare interface WorkerProps {
   route: string
   basePath: string
   config: IntREST.Config
-  data: Omit<IntREST.IntRequest, 'query' | 'assetsStream' | 'params'> & {
+  data: Omit<IntREST.IntRequest, OmittedRequest> & {
     query: string
   }
 }

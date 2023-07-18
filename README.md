@@ -41,14 +41,14 @@ IntREST is a versatile backend framework written in TypeScript, specifically tai
 - **File-System Based Routing:** Routes within the application are determined by the file structure, ensuring a clean and intuitive approach to defining API endpoints.
 - **Performance and Scalability:** Enhances the performance and scalability of Node.js applications, accommodating high volumes of traffic seamlessly.
 - **CORS Handling:** Automatically manages Cross-Origin Resource Sharing (CORS) requests, simplifying integration with external clients.
-- **Request Parsing:** Automatically detects and parses JSON and URL-encoded requests, eliminating the need for manual parsing.
+- **Request Parsing:** Automatically detects and parses JSON, URL-encoded and Multipart requests, eliminating the need for manual parsing.
 - **Response Type Detection:** Intelligently identifies the response type, supporting JSON, Buffer, String, or ReadableStream, facilitating integration with various client applications.
 
 With IntREST, you can expedite your backend development, streamline code organization through file-system-based routing, and deliver high-performance RESTful APIs effortlessly. Let's delve into the details of utilizing this framework to harness its true potential.
 
 ### Future Features
 
-- Authentication and Authorization
+- Easy handlers for Authentication and Authorization
   - JWT
   - OAuth
   - Providers (Google, Facebook, Twitter, Github, etc.)
@@ -62,9 +62,11 @@ With IntREST, you can expedite your backend development, streamline code organiz
 - Performance monitoring
 - Logging
 - Error handling
-- Caching
 - HTTP2.0
 - CronJobs
+- Deployment
+  - Edge functions
+  - Serverless functions
 
 ## Contributing and Community
 

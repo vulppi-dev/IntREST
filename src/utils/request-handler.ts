@@ -155,6 +155,8 @@ export async function requestHandler(
         config,
         data: {
           method,
+          path: route,
+          custom: {},
           headers: req.headers,
           cookies: cookie.parse(req.headers.cookie || ''),
           body,

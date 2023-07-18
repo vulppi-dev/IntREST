@@ -1,4 +1,4 @@
-import { createReadStream } from 'fs'
+import { createReadStream, readFileSync } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { pathToFileURL } from 'url'
@@ -13,11 +13,16 @@ import {
 const { config, basePath, route, data } = workerData as WorkerProps
 const context = {
   ...data,
-  custom: {},
   params: {},
   query: new URLSearchParams(data.query || ''),
   assetsStream: (path: string) => {
     return createReadStream(join(basePath, 'assets', path))
+  },
+  assetsRawContent: (path: string) => {
+    return readFileSync(join(basePath, 'assets', path))
+  },
+  assetsContent: (path: string) => {
+    return readFileSync(join(basePath, 'assets', path)).toString()
   },
 } as IntREST.IntRequest
 
