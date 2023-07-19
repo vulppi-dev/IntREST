@@ -57,7 +57,7 @@ parentPort!.on(
     const routeModules = await Promise.all(
       routePathnames.map(async (r) => ({
         module: await import(
-          pathToFileURL(encapsulateModule(r.pathname)).toString()
+          encapsulateModule(pathToFileURL(r.pathname).toString())
         ),
         paramRegexp: r.paramRegexp,
         vars: r.vars,
@@ -114,7 +114,7 @@ parentPort!.on(
     const middlewareList = (
       await Promise.all(
         middlewarePathnames.map(async (r) => {
-          const m = await import(pathToFileURL(encapsulateModule(r)).toString())
+          const m = await import(encapsulateModule(pathToFileURL(r).toString()))
           return {
             handler: m['middleware'] as IntREST.MiddlewareHandler,
             pathname: r,
