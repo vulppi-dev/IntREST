@@ -9,7 +9,6 @@ import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
 import {
   escapePath,
-  findEnvPaths,
   getAppPath,
   getConfigModule,
   getEnvPath,
@@ -137,7 +136,10 @@ async function restartServer(
         }
     dotenvExpand.expand(myEnv)
     app = new Worker(join(__dirname, defaultPaths.workerApp), {
-      env: envObject,
+      env: {
+        ...envObject,
+        NODE_ENV: 'development',
+      },
     })
   }, 1000)
 }

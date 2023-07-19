@@ -3,13 +3,19 @@ import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { pathToFileURL } from 'url'
 import { parentPort } from 'worker_threads'
-import { escapePath, join } from '../utils/path'
+import { join } from '../utils/path'
 import {
   findMiddlewarePathnames,
   findRoutePathname,
   sendResponseAll,
 } from '../utils/router-tools'
-import { defaultPaths } from '../utils/constants'
+
+const isDev = process.env.NODE_ENV === 'development'
+
+function encapsulateModule(v: string) {
+  if (!isDev) return v
+  return `${v}?update=${Date.now()}`
+}
 
 parentPort!.on(
   'message',
@@ -50,7 +56,9 @@ parentPort!.on(
     const method = context.method
     const routeModules = await Promise.all(
       routePathnames.map(async (r) => ({
-        module: await import(pathToFileURL(r.pathname).toString()),
+        module: await import(
+          pathToFileURL(encapsulateModule(r.pathname)).toString()
+        ),
         paramRegexp: r.paramRegexp,
         vars: r.vars,
         pathname: r.pathname,
@@ -106,7 +114,7 @@ parentPort!.on(
     const middlewareList = (
       await Promise.all(
         middlewarePathnames.map(async (r) => {
-          const m = await import(pathToFileURL(r).toString())
+          const m = await import(pathToFileURL(encapsulateModule(r)).toString())
           return {
             handler: m['middleware'] as IntREST.MiddlewareHandler,
             pathname: r,
