@@ -1,8 +1,7 @@
-import { Worker } from 'worker_threads'
-import { resolveModule } from '../utils/path'
 import { randomUUID } from 'crypto'
-
-const wFile = resolveModule('./router.mjs')
+import { Worker } from 'worker_threads'
+import { defaultPaths } from './constants'
+import { join } from './path'
 
 interface WorkerPool {
   weight: number
@@ -14,9 +13,12 @@ const workerPool = new Map<number, WorkerPool>()
 
 export async function startWorker(size: number) {
   for (let i = 0; i < size; i++) {
-    const worker = new Worker(wFile, {
-      env: process.env,
-    })
+    const worker = new Worker(
+      new URL(join('.', defaultPaths.workerRouter), import.meta.url),
+      {
+        env: process.env,
+      },
+    )
     worker.setMaxListeners(Infinity)
     workerPool.set(worker.threadId, {
       weight: 0,
@@ -40,7 +42,7 @@ export async function callWorker(
       !workerItem &&
       workerList.length < (config.limits?.maxWorkerPoolSize || 20)
     ) {
-      const worker = new Worker(wFile, {
+      const worker = new Worker(new URL('./router.mjs', import.meta.url), {
         env: process.env,
       })
       worker.setMaxListeners(Infinity)

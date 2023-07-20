@@ -15,6 +15,6 @@ export const defaultPaths = {
   compiled: '.intrest',
   compiledApp: 'app',
   compiledGenerated: 'generated',
-  workerApp: 'workers/app.mjs',
-  workerRouter: 'workers/router.mjs',
+  workerApp: 'app.mjs',
+  workerRouter: 'router.mjs',
 }

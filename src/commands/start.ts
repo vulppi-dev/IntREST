@@ -5,11 +5,6 @@ import { Worker } from 'worker_threads'
 import { defaultPaths } from '../utils/constants'
 import { join } from '../utils/path'
 
-const urlPath = import.meta.url
-// Url in dist/commands folder
-const basePath = resolve(fileURLToPath(urlPath), '..')
-const __dirname = dirname(basePath)
-
 export const command = 'start'
 
 export const aliases = ['serve', 'server']
@@ -21,11 +16,14 @@ export async function handler(): Promise<void> {
     '\nStarting the application in %s mode...\n',
     ck.bold('production'),
   )
-  restartServer()
+  startServer()
 }
 
-async function restartServer() {
-  new Worker(join(__dirname, defaultPaths.workerApp), {
-    env: process.env,
-  })
+async function startServer() {
+  new Worker(
+    new URL(join('..', 'workers', defaultPaths.workerApp), import.meta.url),
+    {
+      env: process.env,
+    },
+  )
 }

@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
 import { existsSync, lstatSync, rmSync, watch } from 'fs'
 import _ from 'lodash'
-import { dirname, resolve } from 'path'
+import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
@@ -19,11 +19,6 @@ import {
 } from '../utils/path'
 import { startWatchBuild } from './_builder'
 import { getChecksum } from './_common'
-
-const urlPath = import.meta.url
-// Url in dist/commands folder
-const basePath = resolve(fileURLToPath(urlPath), '..')
-const __dirname = dirname(basePath)
 
 export const command = 'dev'
 
@@ -135,12 +130,15 @@ async function restartServer(
           parsed: envObject,
         }
     dotenvExpand.expand(myEnv)
-    app = new Worker(join(__dirname, defaultPaths.workerApp), {
-      env: {
-        ...envObject,
-        NODE_ENV: 'development',
+    app = new Worker(
+      new URL(join('..', 'workers', defaultPaths.workerApp), import.meta.url),
+      {
+        env: {
+          ...envObject,
+          NODE_ENV: 'development',
+        },
       },
-    })
+    )
   }, 1000)
 }
 

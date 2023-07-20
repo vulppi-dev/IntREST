@@ -1,6 +1,6 @@
 import { glob } from 'glob'
-import path, { dirname, isAbsolute, resolve } from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
+import path from 'path'
+import { pathToFileURL } from 'url'
 import { globPatterns } from './constants'
 
 export async function getConfigModule(configPath?: string) {
@@ -12,16 +12,6 @@ export async function getConfigModule(configPath?: string) {
       (m) => m.default as IntREST.Config,
     )) || {}
   )
-}
-
-export function resolveModule(path: string, parent = import.meta.url) {
-  const safePath = /^[a-z]+:\/\//.test(path) ? fileURLToPath(path) : path
-
-  if (isAbsolute(safePath)) {
-    return resolve(safePath)
-  }
-  const p = dirname(fileURLToPath(parent))
-  return resolve(p, safePath)
 }
 
 export function join(...paths: string[]) {
