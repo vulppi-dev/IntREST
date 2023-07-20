@@ -26,50 +26,50 @@ export async function requestHandler(
   const config = await getConfigModule(configPath)
   const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
 
+  res.setHeader('Server', 'IntREST')
+  res.setHeader('Accept', [
+    'application/json',
+    'x-www-form-urlencoded',
+    'multipart/form-data',
+  ])
+  res.setHeader('Accept-Encoding', [
+    'gzip',
+    'ascii',
+    'utf8',
+    'utf-8',
+    'utf16le',
+    'ucs2',
+    'ucs-2',
+    'base64',
+    'base64url',
+    'latin1',
+    'binary',
+    'hex',
+  ])
+  if (config.limits?.cors) {
+    res.setHeader('Access-Control-Allow-Origin', config.limits.cors)
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'null')
+  }
+  res.setHeader('Access-Control-Allow-Methods', [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+  ])
+  res.setHeader('Access-Control-Allow-Headers', [
+    'Content-Type',
+    'Authorization',
+    'Range',
+    'X-*',
+  ])
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Max-Age', '86400')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('Keep-Alive', ['timeout=5', 'max=1000'])
   if (/^options$/i.test(method)) {
-    res.setHeader('Server', 'IntREST')
-    res.setHeader('Accept', [
-      'application/json',
-      'x-www-form-urlencoded',
-      'multipart/form-data',
-    ])
-    res.setHeader('Accept-Encoding', [
-      'gzip',
-      'ascii',
-      'utf8',
-      'utf-8',
-      'utf16le',
-      'ucs2',
-      'ucs-2',
-      'base64',
-      'base64url',
-      'latin1',
-      'binary',
-      'hex',
-    ])
-    if (config.limits?.cors) {
-      res.setHeader('Access-Control-Allow-Origin', config.limits.cors)
-    } else {
-      res.setHeader('Access-Control-Allow-Origin', 'null')
-    }
-    res.setHeader('Access-Control-Allow-Methods', [
-      'GET',
-      'POST',
-      'PUT',
-      'PATCH',
-      'DELETE',
-      'OPTIONS',
-    ])
-    res.setHeader('Access-Control-Allow-Headers', [
-      'Content-Type',
-      'Authorization',
-      'Range',
-      'X-*',
-    ])
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Max-Age', '86400')
-    res.setHeader('Connection', 'keep-alive')
-    res.setHeader('Keep-Alive', ['timeout=5', 'max=1000'])
     res.statusCode = StatusCodes.NO_CONTENT
     res.end()
     return
