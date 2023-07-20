@@ -47,8 +47,11 @@ export async function requestHandler(
       'binary',
       'hex',
     ])
-    // TODO: Add more custom acceptable domains headers
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    if (config.limits?.cors) {
+      res.setHeader('Access-Control-Allow-Origin', config.limits.cors)
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', 'null')
+    }
     res.setHeader('Access-Control-Allow-Methods', [
       'GET',
       'POST',
