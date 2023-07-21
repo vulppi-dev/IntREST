@@ -269,8 +269,11 @@ export async function findRoutePathname(basePath: string, route: string) {
         ).map((m) => m[1]),
         paramRegexp: new RegExp(
           cleanedRoute
-            .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$]+)')
-            .replace(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g, '?([A-zÀ-ú0-9-_:\\$/]*)')
+            .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$%]+)')
+            .replace(
+              /\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g,
+              '?([A-zÀ-ú0-9-_:\\$%/]*)',
+            )
             .replace(/[\/\\]/, '\\/')
             .replace(/^\^*/, '^')
             .replace(/\$*$/, '\\/?$'),

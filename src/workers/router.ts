@@ -9,6 +9,7 @@ import {
   findRoutePathname,
   sendResponseAll,
 } from '../utils/router-tools'
+import { unescape } from 'querystring'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -108,7 +109,7 @@ parentPort!.on(
       const paramsValues = Array.from(data.path.match(paramRegexp) || []).slice(
         1,
       )
-      context.params = _.zipObject(vars, paramsValues)
+      context.params = _.zipObject(vars, paramsValues.map(unescape))
 
       const middlewarePathnames = await findMiddlewarePathnames(
         basePath,
