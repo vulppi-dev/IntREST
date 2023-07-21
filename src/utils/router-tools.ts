@@ -241,39 +241,36 @@ export async function findRoutePathname(basePath: string, route: string) {
         join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
       )
       const cleanedRoute = escapedRoute
-        .replace(/[\/\\]?\([a-z0-1]+\)/gi, '')
+        .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
         .replace(/route\.mjs$/, '')
         .replace(/\/*$/, '')
         .replace(/^\/*/, '/')
 
-      if (/\[\.\.\.[a-z0-1]+\].+$/.test(cleanedRoute)) {
+      if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
         throw new Error(`Invalid route path: ${escapedRoute}`)
       }
       const singleParam = Array.from(
-        cleanedRoute.matchAll(/\[([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
+        cleanedRoute.matchAll(/\[([A-zÀ-ú0-9-_\$]+)\]/g),
       )
         .map((m) => cleanedRoute.length - (m.index || 0))
         .reduce((acc, cur) => acc + cur, 0)
       const catchParam = Array.from(
-        cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
+        cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g),
       )
-        .map((m) => cleanedRoute.length - (m.index || 0))
+        .map(() => 1)
         .reduce((acc, cur) => acc + cur, 0)
 
       return {
         pathname: r,
         route: cleanedRoute,
-        weight: singleParam + catchParam * 10,
+        weight: singleParam + catchParam * 1000,
         vars: Array.from(
-          cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
+          cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_\$]+)\]/g),
         ).map((m) => m[1]),
         paramRegexp: new RegExp(
           cleanedRoute
-            .replace(/\[([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/, '([A-zÀ-ú0-9-_]+)')
-            .replace(
-              /\[\.{3,3}([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/,
-              '?([A-zÀ-ú0-9-_/]*)',
-            )
+            .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$]+)')
+            .replace(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g, '?([A-zÀ-ú0-9-_:\\$/]*)')
             .replace(/[\/\\]/, '\\/')
             .replace(/^\^*/, '^')
             .replace(/\$*$/, '\\/?$'),
@@ -288,7 +285,6 @@ export async function findRoutePathname(basePath: string, route: string) {
       }
       return a.weight - b.weight
     })
-
   return maps.filter((m) => m.paramRegexp.test(route))
 }
 
