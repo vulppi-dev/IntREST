@@ -58,10 +58,13 @@ export async function requestHandler(
   ])
 
   if (config.limits?.cors) {
-    const cors = Array.isArray(config.limits.cors)
-      ? config.limits.cors
-      : [config.limits.cors]
-    if (cors.map((d) => d.replace(/^[a-z]+:\/\//, '')).includes(origin)) {
+    const cors = (
+      Array.isArray(config.limits.cors)
+        ? config.limits.cors
+        : [config.limits.cors]
+    ).map((d) => d.replace(/^[a-z]+:\/\//, ''))
+
+    if (cors.some((o) => o === origin)) {
       res.setHeader('Access-Control-Allow-Origin', originWithProtocol)
     } else {
       res.setHeader('Access-Control-Allow-Origin', '*')
@@ -78,6 +81,7 @@ export async function requestHandler(
     'OPTIONS',
   ])
   res.setHeader('Access-Control-Allow-Headers', [
+    'Content-Length',
     'Content-Type',
     'Authorization',
     'Range',
