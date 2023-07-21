@@ -233,6 +233,7 @@ export async function findRoutePathname(basePath: string, route: string) {
     defaultPaths.compiledApp,
     '**/route.mjs',
   )
+
   const maps = routesPathnames
     .map((r) => {
       const escapedRoute = escapePath(
@@ -250,15 +251,19 @@ export async function findRoutePathname(basePath: string, route: string) {
       }
       const singleParam = Array.from(
         cleanedRoute.matchAll(/\[([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
-      ).map((m) => m[1])
+      )
+        .map((m) => cleanedRoute.length - (m.index || 0))
+        .reduce((acc, cur) => acc + cur, 0)
       const catchParam = Array.from(
         cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
-      ).map((m) => m[1])
+      )
+        .map((m) => cleanedRoute.length - (m.index || 0))
+        .reduce((acc, cur) => acc + cur, 0)
 
       return {
         pathname: r,
         route: cleanedRoute,
-        weight: singleParam.length + catchParam.length * 2,
+        weight: singleParam + catchParam * 10,
         vars: Array.from(
           cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/g),
         ).map((m) => m[1]),
@@ -267,11 +272,11 @@ export async function findRoutePathname(basePath: string, route: string) {
             .replace(/\[([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/, '([A-zÀ-ú0-9-_]+)')
             .replace(
               /\[\.{3,3}([A-zÀ-ú-_][A-zÀ-ú0-9-_]+)\]/,
-              '([A-zÀ-ú0-9-_/]+)',
+              '?([A-zÀ-ú0-9-_/]*)',
             )
             .replace(/[\/\\]/, '\\/')
             .replace(/^\^*/, '^')
-            .replace(/\$*$/, '$'),
+            .replace(/\$*$/, '\\/?$'),
         ),
       }
     })
@@ -283,6 +288,7 @@ export async function findRoutePathname(basePath: string, route: string) {
       }
       return a.weight - b.weight
     })
+
   return maps.filter((m) => m.paramRegexp.test(route))
 }
 

@@ -19,6 +19,7 @@ export const handler = async (): Promise<void> => {
 
   cpSync(templateFolder, projectPath, {
     recursive: true,
+    filter: () => true,
   })
   console.log('\nProject created successfully! 🤩🎉\n')
 }
