@@ -25,10 +25,16 @@ export async function requestHandler(
   const method = (req.method?.toUpperCase() || 'GET') as IntREST.RequestMethods
   const config = await getConfigModule(configPath)
   const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+  const pureOrigin = req.headers.origin || req.headers.host || ''
   const origin = (req.headers.origin || req.headers.host || '').replace(
     /^[a-z]+:\/\//,
     '',
   )
+  const originWithProtocol = /^[a-z]+:\/\//.test(pureOrigin)
+    ? pureOrigin
+    : pureOrigin.includes('localhost')
+    ? `http://${pureOrigin}`
+    : `https://${pureOrigin}`
 
   res.setHeader('Server', 'IntREST')
   res.setHeader('Accept', [
@@ -50,17 +56,18 @@ export async function requestHandler(
     'binary',
     'hex',
   ])
+
   if (config.limits?.cors) {
     const cors = Array.isArray(config.limits.cors)
       ? config.limits.cors
       : [config.limits.cors]
     if (cors.map((d) => d.replace(/^[a-z]+:\/\//, '')).includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin)
+      res.setHeader('Access-Control-Allow-Origin', originWithProtocol)
     } else {
       res.setHeader('Access-Control-Allow-Origin', '*')
     }
   } else {
-    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Origin', originWithProtocol)
   }
   res.setHeader('Access-Control-Allow-Methods', [
     'GET',
