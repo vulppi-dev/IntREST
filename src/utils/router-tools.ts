@@ -234,61 +234,62 @@ export async function findRoutePathname(basePath: string, route: string) {
     '**/route.mjs',
   )
 
-  const maps = routesPathnames
-    .map((r) => {
-      const escapedRoute = escapePath(
-        r,
-        join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
-      )
-      const cleanedRoute = escapedRoute
-        .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
-        .replace(/route\.mjs$/, '')
-        .replace(/\/*$/, '')
-        .replace(/^\/*/, '/')
+  const maps = routesPathnames.map((r) => {
+    const escapedRoute = escapePath(
+      r,
+      join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
+    )
+    const cleanedRoute = escapedRoute
+      .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
+      .replace(/route\.mjs$/, '')
+      .replace(/\/*$/, '')
+      .replace(/^\/*/, '/')
 
-      if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
-        throw new Error(`Invalid route path: ${escapedRoute}`)
-      }
-      const singleParam = Array.from(
-        cleanedRoute.matchAll(/\[([A-zÀ-ú0-9-_\$]+)\]/g),
-      )
-        .map((m) => cleanedRoute.length - (m.index || 0))
-        .reduce((acc, cur) => acc + cur, 0)
-      const catchParam = Array.from(
-        cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g),
-      )
-        .map(() => 1)
-        .reduce((acc, cur) => acc + cur, 0)
+    if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
+      throw new Error(`Invalid route path: ${escapedRoute}`)
+    }
+    // const singleParam = Array.from(
+    //   cleanedRoute.matchAll(/\[([A-zÀ-ú0-9-_\$]+)\]/g),
+    // )
+    //   .map((m) => cleanedRoute.length - (m.index || 0))
+    //   .reduce((acc, cur) => acc + cur, 0)
+    // const catchParam = Array.from(
+    //   cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g),
+    // )
+    //   .map((m) => cleanedRoute.length - (m.index || 0))
+    //   .reduce((acc, cur) => acc + cur, 0)
 
-      return {
-        pathname: r,
-        route: cleanedRoute,
-        weight: singleParam + catchParam * 1000,
-        vars: Array.from(
-          cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_\$]+)\]/g),
-        ).map((m) => m[1]),
-        paramRegexp: new RegExp(
-          cleanedRoute
-            .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$%]+)')
-            .replace(
-              /\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g,
-              '?([A-zÀ-ú0-9-_:\\$%/]*)',
-            )
-            .replace(/[\/\\]/, '\\/')
-            .replace(/^\^*/, '^')
-            .replace(/\$*$/, '\\/?$'),
-        ),
-      }
-    })
+    return {
+      pathname: r,
+      route: cleanedRoute,
+      vars: Array.from(
+        cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_\$]+)\]/g),
+      ).map((m) => m[1]),
+      paramRegexp: new RegExp(
+        cleanedRoute
+          .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$%]+)')
+          .replace(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g, '?([A-zÀ-ú0-9-_:\\$%/]*)')
+          .replace(/[\/\\]/, '\\/')
+          .replace(/^\^*/, '^')
+          .replace(/\$*$/, '\\/?$'),
+      ),
+    }
+  })
+
+  return maps
+    .filter((m) => m.paramRegexp.test(route))
     .sort((a, b) => {
-      if (b.weight === a.weight) {
-        if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
-        if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
-        return b.pathname.length - a.pathname.length
+      const aSlipt = a.pathname.split('/')
+      const bSlipt = b.pathname.split('/')
+      for (let i = 0; i < aSlipt.length; i++) {
+        if (aSlipt[i][0] === '[' && bSlipt[i][0] === '[') continue
+        if (aSlipt[i][0] === '[') return 1
+        if (bSlipt[i]?.[0] === '[') return -1
       }
-      return a.weight - b.weight
+      if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
+      if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
+      return b.pathname.length - a.pathname.length
     })
-  return maps.filter((m) => m.paramRegexp.test(route))
 }
 
 export function recursiveDirectoryList(path: string) {

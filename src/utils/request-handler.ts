@@ -25,7 +25,10 @@ export async function requestHandler(
   const method = (req.method?.toUpperCase() || 'GET') as IntREST.RequestMethods
   const config = await getConfigModule(configPath)
   const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
-  const origin = req.headers.origin || ''
+  const origin = (req.headers.origin || req.headers.host || '').replace(
+    /^[a-z]+:\/\//,
+    '',
+  )
 
   res.setHeader('Server', 'IntREST')
   res.setHeader('Accept', [
@@ -47,10 +50,17 @@ export async function requestHandler(
     'binary',
     'hex',
   ])
-  if (config.limits?.cors && config.limits.cors.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
+  if (config.limits?.cors) {
+    const cors = Array.isArray(config.limits.cors)
+      ? config.limits.cors
+      : [config.limits.cors]
+    if (cors.map((d) => d.replace(/^[a-z]+:\/\//, '')).includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin)
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*')
+    }
   } else {
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Origin', origin)
   }
   res.setHeader('Access-Control-Allow-Methods', [
     'GET',

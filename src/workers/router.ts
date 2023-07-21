@@ -38,7 +38,6 @@ parentPort!.on(
 
     try {
       const routePathnames = await findRoutePathname(basePath, data.path)
-
       if (!routePathnames.length) {
         return await sendResponseAll(
           {
@@ -169,6 +168,7 @@ parentPort!.on(
         requestId,
       )
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         return await sendResponseAll(
           {
