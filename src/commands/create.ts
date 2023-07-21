@@ -1,8 +1,7 @@
-import { dirname, resolve } from 'path'
-import { join, normalizePath } from '../utils/path'
-import { fileURLToPath } from 'url'
-import { cpSync } from 'fs'
 import ck from 'chalk'
+import { cpSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { join, normalizePath } from '../utils/path'
 
 export const command = 'create'
 
@@ -14,12 +13,10 @@ export const handler = async (): Promise<void> => {
   const projectPath = normalizePath(process.cwd())
   console.log('Project folder: %s\n', ck.blue(projectPath))
 
-  const templateFolder = join(
-    dirname(fileURLToPath(import.meta.url)),
-    '../..',
-    'templates',
-    'simple',
+  const templateFolder = fileURLToPath(
+    new URL(join('../..', 'templates', 'simple'), import.meta.url),
   )
+
   cpSync(templateFolder, projectPath, {
     recursive: true,
   })

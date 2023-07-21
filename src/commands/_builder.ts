@@ -102,7 +102,7 @@ export async function startWatchBuild({
               ck.bold.blue(entry),
             )
           })
-          build.onEnd((res) => {
+          build.onEnd(() => {
             const existsEntry = existsSync(absoluteEntry)
             if (!existsEntry) {
               contextMap.get(absoluteEntry)?.dispose()

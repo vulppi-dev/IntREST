@@ -19,7 +19,7 @@ export async function requestHandler(
   req: IncomingMessage,
   res: ServerResponse,
 ) {
-  const basePath = process.env.INTREST_BASE_PATH || process.cwd()
+  const basePath = process.cwd()
   const configPath = await globFind(basePath, globPatterns.config)
   const contentType = req.headers['content-type']
   const method = (req.method?.toUpperCase() || 'GET') as IntREST.RequestMethods
@@ -129,7 +129,7 @@ export async function requestHandler(
         })
       })
     } else {
-      const buffer = await new Promise<Buffer>((resolve, reject) => {
+      const buffer = await new Promise<Buffer>((resolve) => {
         const writer = concat(resolve)
         req.pipe(writer)
       })

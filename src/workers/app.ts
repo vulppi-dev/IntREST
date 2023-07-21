@@ -6,7 +6,7 @@ import { getConfigModule, globFind, join } from '../utils/path'
 import { requestHandler } from '../utils/request-handler'
 import { startWorker } from '../utils/call-worker'
 
-const basePath = process.env.INTREST_BASE_PATH || process.cwd()
+const basePath = process.cwd()
 const configPath = await globFind(basePath, globPatterns.config)
 const config = await getConfigModule(configPath)
 const appPort = config.port || +(process.env.PORT || 4000)

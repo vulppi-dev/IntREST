@@ -20,6 +20,8 @@
     "emitDeclarationOnly": true,
     "allowJs": true,
     "checkJs": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "baseUrl": "src",
     "paths": {
       "@/*": [

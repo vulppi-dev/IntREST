@@ -116,7 +116,6 @@ async function restartServer(
 
     const envObject = Object.assign(
       structuredClone(process.env),
-      { INTREST_BASE_PATH: projectPath },
       _.get(config, 'env', {}),
     ) as Record<string, string>
     const myEnv = envPath
