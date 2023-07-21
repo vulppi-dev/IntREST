@@ -83,6 +83,6 @@ export async function getEnvPath(basePath: string) {
 export async function getAppPath(basePath: string) {
   return (
     (await globFindAllList(...globPatterns.app.map((p) => [basePath, p])))[0] ||
-    'app'
+    globPatterns.app[1]
   )
 }

@@ -4,10 +4,10 @@ import type { Options } from 'yargs'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import {
   escapePath,
+  getAppPath,
   getConfigModule,
   globFind,
   globFindAll,
-  globFindAllList,
   join,
   normalizePath,
 } from '../utils/path'
@@ -23,7 +23,8 @@ export async function handler(): Promise<void> {
   const projectPath = normalizePath(process.cwd())
   const configPath = await globFind(projectPath, globPatterns.config)
   const config = await getConfigModule(configPath)
-  console.info('\nBuilding application...\n')
+  console.info('\nBuilding application...')
+  console.log('Project folder: %s\n', ck.blue(projectPath))
 
   const appFolder = await getAppPath(projectPath)
   console.info(
@@ -46,11 +47,4 @@ export async function handler(): Promise<void> {
     }),
   )
   copyFile
-}
-
-async function getAppPath(basePath: string) {
-  return (
-    (await globFindAllList(...globPatterns.app.map((p) => [basePath, p])))[0] ||
-    'app'
-  )
 }

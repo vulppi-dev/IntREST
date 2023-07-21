@@ -3,8 +3,6 @@ import dotenv from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
 import { existsSync, lstatSync, rmSync, watch } from 'fs'
 import _ from 'lodash'
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
 import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
 import {
@@ -29,9 +27,10 @@ export const describe = 'Start the development server'
 export async function handler(): Promise<void> {
   const projectPath = normalizePath(process.cwd())
   console.log(
-    '\nStarting the application in %s mode...\n',
+    '\nStarting the application in %s mode...',
     ck.bold.blue('development'),
   )
+  console.log('Project folder: %s\n', ck.blue(projectPath))
 
   let configPath = await globFind(projectPath, globPatterns.config)
   let envPath = await getEnvPath(projectPath)

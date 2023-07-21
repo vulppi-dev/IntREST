@@ -1,6 +1,6 @@
 export const globPatterns = {
   env: ['.env', '.env.*'],
-  app: ['app', 'src/app'],
+  app: ['routes', 'src/routes'],
   config: 'intrest.config.{mjs,cjs,js}',
   route: '**/{route,middleware}.ts',
 } as const
@@ -13,7 +13,7 @@ export const regexpPatterns = {
 
 export const defaultPaths = {
   compiled: '.intrest',
-  compiledApp: 'app',
+  compiledApp: 'routes',
   compiledGenerated: 'generated',
   workerApp: 'app.mjs',
   workerRouter: 'router.mjs',

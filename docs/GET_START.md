@@ -202,11 +202,11 @@ These scripts will enable you to run the development server, build your project,
 
 #### 6. Create Your First Route
 
-Create a file called `route.ts` inside a folder named `src/app` or `app` in your project directory:
+Create a file called `route.ts` inside a folder named `src/routes` or `routes` in your project directory:
 
 ```
 src
-└── app
+└── routes
     └── route.ts
 package.json
 tsconfig.json
@@ -215,7 +215,7 @@ tsconfig.json
 Open the `route.ts` file and add the following content:
 
 ```ts
-// src/app/route.ts
+// src/routes/route.ts
 
 import type { IntRequest, IntResponse } from '@vulppi/intrest'
 

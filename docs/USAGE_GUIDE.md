@@ -2,7 +2,7 @@
 
 ## Usage Guide
 
-To start using IntREST, you need create routes in app folder. Here's a simple example of routes:
+To start using IntREST, you need create routes in `routes` folder. Here's a simple example of routes:
 
 ```typescript
 import type { IntRequest, IntResponse } from '@vulppi/intrest'
