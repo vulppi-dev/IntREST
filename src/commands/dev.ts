@@ -25,6 +25,7 @@ export const aliases = ['develop']
 export const describe = 'Start the development server'
 
 export async function handler(): Promise<void> {
+  // Get project root path
   const projectPath = normalizePath(process.cwd())
   console.log(
     '\nStarting the application in %s mode...',
@@ -32,17 +33,23 @@ export async function handler(): Promise<void> {
   )
   console.log('Project folder: %s\n', ck.blue(projectPath))
 
+  // Try to find the config file
   let configPath = await globFind(projectPath, globPatterns.config)
+  // Try to find the env file
   let envPath = await getEnvPath(projectPath)
 
+  // Initialize the config and env checksums
   let configChecksum = configPath ? await getChecksum(configPath) : ''
   let envChecksum = envPath ? await getChecksum(envPath) : ''
 
+  // Start application worker and watch for changes
   restartServer(projectPath, configPath, envPath)
 
+  // If root dependencies (env, config) are changed, restart the application
   watch(projectPath, async (_, filename) => {
     if (!filename) return
     if (regexpPatterns.config.test(filename)) {
+      // If multiple config files are found, exit the process
       const configFiles = await globFindAll(projectPath, globPatterns.config)
       if (configFiles.length > 1) {
         console.error(ck.red('Multiple config files found.'))
@@ -99,6 +106,7 @@ async function restartServer(
     debounceApp = null
   }
 
+  // If the application is already running, terminate it and start again
   debounceApp = setTimeout(async () => {
     if (app) {
       app.terminate()
@@ -107,6 +115,7 @@ async function restartServer(
     }
     const config = await getConfigModule(configPath)
 
+    // If it is the first time, start the router builder
     if (!first) {
       console.info('Restarting the application...\n')
     } else {
@@ -114,6 +123,7 @@ async function restartServer(
       await startRouterBuilder(projectPath, config)
     }
 
+    // Merge and expand the environment variables
     const envObject = Object.assign(
       structuredClone(process.env),
       _.get(config, 'env', {}),
@@ -128,6 +138,8 @@ async function restartServer(
           parsed: envObject,
         }
     dotenvExpand.expand(myEnv)
+
+    // Start the application worker
     app = new Worker(
       new URL(join('..', 'workers', defaultPaths.workerApp), import.meta.url),
       {
@@ -153,6 +165,8 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
     const normalizedFilename = normalizePath(filename)
     const absolute = join(appFolder, normalizedFilename)
     const exists = existsSync(absolute)
+
+    // If the file is a directory, ignore it
     if (exists) {
       const stat = lstatSync(absolute)
       if (stat.isDirectory()) return
@@ -175,6 +189,11 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
   return Promise.all(
     appFiles.map(async (filename) => {
       const escapedPath = escapePath(filename, appFolder)
+      // If the file is a directory, ignore it
+      if (existsSync(filename)) {
+        const stat = lstatSync(filename)
+        if (stat.isDirectory()) return
+      }
       await startWatchBuild({
         input: appFolder,
         output: join(basePath, defaultPaths.compiled),

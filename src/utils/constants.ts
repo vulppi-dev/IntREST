@@ -9,6 +9,15 @@ export const regexpPatterns = {
   env: /^\.env(?:\.[a-z-_]*)?$/,
   config: /^intrest.config.[mc]?js$/,
   route: /(^|\/)(route|middleware).ts$/,
+  reservedChars: /([.*+?^=!:${}()|\[\]\/\\])/g,
+  startSlashesOrNot: /^[\\\/]*/,
+  endSlashesOrNot: /[\\\/]*$/,
+  multiSlashes: /[\\\/]+/g,
+  isBusboyContentType: /^(?:x-www-form-urlencoded|multipart\/form-data)$/i,
+  isJSONContentType: /^application\/json$/i,
+  isXMLContentType: /^application\/xml$/i,
+  isAcceptableContentType:
+    /^(?:x-www-form-urlencoded|multipart\/form-data|application\/(?:json|xml))$/i,
 } as const
 
 export const defaultPaths = {
@@ -17,4 +26,4 @@ export const defaultPaths = {
   compiledGenerated: 'generated',
   workerApp: 'app.mjs',
   workerRouter: 'router.mjs',
-}
+} as const

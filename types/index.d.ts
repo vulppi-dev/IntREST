@@ -8,6 +8,9 @@ declare global {
   }
 
   namespace IntREST {
+    /**
+     * The configuration for the application
+     */
     interface Config {
       /**
        * The port where the application will be running
@@ -49,7 +52,7 @@ declare global {
          * If this is a number, then the value specifies the number of bytes.
          * If it is a string, the value is passed to the bytes library for parsing.
          *
-         * @default '1mb'
+         * @default '10mb'
          */
         bodyMaxSize?: number | string
         /**
@@ -97,6 +100,12 @@ declare global {
          * @default 'Request entity too large'
          */
         REQUEST_TOO_LONG?: string
+        /**
+         * The message for the status code 415
+         *
+         * @default 'Unsupported media type'
+         */
+        UNSUPPORTED_MEDIA_TYPE?: string
       }
       /**
        * The environment variables for the application
@@ -113,30 +122,113 @@ declare global {
 
     interface FileMetadata {
       absolutePath: string
+      /**
+       * The original filename
+       */
       filename: string
+      /**
+       * The MIME type of the file
+       */
       mimetype: string
+      /**
+       * The encoding of the file
+       */
       encoding: string
     }
 
     type RequestMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+    type RequestEncoding = 'gzip' | 'x-gzip' | 'deflate' | 'identity'
 
-    interface IntRequest<
+    type CompressEncoding =
+      | 'gzip'
+      | 'deflate'
+      | 'gzip, deflate'
+      | 'deflate, gzip'
+
+    /**
+     * The function to get the content of a file
+     *
+     * @param path The path of the file
+     * @param compress The encoding to compress the file
+     */
+    type StreamAssetFunction<R> = (
+      path: string,
+      compress?: boolean | CompressEncoding,
+    ) => R
+
+    type IntRequest<
       Params extends Record<string, string> = Record<string, string>,
-    > {
-      method: RequestMethods
+      Body extends Record<string, any> = Record<string, any>,
+    > = {
+      /**
+       * The path route of the request
+       */
       path: string
+      /**
+       * The query of the request using the `URLSearchParams` api
+       */
       query: URLSearchParams
+      /**
+       * The cookies of the request
+       */
       cookies: Record<string, string>
+      /**
+       * The params of the request, match with the route patterns
+       */
       params: Params
+      /**
+       * The request headers
+       */
       headers: import('http').IncomingHttpHeaders
-      body: Record<string, any> | string | undefined
-      assetsStream: (path: string) => import('fs').ReadStream
-      assetsRawContent: (path: string) => Buffer
-      assetsContent: (path: string) => string
+      /**
+       * The function to get the read stream of a file
+       *
+       * @param path The path of the file
+       * @param compress The encoding to compress the file
+       */
+      assetsStream: StreamAssetFunction<import('fs').ReadStream>
+      /**
+       * The function to get the raw content of a file
+       *
+       * @param path The path of the file
+       * @param compress The encoding to compress the file
+       */
+      assetsRawContent: StreamAssetFunction<Buffer>
+      /**
+       * The function to get the string content of a file
+       *
+       * @param path The path of the file
+       * @param compress The encoding to compress the file
+       */
+      assetsContent: StreamAssetFunction<string>
       custom: CustomRequestData
-    }
+    } & (
+      | {
+          /**
+           * The method of the request
+           */
+          method: Omit<RequestMethods, 'GET'>
+          /**
+           * The parsed body of the request
+           */
+          body: Body
+        }
+      | {
+          /**
+           * The method of the request
+           */
+          method: 'GET'
+          /**
+           * Request don't have body if the method is `GET`
+           */
+          body: undefined
+        }
+    )
 
     interface IntResponse {
+      /**
+       * The body of the response
+       */
       body?:
         | string
         | Record<string, any>
@@ -144,35 +236,52 @@ declare global {
         | ArrayBuffer
         | Uint8Array
         | import('stream').Writable
+      /**
+       * The status code of the response
+       */
       status?: number
-      headers?: Record<string, string | string[] | undefined> &
-        import('http').IncomingHttpHeaders
-      cookies?: Record<string, ValueCookie>
+      /**
+       * The headers of the response
+       */
+      headers?: Record<string, string | string[] | undefined>
+      /**
+       * The cookies to set in the response
+       */
+      cookies?: Record<string, SetCookie>
+      /**
+       * The cookies to clear in the response
+       */
       clearCookies?: Record<string, CookieOptions>
     }
 
     type CookieOptions = import('cookie').CookieSerializeOptions
 
+    /**
+     * The cookie content to set in the response
+     */
     interface SetCookie {
-      name: string
       value: string
       options?: CookieOptions
     }
 
-    interface ValueCookie {
-      value: string
-      options?: CookieOptions
-    }
-
+    /**
+     * The cookie to clear in the response
+     */
     interface ClearCookie {
       name: string
       options?: CookieOptions
     }
 
+    /**
+     * The function to handle the request
+     */
     interface RequestHandler {
       (context: IntRequest): Promise<IntResponse | void> | IntResponse | void
     }
 
+    /**
+     * The function to handle the middleware
+     */
     interface MiddlewareHandler {
       (context: IntRequest, next: MiddlewareNext):
         | Promise<IntResponse | void>
@@ -180,14 +289,11 @@ declare global {
         | void
     }
 
+    /**
+     * The function to call the next middleware
+     */
     interface MiddlewareNext {
       (custom?: CustomRequestData): void
-    }
-
-    type Primitive = string | number | boolean
-
-    interface QueryData {
-      [x: string]: undefined | Primitive | Primitive[] | QueryData | QueryData[]
     }
   }
 
@@ -199,9 +305,7 @@ declare global {
 export type Config = IntREST.Config
 export type FileMetadata = IntREST.FileMetadata
 export type CookieOptions = IntREST.CookieOptions
-export type QueryData = IntREST.QueryData
 export type SetCookie = IntREST.SetCookie
-export type ValueCookie = IntREST.ValueCookie
 export type ClearCookie = IntREST.ClearCookie
 export type RequestMethods = IntREST.RequestMethods
 

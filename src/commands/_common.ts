@@ -2,6 +2,10 @@ import crypto from 'crypto'
 import fs, { existsSync } from 'fs'
 import _ from 'lodash'
 
+/**
+ * Get the checksum of a file
+ * If the file does not exist, return an empty string
+ */
 export function getChecksum(path: string) {
   return new Promise<string>(function (resolve, reject) {
     if (!existsSync(path)) return resolve('')

@@ -6,25 +6,34 @@ import { createWriteStream } from 'fs'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
-import { callWorker } from './call-worker'
-import { globPatterns } from './constants'
+import { callWorker } from './app-tools'
+import { globPatterns, regexpPatterns } from './constants'
 import {
   parseStringBytesToNumber,
   parseStringToAutoDetectValue,
 } from './parser'
 import { getConfigModule, globFind, join } from './path'
 import ck from 'chalk'
+import { deflate, gzip } from 'zlib'
+import { XMLParser, XMLValidator } from 'fast-xml-parser'
 
 export async function requestHandler(
   req: IncomingMessage,
   res: ServerResponse,
 ) {
+  // Get the root path of the project
   const basePath = process.cwd()
+  // Try find the config module
   const configPath = await globFind(basePath, globPatterns.config)
-  const contentType = req.headers['content-type']
-  const method = (req.method?.toUpperCase() || 'GET') as IntREST.RequestMethods
   const config = await getConfigModule(configPath)
+  // Get the temp path for upload files
   const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+
+  // Get the request method and content type
+  const contentType = req.headers['content-type'] || 'application/json'
+  const method = (req.method?.toUpperCase() || 'GET') as IntREST.RequestMethods
+
+  // Prepare origin for CORS
   const pureOrigin = req.headers.origin || req.headers.host || ''
   const origin = (req.headers.origin || req.headers.host || '').replace(
     /^[a-z]+:\/\//,
@@ -36,26 +45,15 @@ export async function requestHandler(
     ? `http://${pureOrigin}`
     : `https://${pureOrigin}`
 
+  // Set default headers
   res.setHeader('Server', 'IntREST')
   res.setHeader('Accept', [
     'application/json',
+    'application/xml',
     'x-www-form-urlencoded',
     'multipart/form-data',
   ])
-  res.setHeader('Accept-Encoding', [
-    'gzip',
-    'ascii',
-    'utf8',
-    'utf-8',
-    'utf16le',
-    'ucs2',
-    'ucs-2',
-    'base64',
-    'base64url',
-    'latin1',
-    'binary',
-    'hex',
-  ])
+  res.setHeader('Accept-Encoding', ['gzip', 'x-gzip', 'deflate', 'identity'])
 
   if (config.limits?.cors) {
     const cors = (
@@ -97,13 +95,27 @@ export async function requestHandler(
     return
   }
 
+  // Check if the content type is acceptable
+  if (!regexpPatterns.isAcceptableContentType.test(contentType)) {
+    res.writeHead(StatusCodes.UNSUPPORTED_MEDIA_TYPE, {
+      'Content-Type': 'application/json',
+    })
+    return res.end(
+      JSON.stringify({
+        message:
+          config.messages?.UNSUPPORTED_MEDIA_TYPE || 'Unsupported media type',
+      }),
+    )
+  }
+
   let body = {} as Record<string, any>
+  // Check if the body size is acceptable
   const bodySize =
     (req.headers['content-length'] &&
       parseInt(req.headers['content-length'])) ||
     0
   const maxBodySize = parseStringBytesToNumber(
-    config.limits?.bodyMaxSize || '1mb',
+    config.limits?.bodyMaxSize || '10mb',
   )
 
   if (maxBodySize && bodySize > maxBodySize) {
@@ -118,8 +130,9 @@ export async function requestHandler(
     )
   }
 
+  // Parse the body if the method is not GET
   if (!/^get$/i.test(method)) {
-    if (contentType && !/^application\/json$/i.test(contentType)) {
+    if (contentType && regexpPatterns.isBusboyContentType.test(contentType)) {
       await new Promise<void>((resolve, reject) => {
         const bb = busboy({ headers: req.headers })
         bb.on('file', (name, file, info) => {
@@ -154,17 +167,35 @@ export async function requestHandler(
         const writer = concat(resolve)
         req.pipe(writer)
       })
-      const encoding = req.headers['content-encoding'] as string | undefined
-      const bodyString = buffer.toString(encoding as any)
+      const encoding = req.headers['content-encoding'] || 'identity'
+
+      const bodyString = parseBodyBuffer(
+        buffer,
+        encoding.split(/, */) as IntREST.RequestEncoding[],
+      ).toString()
+
       try {
-        body = JSON.parse(bodyString)
+        if (regexpPatterns.isJSONContentType.test(contentType)) {
+          body = JSON.parse(bodyString)
+        } else {
+          // is XML Content-Type
+          const parser = new XMLParser()
+          if (!XMLValidator.validate(bodyString)) {
+            throw new Error('Invalid XML')
+          }
+
+          body = parser.parse(bodyString, {
+            allowBooleanAttributes: true,
+            unpairedTags: ['meta', 'link', 'img', 'br', 'hr', 'input'],
+          })
+        }
       } catch (error: any) {
         res.writeHead(StatusCodes.BAD_REQUEST, {
           'Content-Type': 'application/json',
         })
         return res.end(
           JSON.stringify({
-            message: 'Invalid JSON body',
+            message: 'Invalid body',
             error: error?.message,
           }),
         )
@@ -221,4 +252,29 @@ export async function requestHandler(
       }),
     )
   }
+}
+
+async function parseBodyBuffer(
+  data: Buffer,
+  encoding: IntREST.RequestEncoding[] = ['identity'],
+) {
+  let buffer = data
+  for (const enc of encoding) {
+    if (/^gzip$/i.test(enc)) {
+      buffer = await new Promise<Buffer>((resolve, reject) => {
+        gzip(buffer, (err, res) => {
+          if (err) return reject(err)
+          resolve(res)
+        })
+      })
+    } else if (/^deflate$/i.test(enc)) {
+      buffer = await new Promise<Buffer>((resolve, reject) => {
+        deflate(buffer, (err, res) => {
+          if (err) return reject(err)
+          resolve(res)
+        })
+      })
+    }
+  }
+  return buffer
 }

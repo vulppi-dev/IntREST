@@ -4,7 +4,7 @@ import { createServer } from 'http'
 import { globPatterns } from '../utils/constants'
 import { getConfigModule, globFind, join } from '../utils/path'
 import { requestHandler } from '../utils/request-handler'
-import { startWorker } from '../utils/call-worker'
+import { startWorker } from '../utils/app-tools'
 
 const basePath = process.cwd()
 const configPath = await globFind(basePath, globPatterns.config)

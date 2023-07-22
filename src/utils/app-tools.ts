@@ -11,6 +11,9 @@ interface WorkerPool {
 
 const workerPool = new Map<number, WorkerPool>()
 
+/**
+ * Initialize the worker pool
+ */
 export async function startWorker(size: number) {
   for (let i = 0; i < size; i++) {
     const worker = new Worker(
@@ -33,15 +36,22 @@ export async function callWorker(
   cb: (state: ResponseState, data: ResponseData) => void,
 ) {
   return new Promise<void>((resolve, reject) => {
+    // Generate a random request id
     const requestId = randomUUID()
+    // Get the list of workers
     const workerList = Array.from(workerPool.values())
 
+    // Try to find a worker with weight 0
     let workerItem = workerList.find((w) => w.weight === 0)
 
+    // If no worker with weight 0 is found
+    // and the worker pool size is less than the max size,
+    // find a worker with the lowest weight
     if (
       !workerItem &&
       workerList.length < (config.limits?.maxWorkerPoolSize || 20)
     ) {
+      // Create a new worker
       const worker = new Worker(new URL('./router.mjs', import.meta.url), {
         env: process.env,
       })
@@ -51,14 +61,17 @@ export async function callWorker(
         worker,
         workerId: worker.threadId,
       }
+      // Add the worker to the worker pool
       workerPool.set(worker.threadId, workerItem)
     } else if (!workerItem) {
       workerItem = workerList.reduce((a, b) => (a.weight < b.weight ? a : b))
     }
 
+    // Increase the worker weight, because it is busy with a request
     workerItem.weight++
     const { worker, workerId } = workerItem
 
+    // Handle worker exit, if a catastrophic error occurs
     const handleExit = (code: number) => {
       workerPool.delete(workerId)
       worker.off('exit', handleExit)
@@ -66,6 +79,7 @@ export async function callWorker(
     }
     worker.once('exit', handleExit)
 
+    // Handle worker error, if a catastrophic error occurs
     const handleError = (err: Error) => {
       reject(err)
       workerItem!.weight--
@@ -74,6 +88,7 @@ export async function callWorker(
     }
     worker.once('error', handleError)
 
+    // Handle worker message, and call the callback function if the request id matches
     const handleMessage = (r: TransferResponse) => {
       if (r.requestId !== requestId) return
 
@@ -87,6 +102,7 @@ export async function callWorker(
       }
     }
     worker.on('message', handleMessage)
+    // Send the data to the worker router
     worker.postMessage({
       data,
       basePath,

@@ -19,7 +19,9 @@ export async function callBuild({
   entry,
   config,
 }: StartBuildProps) {
+  // Generate the output path for the compiled app
   const appPath = join(output, defaultPaths.compiledApp)
+  // Generate the absolute path for the entry file
   const absoluteEntry = join(input, entry)
 
   await build({
@@ -35,11 +37,15 @@ export async function callBuild({
     outExtension: { '.js': '.mjs' },
     outdir: appPath,
     plugins: [
+      // Use the TsconfigPathsPlugin to enable resolution of TypeScript paths
       TsconfigPathsPlugin({
+        // The tsconfig import in lib '@esbuild-plugins/tsconfig-paths' is not working
+        // so we need to use the get-tsconfig package to get the tsconfig object
         tsconfig: getTsconfig(
           join(process.cwd(), config?.paths?.tsConfig || 'tsconfig.json'),
         )?.config,
       }),
+      // Add a custom plugin to log the build status
       {
         name: 'InteREST',
         setup(build) {
@@ -67,8 +73,11 @@ export async function startWatchBuild({
   entry,
   config,
 }: StartBuildProps) {
+  // Generate the output path for the compiled app
   const appPath = join(output, defaultPaths.compiledApp)
+  // Generate the absolute path for the entry file
   const absoluteEntry = join(input, entry)
+  // If the entry file is already being watched, do nothing
   if (contextMap.has(absoluteEntry)) {
     return
   }
@@ -87,11 +96,15 @@ export async function startWatchBuild({
     outdir: appPath,
     logLevel: 'silent',
     plugins: [
+      // Use the TsconfigPathsPlugin to enable resolution of TypeScript paths
       TsconfigPathsPlugin({
+        // The tsconfig import in lib '@esbuild-plugins/tsconfig-paths' is not working
+        // so we need to use the get-tsconfig package to get the tsconfig object
         tsconfig: getTsconfig(
           join(process.cwd(), config?.paths?.tsConfig || 'tsconfig.json'),
         )?.config,
       }),
+      // Add a custom plugin to log the build status
       {
         name: 'InteREST',
         setup(build) {
@@ -110,6 +123,7 @@ export async function startWatchBuild({
               console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
             }
           })
+          // Remove the compiled file when the build is disposed
           build.onDispose(() => {
             const existsApp = existsSync(
               join(appPath, clearExtension(entry) + '.mjs'),
@@ -121,6 +135,8 @@ export async function startWatchBuild({
       },
     ],
   })
+  // Save the context to the map
   contextMap.set(absoluteEntry, ctx)
+  // Start the build
   ctx.watch()
 }

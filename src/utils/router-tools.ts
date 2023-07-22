@@ -7,7 +7,7 @@ import { Readable } from 'stream'
 import { parentPort } from 'worker_threads'
 import { defaultPaths } from '../utils/constants'
 import { escapePath, globFindAll, join, normalizePath } from '../utils/path'
-import { isBuffer } from './buffer'
+import { isBuffer } from './compare'
 
 function isRange(
   range?: rangeParser.Result | rangeParser.Ranges,
