@@ -10,7 +10,7 @@
 IntREST projects follow a specific structure to ensure that your application is easy to understand and maintain. The following diagram shows the basic structure of a IntREST project:
 
 ```
-assets
+assets (optional)
 ├── file.txt
 └── image.png
 routes
@@ -35,6 +35,7 @@ routes
         └── route.ts (POST, PUT, DELETE)
 package.json
 tsconfig.json
+app.d.ts (optional)
 intrest.config.mjs (optional)
 
 ```

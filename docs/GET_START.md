@@ -34,18 +34,21 @@ With npm:
 
 ```bash
 npx @vulppi/intrest create
+npm install
 ```
 
 With pnpm:
 
 ```bash
 pnpx @vulppi/intrest create
+pnpm install
 ```
 
 With yarn:
 
 ```bash
 npx @vulppi/intrest create --yarn
+yarn install
 ```
 
 This command sets up the necessary project structure and installs the required dependencies.
@@ -72,7 +75,7 @@ With yarn:
 yarn dev
 ```
 
-The development server will spin up, and you can now start building your IntREST application.
+The development server will spin up, and you can now start building your IntREST application. The default port is `4000`, but you can change this by setting the `PORT` environment variable or in `port` property, in `intrest.config.mjs` file configuration.
 
 By following these steps, you'll have a IntREST project up and running, ready for you to begin developing your RESTful APIs with ease.
 
@@ -96,24 +99,24 @@ This will create a new directory for your project and initialize a `package.json
 
 #### 2. Install TypeScript
 
-Next, install TypeScript and the TypeScript types for Node.js using your preferred package manager. Run one of the following commands:
+Next, install TypeScript types for Node.js using your preferred package manager. Run one of the following commands:
 
 With npm:
 
 ```bash
-npm install -D typescript @types/node
+npm install -D @types/node
 ```
 
 With pnpm:
 
 ```bash
-pnpm install -D typescript @types/node
+pnpm install -D @types/node
 ```
 
 With yarn:
 
 ```bash
-yarn add -D typescript @types/node
+yarn add -D @types/node
 ```
 
 This will install TypeScript as a development dependency and ensure that you have the necessary types for Node.js.
@@ -251,7 +254,7 @@ With yarn:
 yarn dev
 ```
 
-The development server will start, and you can access your application at the specified port.
+The development server will start, and you can access your application at the specified port. The default port is `4000`, but you can change this by setting the `PORT` environment variable or in `port` property, in `intrest.config.mjs` file configuration.
 
 With these steps, you've manually installed IntREST, configured TypeScript, and set up your first route. You can now start building your IntREST application and explore the framework's capabilities.
 

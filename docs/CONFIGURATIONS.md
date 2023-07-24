@@ -10,20 +10,22 @@ IntREST uses a configuration file to define the application's settings, but is o
  */
 export default {
   port: 4000,
+  removeUploadFilesAfterResponse: false,
   folders: {
     uploadTemp: '.tmp',
   },
   limits: {
-    bodyMaxSize: '1mb',
-    cors: ['*'],
+    bodyMaxSize: '10mb',
+    cors: undefined, // Can be enable by setting `string` or `string[]`
     minWorkerPoolSize: 5
     maxWorkerPoolSize: 20,
   },
   messages: {
-    INTERNAL_SERVER_ERROR: 'Internal Server Error',
-    NOT_FOUND: 'Not Found',
-    METHOD_NOT_ALLOWED: 'Method Not Allowed',
+    INTERNAL_SERVER_ERROR: 'Internal server error',
+    NOT_FOUND: 'Not found',
+    METHOD_NOT_ALLOWED: 'Method not allowed',
     REQUEST_TOO_LONG: 'Request entity too large',
+    UNSUPPORTED_MEDIA_TYPE: 'Unsupported media type',
   },
   env: {
     NODE_ENV: 'development',

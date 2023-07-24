@@ -19,9 +19,10 @@ The `IntRequest` interface is the input interface of IntREST. It contains all th
 - `params`: The object of parameters of the request.
 - `query`: The object of query parameters of the request. Using `URLSearchParams` API.
 - `headers`: The object of headers of the request.
-- `body`: The body of the request. Can be a `string` or `object`.
+- `body`: The body of the request. It's a `object`.
   - The `body` property is only available if the request has a body and the method is not `GET`.
   - If the request `Content-Type` is `multipart/form-data` and contains upload files, the `body` property will be contains a file metadata stored with name of the field. The metadata interface is `FileMetadata`.
+  - If the request `Content-Type` is `application/xml`, the `body` property will be contains a object with the XML data following the type `import('@vulppi/intrest).XMLBody`.
 - `assetsStream`: The function to get a file stream from the `assets` folder, fonded in root directory of the project.
 - `assetsRawContent`: The function to get a file raw content (`Buffer`) from the `assets` folder, fonded in root directory of the project.
 - `assetsContent`: The function to get a file content (`string`) from the `assets` folder, fonded in root directory of the project.

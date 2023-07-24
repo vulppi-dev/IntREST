@@ -1,15 +1,15 @@
-# Vulppi - IntREST
+# Vulppi - IntREST - BETA
 
 [![npm version](https://badge.fury.io/js/%40vulppi%2Fintrest.svg)](https://www.npmjs.com/package/@vulppi/intrest)
 [![npm downloads](https://img.shields.io/npm/dm/%40vulppi%2Fintrest.svg)](https://www.npmjs.com/package/@vulppi/intrest)
 [![GitHub issues](https://img.shields.io/github/issues/vulppi-dev/intrest.svg)](https://github.com/vulppi-dev/intrest/issues)
 [![GitHub license](https://img.shields.io/github/license/vulppi-dev/intrest.svg)](https://github.com/vulppi-dev/intrest/blob/main/LICENSE)
 
-**Attention:** Please note that the current version of this framework is in the _alpha stage_ and is **not recommended** for production use. We strongly advise against using this version in live environments or critical systems.
+**Attention:** Please note that the current version of this framework is in the **_beta stage_** and is **not recommended** for production use. We advise you to wait for the stable release before using it in a production environment.
 
-A more stable and feature-complete beta version of the framework will be released shortly, which will be better suited for production scenarios. We encourage you to wait for the beta release to ensure a more reliable and robust experience.
+We are working hard to deliver a stable and reliable framework for your backend development needs.
 
-In the meantime, you are welcome to explore and experiment with the alpha version for testing and evaluation purposes. Your feedback and suggestions during this phase will be greatly appreciated as they can help us enhance and improve the framework before the final release.
+In the meantime, you are welcome to explore and experiment with the **_beta_** version for testing and evaluation purposes. Your feedback and suggestions during this phase will be greatly appreciated as they can help us enhance and improve the framework before the final release.
 
 Thank you for your understanding and support as we work towards delivering a high-quality framework for your programming needs.
 
@@ -36,12 +36,12 @@ IntREST is a versatile backend framework written in TypeScript, specifically tai
 
 ### Key Features
 
-- **Thread Workers:** Divides requests into thread workers, optimizing resource utilization and improving overall performance.
+- **Thread Workers:** Divides requests into thread workers pool, optimizing resource utilization and improving overall performance.
 - **RESTful API Development:** Simplifies the process of building robust and efficient RESTful APIs.
 - **File-System Based Routing:** Routes within the application are determined by the file structure, ensuring a clean and intuitive approach to defining API endpoints.
 - **Performance and Scalability:** Enhances the performance and scalability of Node.js applications, accommodating high volumes of traffic seamlessly.
 - **CORS Handling:** Automatically manages Cross-Origin Resource Sharing (CORS) requests, simplifying integration with external clients.
-- **Request Parsing:** Automatically detects and parses JSON, URL-encoded and Multipart requests, eliminating the need for manual parsing.
+- **Request Parsing:** Automatically detects and parses JSON, XML, URL-encoded and Multipart requests, eliminating the need for manual parsing.
 - **Response Type Detection:** Intelligently identifies the response type, supporting JSON, Buffer, String, or ReadableStream, facilitating integration with various client applications.
 
 With IntREST, you can expedite your backend development, streamline code organization through file-system-based routing, and deliver high-performance RESTful APIs effortlessly. Let's delve into the details of utilizing this framework to harness its true potential.
