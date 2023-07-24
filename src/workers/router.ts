@@ -139,8 +139,7 @@ parentPort!.on(
               const res =
                 (await middleware.handler(context, (c) => {
                   if (timeoutId) clearTimeout(timeoutId)
-
-                  _.merge(context.custom, c)
+                  context.custom = _.merge(context.custom, c)
                   resolved = true
                 })) ?? null
 
