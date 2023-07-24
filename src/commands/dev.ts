@@ -48,6 +48,9 @@ export async function handler(): Promise<void> {
   // If root dependencies (env, config) are changed, restart the application
   watch(projectPath, async (_, filename) => {
     if (!filename) return
+    let changeConfig = false
+    let changeEnv = false
+
     if (regexpPatterns.config.test(filename)) {
       // If multiple config files are found, exit the process
       const configFiles = await globFindAll(projectPath, globPatterns.config)
@@ -62,14 +65,17 @@ export async function handler(): Promise<void> {
         console.error('\n')
         return process.exit(1)
       } else if (!configFiles.length) {
+        changeConfig = true
         console.info(ck.red('The config file has removed.\n'))
       }
       configPath = configFiles[0]
     } else if (regexpPatterns.env.test(filename)) {
-      envPath = await getEnvPath(projectPath)
+      const newEnvPath = await getEnvPath(projectPath)
+      if (newEnvPath !== envPath) {
+        envPath = newEnvPath
+        changeEnv = true
+      }
     }
-    let changeConfig = false
-    let changeEnv = false
 
     if (configPath) {
       const newConfigChecksum = await getChecksum(configPath)
