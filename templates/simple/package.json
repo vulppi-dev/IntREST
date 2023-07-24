@@ -10,7 +10,7 @@
     "start": "irest start"
   },
   "dependencies": {
-    "@vulppi/intrest": "^0.8.0"
+    "@vulppi/intrest": "^0.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.4.2"

@@ -10,8 +10,7 @@ import {
   sendResponseAll,
 } from '../utils/router-tools'
 import { unescape } from 'querystring'
-
-const isDev = process.env.NODE_ENV === 'development'
+import { isDev } from '../utils/constants'
 
 function encapsulateModule(v: string) {
   if (!isDev) return v
@@ -38,12 +37,13 @@ parentPort!.on(
 
     try {
       const routePathnames = await findRoutePathname(basePath, data.path)
+
       if (!routePathnames.length) {
         return await sendResponseAll(
           {
             status: StatusCodes.NOT_FOUND,
             body: {
-              message: config.messages?.NOT_FOUND || 'Not found Route',
+              message: config.messages?.NOT_FOUND || 'Not found',
             },
             headers: {
               'Content-Type': 'application/json',
@@ -130,19 +130,29 @@ parentPort!.on(
       ).filter((m) => !!m.handler)
 
       let response: IntREST.IntResponse | null = null
-
       for (const middleware of middlewareList) {
         response = await new Promise<IntREST.IntResponse | null>(
           async (resolve, reject) => {
+            let timeoutId: NodeJS.Timeout | null = null
             let resolved = false
             try {
               const res =
                 (await middleware.handler(context, (c) => {
+                  if (timeoutId) clearTimeout(timeoutId)
+
                   _.merge(context.custom, c)
                   resolved = true
                 })) ?? null
 
               if (res || resolved) resolve(res)
+
+              timeoutId = setTimeout(() => {
+                reject(
+                  new Error(
+                    `Middleware handler timeout: ${middleware.pathname}`,
+                  ),
+                )
+              }, config.limits?.middleware?.timeout || 5000)
             } catch (error) {
               reject(error)
             }

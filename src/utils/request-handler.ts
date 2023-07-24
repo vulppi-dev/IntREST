@@ -10,12 +10,13 @@ import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { deflate, gzip } from 'zlib'
 import { callWorker } from './app-tools'
-import { globPatterns, regexpPatterns } from './constants'
+import { globPatterns, isDev, regexpPatterns } from './constants'
 import {
   parseStringBytesToNumber,
   parseStringToAutoDetectValue,
 } from './parser'
 import { getConfigModule, globFind, join } from './path'
+import { getReasonPhrase } from 'http-status-codes'
 
 export async function requestHandler(
   req: IncomingMessage,
@@ -41,7 +42,7 @@ export async function requestHandler(
   )
   const originWithProtocol = /^[a-z]+:\/\//.test(pureOrigin)
     ? pureOrigin
-    : pureOrigin.includes('localhost')
+    : pureOrigin.includes('localhost') || isDev
     ? `http://${pureOrigin}`
     : `https://${pureOrigin}`
 
@@ -220,7 +221,6 @@ export async function requestHandler(
 
   try {
     const [path, query] = (req.url || '/').split('?')
-    console.debug('%s - %s', ck.yellow(method), ck.bold(path))
     await callWorker(
       {
         basePath,
@@ -251,6 +251,13 @@ export async function requestHandler(
         } else if (state === 'status') {
           res.statusCode = data as ResponseDataMap['status']
         } else if (state === 'end') {
+          console.debug(
+            '%s(%s - %s) - %s',
+            ck.yellow(method),
+            ck.green(res.statusCode || 200),
+            getReasonPhrase(res.statusCode || 200),
+            ck.bold(path),
+          )
           res.end()
         }
       },

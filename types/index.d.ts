@@ -74,6 +74,17 @@ declare global {
          * @default 20
          */
         maxWorkerPoolSize?: number
+        /**
+         * Limits for middleware handlers
+         */
+        middleware?: {
+          /**
+           * The max time to wait for a middleware handler to finish in milliseconds
+           *
+           * @default 5000
+           */
+          timeout?: number
+        }
       }
       messages?: {
         /**

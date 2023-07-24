@@ -1,3 +1,5 @@
+export const isDev = process.env.NODE_ENV === 'development'
+
 export const globPatterns = {
   env: ['.env', '.env.*'],
   app: ['routes', 'src/routes'],
