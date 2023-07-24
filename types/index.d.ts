@@ -118,6 +118,13 @@ declare global {
        * ```
        */
       env?: Record<string, string>
+      /**
+       * When `true` and the request is uploading files,
+       * the files will be removed after the response is sent
+       *
+       * @default false
+       */
+      removeUploadFilesAfterResponse?: boolean
     }
 
     interface FileMetadata {
@@ -151,10 +158,7 @@ declare global {
      * @param path The path of the file
      * @param compress The encoding to compress the file
      */
-    type StreamAssetFunction<R> = (
-      path: string,
-      compress?: boolean | CompressEncoding,
-    ) => R
+    type StreamAssetFunction<R> = (path: string) => R
 
     type IntRequest<
       Params extends Record<string, string> = Record<string, string>,
@@ -184,21 +188,18 @@ declare global {
        * The function to get the read stream of a file
        *
        * @param path The path of the file
-       * @param compress The encoding to compress the file
        */
       assetsStream: StreamAssetFunction<import('fs').ReadStream>
       /**
        * The function to get the raw content of a file
        *
        * @param path The path of the file
-       * @param compress The encoding to compress the file
        */
       assetsRawContent: StreamAssetFunction<Buffer>
       /**
        * The function to get the string content of a file
        *
        * @param path The path of the file
-       * @param compress The encoding to compress the file
        */
       assetsContent: StreamAssetFunction<string>
       custom: CustomRequestData
@@ -207,7 +208,7 @@ declare global {
           /**
            * The method of the request
            */
-          method: Omit<RequestMethods, 'GET'>
+          method: Exclude<RequestMethods, 'GET'>
           /**
            * The parsed body of the request
            */
@@ -295,6 +296,13 @@ declare global {
     interface MiddlewareNext {
       (custom?: CustomRequestData): void
     }
+
+    type XMLBody = {
+      $text?: string
+      $attributes?: Record<string, string>
+    } & {
+      [x: string]: XMLBody | XMLBody[] | undefined
+    }
   }
 
   interface CustomRequestData {
@@ -308,6 +316,7 @@ export type CookieOptions = IntREST.CookieOptions
 export type SetCookie = IntREST.SetCookie
 export type ClearCookie = IntREST.ClearCookie
 export type RequestMethods = IntREST.RequestMethods
+export type XMLBody = IntREST.XMLBody
 
 export type IntRequest<
   Params extends Record<string, string> = Record<string, string>,

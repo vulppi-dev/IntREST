@@ -20,11 +20,16 @@ function isRange(
   )
 }
 
+/**
+ * Send the response data to the client through the worker port
+ * auto detect the type of response and send the data
+ */
 export async function sendResponseAll(
   res: IntREST.IntResponse,
   reqHeaders: IntREST.IntRequest['headers'],
   requestId: string,
 ) {
+  // Check if the response has headers to send to the client
   for (const entry of Object.entries(res.headers || {})) {
     sendResponse({
       requestId,
@@ -32,6 +37,7 @@ export async function sendResponseAll(
       data: entry,
     })
   }
+  // Check if the response has cookies to send to the client
   for (const entry of Object.entries(res.cookies || {})) {
     sendResponse({
       requestId,
@@ -43,6 +49,7 @@ export async function sendResponseAll(
       },
     })
   }
+  // Check if the response has cookies to clear in the client
   for (const entry of Object.entries(res.clearCookies || {})) {
     sendResponse({
       requestId,
@@ -53,6 +60,7 @@ export async function sendResponseAll(
       },
     })
   }
+  // Get content length and type from the response headers
   const lengthHeaderKey = Object.keys(res.headers || {}).find((k) =>
     /^content-length$/i.test(k),
   )
@@ -65,12 +73,19 @@ export async function sendResponseAll(
     Infinity,
   )
   const contentType = _.get(res.headers || {}, typeHeaderKey || 'Content-Type')
+
+  // Get the range from the request headers
   const range = reqHeaders.range
     ? rangeParser(+contentLength, reqHeaders.range, { combine: true })
     : undefined
 
+  // Check if the response has a body to send to the client
   if (res.body) {
+    // If the response body is a buffer or string
+    // send the data to the client like a buffer
     if (typeof res.body === 'string' || isBuffer(res.body)) {
+      // If the response has no content type
+      // set the content type to text/plain
       if (!contentType) {
         sendResponse({
           requestId,
@@ -79,6 +94,8 @@ export async function sendResponseAll(
         })
       }
       const data = Buffer.from(res.body)
+      // If the response has a range header
+      // send only the range of the buffer
       if (isRange(range)) {
         sendResponse({
           requestId,
@@ -92,7 +109,10 @@ export async function sendResponseAll(
           data,
         })
       }
+      // If the response body is a readable stream
     } else if (res.body instanceof Readable) {
+      // If the response not has a content type
+      // set the content type to application/octet-stream
       if (!contentType) {
         sendResponse({
           requestId,
@@ -100,11 +120,6 @@ export async function sendResponseAll(
           data: ['Content-Type', 'application/octet-stream'],
         })
       }
-      sendResponse({
-        requestId,
-        state: 'set',
-        data: ['Accept-Ranges', 'bytes'],
-      })
       const reader = res.body
       if (isRange(range)) {
         const start = range[0].start
@@ -156,6 +171,7 @@ export async function sendResponseAll(
         })
       }
     } else {
+      // If the response body is a object
       if (!contentType) {
         sendResponse({
           requestId,
@@ -181,6 +197,7 @@ export async function sendResponseAll(
     }
   }
 
+  // Send the status code to the client
   sendResponse({
     requestId,
     state: 'status',
@@ -189,6 +206,7 @@ export async function sendResponseAll(
         ? StatusCodes.PARTIAL_CONTENT
         : res.status || StatusCodes.OK,
   })
+  // Send the end of the response to the client
   sendResponse({
     requestId,
     state: 'end',
@@ -196,21 +214,28 @@ export async function sendResponseAll(
   })
 }
 
-export function sendResponse<R extends TransferResponse>(res: R) {
+export function sendResponse(res: TransferResponse) {
   parentPort?.postMessage(res)
 }
 
+/**
+ * Find the middleware pathnames in the compiled directory
+ */
 export async function findMiddlewarePathnames(
   basePath: string,
   routeFilePath: string,
 ) {
+  // Get the directory of the route file path
+  // and escape it from root project path
   const dir = dirname(
     escapePath(
       routeFilePath,
       join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
     ),
   )
+  // Get all directories from the route file path recursively
   const directories = recursiveDirectoryList(dir)
+  // Create a list of possible middleware paths
   const searchList = directories.map((r) =>
     join(
       ...[
@@ -222,10 +247,13 @@ export async function findMiddlewarePathnames(
       ].filter(Boolean),
     ),
   )
-  const middlewarePaths = searchList.filter((r) => existsSync(r))
-  return middlewarePaths
+  // Filter the list to get only the existing paths
+  return searchList.filter((r) => existsSync(r))
 }
 
+/**
+ * Find the route pathnames in the compiled directory
+ */
 export async function findRoutePathname(basePath: string, route: string) {
   const routesPathnames = await globFindAll(
     basePath,
@@ -234,6 +262,7 @@ export async function findRoutePathname(basePath: string, route: string) {
     '**/route.mjs',
   )
 
+  // Normalize the route path
   const maps = routesPathnames.map((r) => {
     const escapedRoute = escapePath(
       r,
@@ -248,17 +277,8 @@ export async function findRoutePathname(basePath: string, route: string) {
     if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
       throw new Error(`Invalid route path: ${escapedRoute}`)
     }
-    // const singleParam = Array.from(
-    //   cleanedRoute.matchAll(/\[([A-zÀ-ú0-9-_\$]+)\]/g),
-    // )
-    //   .map((m) => cleanedRoute.length - (m.index || 0))
-    //   .reduce((acc, cur) => acc + cur, 0)
-    // const catchParam = Array.from(
-    //   cleanedRoute.matchAll(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g),
-    // )
-    //   .map((m) => cleanedRoute.length - (m.index || 0))
-    //   .reduce((acc, cur) => acc + cur, 0)
 
+    // Compile the route path to a regexp
     return {
       pathname: r,
       route: cleanedRoute,
@@ -276,22 +296,29 @@ export async function findRoutePathname(basePath: string, route: string) {
     }
   })
 
-  return maps
-    .filter((m) => m.paramRegexp.test(route))
-    .sort((a, b) => {
-      const aSlipt = a.pathname.split('/')
-      const bSlipt = b.pathname.split('/')
-      for (let i = 0; i < aSlipt.length; i++) {
-        if (aSlipt[i][0] === '[' && bSlipt[i][0] === '[') continue
-        if (aSlipt[i][0] === '[') return 1
-        if (bSlipt[i]?.[0] === '[') return -1
-      }
-      if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
-      if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
-      return b.pathname.length - a.pathname.length
-    })
+  // Filter the list to get only the match routes
+  return (
+    maps
+      .filter((m) => m.paramRegexp.test(route))
+      // Sort by priority
+      .sort((a, b) => {
+        const aSlipt = a.pathname.split('/')
+        const bSlipt = b.pathname.split('/')
+        for (let i = 0; i < aSlipt.length; i++) {
+          if (aSlipt[i][0] === '[' && bSlipt[i][0] === '[') continue
+          if (aSlipt[i][0] === '[') return 1
+          if (bSlipt[i]?.[0] === '[') return -1
+        }
+        if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
+        if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
+        return b.pathname.length - a.pathname.length
+      })
+  )
 }
 
+/**
+ * Get all directories from a path recursively
+ */
 export function recursiveDirectoryList(path: string) {
   const dirs = normalizePath(path)
     .split('/')

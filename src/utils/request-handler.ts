@@ -1,11 +1,14 @@
 import busboy from 'busboy'
+import ck from 'chalk'
 import concat from 'concat-stream'
 import cookie from 'cookie'
 import { randomUUID } from 'crypto'
+import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { createWriteStream } from 'fs'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
+import { deflate, gzip } from 'zlib'
 import { callWorker } from './app-tools'
 import { globPatterns, regexpPatterns } from './constants'
 import {
@@ -13,9 +16,6 @@ import {
   parseStringToAutoDetectValue,
 } from './parser'
 import { getConfigModule, globFind, join } from './path'
-import ck from 'chalk'
-import { deflate, gzip } from 'zlib'
-import { XMLParser, XMLValidator } from 'fast-xml-parser'
 
 export async function requestHandler(
   req: IncomingMessage,
@@ -45,16 +45,7 @@ export async function requestHandler(
     ? `http://${pureOrigin}`
     : `https://${pureOrigin}`
 
-  // Set default headers
-  res.setHeader('Server', 'IntREST')
-  res.setHeader('Accept', [
-    'application/json',
-    'application/xml',
-    'x-www-form-urlencoded',
-    'multipart/form-data',
-  ])
-  res.setHeader('Accept-Encoding', ['gzip', 'x-gzip', 'deflate', 'identity'])
-
+  // Validate cors
   if (config.limits?.cors) {
     const cors = (
       Array.isArray(config.limits.cors)
@@ -70,6 +61,16 @@ export async function requestHandler(
   } else {
     res.setHeader('Access-Control-Allow-Origin', originWithProtocol)
   }
+
+  // Set default headers
+  res.setHeader('Server', 'IntREST')
+  res.setHeader('Accept', [
+    'application/json',
+    'application/xml',
+    'x-www-form-urlencoded',
+    'multipart/form-data',
+  ])
+  res.setHeader('Accept-Encoding', ['gzip', 'x-gzip', 'deflate', 'identity'])
   res.setHeader('Access-Control-Allow-Methods', [
     'GET',
     'POST',
@@ -88,7 +89,9 @@ export async function requestHandler(
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Max-Age', '86400')
   res.setHeader('Connection', 'keep-alive')
-  res.setHeader('Keep-Alive', ['timeout=5', 'max=1000'])
+  res.setHeader('Keep-Alive', ['timeout=5', 'max=10000'])
+  res.setHeader('Accept-Ranges', 'bytes')
+
   if (/^options$/i.test(method)) {
     res.statusCode = StatusCodes.NO_CONTENT
     res.end()
@@ -132,6 +135,7 @@ export async function requestHandler(
 
   // Parse the body if the method is not GET
   if (!/^get$/i.test(method)) {
+    // x-www-form-urlencoded and multipart/form-data
     if (contentType && regexpPatterns.isBusboyContentType.test(contentType)) {
       await new Promise<void>((resolve, reject) => {
         const bb = busboy({ headers: req.headers })
@@ -163,15 +167,18 @@ export async function requestHandler(
         })
       })
     } else {
+      // application/json and application/xml
       const buffer = await new Promise<Buffer>((resolve) => {
         const writer = concat(resolve)
         req.pipe(writer)
       })
       const encoding = req.headers['content-encoding'] || 'identity'
 
-      const bodyString = parseBodyBuffer(
-        buffer,
-        encoding.split(/, */) as IntREST.RequestEncoding[],
+      const bodyString = (
+        await parseBodyBuffer(
+          buffer,
+          encoding.split(/, */) as IntREST.RequestEncoding[],
+        )
       ).toString()
 
       try {
@@ -179,15 +186,23 @@ export async function requestHandler(
           body = JSON.parse(bodyString)
         } else {
           // is XML Content-Type
-          const parser = new XMLParser()
+          const parser = new XMLParser({
+            ignoreAttributes: false,
+            allowBooleanAttributes: true,
+            attributeNamePrefix: '',
+            attributesGroupName: '$attributes',
+            commentPropName: '$comment',
+            cdataPropName: '$cdata',
+            textNodeName: '$text',
+            alwaysCreateTextNode: true,
+            parseTagValue: true,
+            unpairedTags: ['meta', 'link', 'img', 'br', 'hr', 'input'],
+          })
           if (!XMLValidator.validate(bodyString)) {
             throw new Error('Invalid XML')
           }
 
-          body = parser.parse(bodyString, {
-            allowBooleanAttributes: true,
-            unpairedTags: ['meta', 'link', 'img', 'br', 'hr', 'input'],
-          })
+          body = parser.parse(bodyString)
         }
       } catch (error: any) {
         res.writeHead(StatusCodes.BAD_REQUEST, {

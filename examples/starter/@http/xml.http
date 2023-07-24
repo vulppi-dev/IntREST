@@ -1,0 +1,12 @@
+POST http://localhost:4001/body
+Content-Type: application/xml
+
+<root id="123">
+  <child name="asd">
+    hello
+    hello
+    <strong>AAA</strong>
+  </child>
+  <child class="qwe">hello</child>
+  <child>hello</child>
+</root>
