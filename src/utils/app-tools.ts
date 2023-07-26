@@ -14,12 +14,6 @@ interface WorkerPool {
 }
 
 const workerPool = new Map<number, WorkerPool>()
-// const openapiWorker: Worker = new Worker(
-//   workerURL(defaultPaths.workerOpenapi),
-//   {
-//     env: process.env,
-//   },
-// )
 
 /**
  * Initialize the worker pool
@@ -52,7 +46,6 @@ export async function callWorker(
     let worker: Worker
     let workerId: number
 
-    // if (!/^\/?__api/.test(data.path)) {
     // If no worker with weight 0 is found
     // and the worker pool size is less than the max size,
     // find a worker with the lowest weight
@@ -80,10 +73,7 @@ export async function callWorker(
     workerItem.weight++
     worker = workerItem.worker
     workerId = workerItem.workerId
-    // } else {
-    //   worker = openapiWorker
-    //   workerId = openapiWorker.threadId
-    // }
+
     // Handle worker exit, if a catastrophic error occurs
     const handleExit = (code: number) => {
       workerPool.delete(workerId)

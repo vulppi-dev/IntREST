@@ -5,6 +5,7 @@ npm-debug.log
 # IDE
 .idea/
 .vscode/
+study/
 
 # OS files
 .DS_Store

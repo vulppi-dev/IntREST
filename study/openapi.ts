@@ -3,8 +3,8 @@ import { StatusCodes } from 'http-status-codes'
 import type { OpenAPIV3_1 } from 'openapi-types'
 import { pathToFileURL } from 'url'
 import { parentPort } from 'worker_threads'
-import { join } from '../utils/path'
-import { findRoutePathnames, sendResponseAll } from '../utils/router-tools'
+import { join } from '../src/utils/path'
+import { findRoutePathnames, sendResponseAll } from '../src/utils/router-tools'
 
 parentPort!.on(
   'message',

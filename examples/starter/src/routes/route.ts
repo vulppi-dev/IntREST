@@ -22,6 +22,6 @@ export async function GET({ custom }: IntRequest): Promise<IntResponse> {
 export const POST = async () => {
   return {
     status: 200,
-    body: 'Hello World!',
+    body: 'Hello World!!',
   }
 }
