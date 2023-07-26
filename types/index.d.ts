@@ -18,6 +18,13 @@ declare global {
        */
       port?: number
       /**
+       * When `true` and the request is uploading files,
+       * the files will be removed after the response is sent
+       *
+       * @default false
+       */
+      removeUploadFilesAfterResponse?: boolean
+      /**
        * If you want change the default paths for the application
        */
       paths?: {
@@ -130,12 +137,17 @@ declare global {
        */
       env?: Record<string, string>
       /**
-       * When `true` and the request is uploading files,
-       * the files will be removed after the response is sent
-       *
-       * @default false
+       * The definition of the OpenAPI specification for this application
        */
-      removeUploadFilesAfterResponse?: boolean
+      openapi?: {
+        title?: string
+        termsOfService?: string
+        license?: string
+        licenseUrl?: string
+        summary?: string
+        contact?: import('openapi-types').OpenAPIV3_1.ContactObject
+        server?: import('openapi-types').OpenAPIV3_1.ServerObject
+      }
     }
 
     interface FileMetadata {

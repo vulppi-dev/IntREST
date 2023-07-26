@@ -28,4 +28,5 @@ export const defaultPaths = {
   compiledGenerated: 'generated',
   workerApp: 'app.mjs',
   workerRouter: 'router.mjs',
+  workerOpenapi: 'openapi.mjs',
 } as const

@@ -252,15 +252,40 @@ export async function findMiddlewarePathnames(
 }
 
 /**
- * Find the route pathnames in the compiled directory
+ * Find all route pathnames in the compiled directory
  */
-export async function findRoutePathname(basePath: string, route: string) {
-  const routesPathnames = await globFindAll(
+export async function getAllRoutePathnames(basePath: string) {
+  return await globFindAll(
     basePath,
     defaultPaths.compiled,
     defaultPaths.compiledApp,
-    '**/route.mjs',
+    '**',
+    'route.mjs',
   )
+}
+
+/**
+ * Parse route pathname to route path
+ */
+export function parseRoutePathname(pathname: string) {
+  return (
+    pathname
+      // Remove groups
+      .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
+      // Remove filename and extension
+      .replace(/route\.mjs$/, '')
+      // Remove the '\' of end of the path
+      .replace(/\/*$/, '')
+      // Ensure that starts with `/`
+      .replace(/^\/*/, '/')
+  )
+}
+
+/**
+ * Find the route pathnames in the compiled directory
+ */
+export async function findRoutePathnames(basePath: string, route?: string) {
+  const routesPathnames = await getAllRoutePathnames(basePath)
 
   // Normalize the route path
   const maps = routesPathnames.map((r) => {
@@ -268,11 +293,7 @@ export async function findRoutePathname(basePath: string, route: string) {
       r,
       join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
     )
-    const cleanedRoute = escapedRoute
-      .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
-      .replace(/route\.mjs$/, '')
-      .replace(/\/*$/, '')
-      .replace(/^\/*/, '/')
+    const cleanedRoute = parseRoutePathname(escapedRoute)
 
     if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
       throw new Error(`Invalid route path: ${escapedRoute}`)
@@ -296,24 +317,36 @@ export async function findRoutePathname(basePath: string, route: string) {
     }
   })
 
-  // Filter the list to get only the match routes
-  return (
-    maps
+  // Filter the list to get only the match routes if route is defined
+  if (route) {
+    return maps
       .filter((m) => m.paramRegexp.test(route))
-      // Sort by priority
-      .sort((a, b) => {
-        const aSlipt = a.pathname.split('/')
-        const bSlipt = b.pathname.split('/')
-        for (let i = 0; i < aSlipt.length; i++) {
-          if (aSlipt[i][0] === '[' && bSlipt[i][0] === '[') continue
-          if (aSlipt[i][0] === '[') return 1
-          if (bSlipt[i]?.[0] === '[') return -1
-        }
-        if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
-        if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
-        return b.pathname.length - a.pathname.length
-      })
-  )
+      .sort(sortCompiledRoutes)
+  }
+  return maps.sort(sortCompiledRoutes)
+}
+
+interface CompiledRoute {
+  pathname: string
+  route: string
+  vars: string[]
+  paramRegexp: RegExp
+}
+
+/**
+ * Sort the compiled routes by priority
+ */
+export function sortCompiledRoutes(a: CompiledRoute, b: CompiledRoute) {
+  const aSlipt = a.pathname.split('/')
+  const bSlipt = b.pathname.split('/')
+  for (let i = 0; i < aSlipt.length; i++) {
+    if (aSlipt[i][0] === '[' && bSlipt[i][0] === '[') continue
+    if (aSlipt[i][0] === '[') return 1
+    if (bSlipt[i]?.[0] === '[') return -1
+  }
+  if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
+  if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
+  return b.pathname.length - a.pathname.length
 }
 
 /**

@@ -11,7 +11,7 @@ import {
   join,
   normalizePath,
 } from '../utils/path'
-import { callBuild } from './_builder'
+import { callBuild, startAST } from './_builder'
 
 export const command = 'build'
 
@@ -43,6 +43,7 @@ export async function handler(): Promise<void> {
   // If the compiled folder exists, delete it
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
+  startAST()
   // Build the application files
   await Promise.all(
     appFiles.map(async (filename) => {

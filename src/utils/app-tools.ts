@@ -3,6 +3,10 @@ import { Worker } from 'worker_threads'
 import { defaultPaths } from './constants'
 import { join } from './path'
 
+function workerURL(path: string) {
+  return new URL(join('.', path), import.meta.url)
+}
+
 interface WorkerPool {
   weight: number
   worker: Worker
@@ -10,18 +14,21 @@ interface WorkerPool {
 }
 
 const workerPool = new Map<number, WorkerPool>()
+// const openapiWorker: Worker = new Worker(
+//   workerURL(defaultPaths.workerOpenapi),
+//   {
+//     env: process.env,
+//   },
+// )
 
 /**
  * Initialize the worker pool
  */
 export async function startWorker(size: number) {
   for (let i = 0; i < size; i++) {
-    const worker = new Worker(
-      new URL(join('.', defaultPaths.workerRouter), import.meta.url),
-      {
-        env: process.env,
-      },
-    )
+    const worker = new Worker(workerURL(defaultPaths.workerRouter), {
+      env: process.env,
+    })
     worker.setMaxListeners(Infinity)
     workerPool.set(worker.threadId, {
       weight: 0,
@@ -40,10 +47,12 @@ export async function callWorker(
     const requestId = randomUUID()
     // Get the list of workers
     const workerList = Array.from(workerPool.values())
-
     // Try to find a worker with weight 0
     let workerItem = workerList.find((w) => w.weight === 0)
+    let worker: Worker
+    let workerId: number
 
+    // if (!/^\/?__api/.test(data.path)) {
     // If no worker with weight 0 is found
     // and the worker pool size is less than the max size,
     // find a worker with the lowest weight
@@ -52,7 +61,7 @@ export async function callWorker(
       workerList.length < (config.limits?.maxWorkerPoolSize || 20)
     ) {
       // Create a new worker
-      const worker = new Worker(new URL('./router.mjs', import.meta.url), {
+      const worker = new Worker(workerURL(defaultPaths.workerRouter), {
         env: process.env,
       })
       worker.setMaxListeners(Infinity)
@@ -69,8 +78,12 @@ export async function callWorker(
 
     // Increase the worker weight, because it is busy with a request
     workerItem.weight++
-    const { worker, workerId } = workerItem
-
+    worker = workerItem.worker
+    workerId = workerItem.workerId
+    // } else {
+    //   worker = openapiWorker
+    //   workerId = openapiWorker.threadId
+    // }
     // Handle worker exit, if a catastrophic error occurs
     const handleExit = (code: number) => {
       workerPool.delete(workerId)
@@ -82,7 +95,7 @@ export async function callWorker(
     // Handle worker error, if a catastrophic error occurs
     const handleError = (err: Error) => {
       reject(err)
-      workerItem!.weight--
+      workerItem && workerItem.weight--
       worker.off('error', handleError)
       worker.off('exit', handleExit)
     }
@@ -94,7 +107,7 @@ export async function callWorker(
 
       cb(r.state, r.data)
       if (r.state === 'end') {
-        workerItem!.weight--
+        workerItem && workerItem.weight--
         worker.off('message', handleMessage)
         worker.off('error', handleError)
         worker.off('exit', handleExit)

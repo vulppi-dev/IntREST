@@ -6,7 +6,7 @@ import { parentPort } from 'worker_threads'
 import { join } from '../utils/path'
 import {
   findMiddlewarePathnames,
-  findRoutePathname,
+  findRoutePathnames,
   sendResponseAll,
 } from '../utils/router-tools'
 import { unescape } from 'querystring'
@@ -36,7 +36,7 @@ parentPort!.on(
     } as IntREST.IntRequest
 
     try {
-      const routePathnames = await findRoutePathname(basePath, data.path)
+      const routePathnames = await findRoutePathnames(basePath, data.path)
 
       if (!routePathnames.length) {
         return await sendResponseAll(

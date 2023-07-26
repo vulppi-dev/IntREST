@@ -5,12 +5,33 @@ import { getTsconfig } from 'get-tsconfig'
 import { defaultPaths } from '../utils/constants'
 import { clearExtension, join } from '../utils/path'
 import { existsSync, rmSync } from 'fs'
+// import {
+//   Project,
+//   SyntaxKind,
+//   ParameterDeclaration,
+//   Block,
+//   ArrowFunction,
+//   FunctionDeclaration,
+//   FunctionExpression,
+//   ReturnStatement,
+// } from 'ts-morph'
 
 interface StartBuildProps {
   input: string
   output: string
   entry: string
   config?: IntREST.Config
+}
+
+// let project: Project
+
+export function startAST() {
+  // project = new Project({
+  //   compilerOptions: {
+  //     incremental: true,
+  //   },
+  //   tsConfigFilePath: join(process.cwd(), 'tsconfig.json'),
+  // })
 }
 
 export async function callBuild({
@@ -49,12 +70,13 @@ export async function callBuild({
       {
         name: 'InteREST',
         setup(build) {
-          build.onStart(() => {
+          build.onStart(async () => {
             console.info(
               '%s Building - %s',
               ck.yellow('◉'),
               ck.bold.blue(entry),
             )
+            // await generateMorphTypes(absoluteEntry)
           })
           build.onEnd(() => {
             console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
@@ -108,12 +130,13 @@ export async function startWatchBuild({
       {
         name: 'InteREST',
         setup(build) {
-          build.onStart(() => {
+          build.onStart(async () => {
             console.info(
               '%s Building - %s',
               ck.yellow('◉'),
               ck.bold.blue(entry),
             )
+            // await generateMorphTypes(absoluteEntry)
           })
           build.onEnd(() => {
             const existsEntry = existsSync(absoluteEntry)
@@ -124,11 +147,12 @@ export async function startWatchBuild({
             }
           })
           // Remove the compiled file when the build is disposed
-          build.onDispose(() => {
+          build.onDispose(async () => {
             const existsApp = existsSync(
               join(appPath, clearExtension(entry) + '.mjs'),
             )
             existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
+            // await removeMorphTypes(absoluteEntry)
             console.info('%s Removed - %s', ck.red('◉'), ck.bold.blue(entry))
           })
         },
@@ -140,3 +164,78 @@ export async function startWatchBuild({
   // Start the build
   ctx.watch()
 }
+
+// async function generateMorphTypes(absolutePath: string) {
+//   let source = project.getSourceFile(absolutePath)
+//   if (!source) {
+//     project.addSourceFileAtPathIfExists(absolutePath)
+//     source = project.getSourceFile(absolutePath)
+//   } else {
+//     source.refreshFromFileSystemSync()
+//   }
+//   if (!source) {
+//     return
+//   }
+
+//   source.forEachChild((node) => {
+//     if (
+//       !(
+//         node.isKind(SyntaxKind.FunctionDeclaration) ||
+//         node.isKind(SyntaxKind.VariableStatement)
+//       ) ||
+//       !node.getExportKeyword()
+//     ) {
+//       return
+//     }
+//     let name: string = ''
+//     let params: ParameterDeclaration[] = []
+//     let baseBlock: Block | null = null
+//     if (node.isKind(SyntaxKind.FunctionDeclaration)) {
+//       name = node.getName() ?? ''
+//       params = node.getParameters()
+//       const body = node.getBody()!
+//       if (body.isKind(SyntaxKind.Block)) {
+//         baseBlock = body
+//       }
+//     } else {
+//       const varNode = node
+//         .getDeclarationList()
+//         .getChildren()
+//         .find((child) => child.isKind(SyntaxKind.VariableDeclaration))
+//       if (!varNode) return
+//       const varChildren = varNode.getChildren()
+//       const identifier = varChildren.find((child) =>
+//         child.isKind(SyntaxKind.Identifier),
+//       )
+//       const varFunction = varChildren.find(
+//         (child) =>
+//           child.isKind(SyntaxKind.ArrowFunction) ||
+//           child.isKind(SyntaxKind.FunctionExpression) ||
+//           child.isKind(SyntaxKind.FunctionDeclaration),
+//       ) as ArrowFunction | FunctionExpression | FunctionDeclaration | undefined
+//       if (!varFunction || !identifier) return
+//       name = identifier.getText()
+//       params = varFunction.getParameters()
+//       const body = varFunction.getBody()!
+//       if (body.isKind(SyntaxKind.Block)) {
+//         baseBlock = body
+//       }
+//     }
+
+//     const resturnStatements = baseBlock
+//       ?.getDescendantStatements()
+//       .filter((statement) =>
+//         statement.isKind(SyntaxKind.ReturnStatement),
+//       ) as ReturnStatement[]
+
+//     resturnStatements?.forEach((statement) => {
+//       console.log(statement.toString())
+//     })
+//   })
+// }
+// async function removeMorphTypes(absoluteEntry: string) {
+//   const source = project.getSourceFile(absoluteEntry)
+//   if (source) {
+//     project.removeSourceFile(source)
+//   }
+// }

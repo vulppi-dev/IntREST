@@ -19,5 +19,10 @@ mkdirSync(appTempPath, { recursive: true })
 startWorker(config.limits?.minWorkerPoolSize || 5)
 const server = createServer({ noDelay: true }, requestHandler)
 server.listen(appPort, () => {
-  console.log(`\nServer running on port %s\n`, ck.yellow(appPort))
+  console.log(`\nServer running on port %s`, ck.yellow(appPort))
+  console.log(
+    `You can access the server at %s or %s`,
+    ck.yellow(`http://localhost:${appPort}`),
+    ck.yellow(`http://127.0.0.1:${appPort}`),
+  )
 })

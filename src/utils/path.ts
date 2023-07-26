@@ -84,9 +84,9 @@ export async function globFindAllList(
 /**
  * Escape the path with the given escape string
  */
-export function escapePath(path: string, escape: string) {
+export function escapePath(path: string, ...escape: string[]) {
   return normalizePath(path)
-    .replace(normalizePath(escape), '')
+    .replace(join(...escape), '')
     .replace(/^\//, '')
 }
 
@@ -94,7 +94,7 @@ export function escapePath(path: string, escape: string) {
  * Normalize the path, replace all backslash and multiple slashes with single slash
  */
 export function normalizePath(path: string) {
-  return path.replace(/[\\\/]+/g, '/').replace(/^[\/\\]*/, '')
+  return path.replace(/[\\\/]+/g, '/')
 }
 
 /**

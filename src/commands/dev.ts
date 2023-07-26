@@ -15,7 +15,7 @@ import {
   join,
   normalizePath,
 } from '../utils/path'
-import { startWatchBuild } from './_builder'
+import { startAST, startWatchBuild } from './_builder'
 import { getChecksum } from './_common'
 
 export const command = 'dev'
@@ -165,7 +165,7 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
     'Application path: %s',
     ck.blue.bold(escapePath(appFolder, basePath)),
   )
-
+  startAST()
   watch(appFolder, { recursive: true }, async (state, filename) => {
     if (!filename || state === 'change') return
     const normalizedFilename = normalizePath(filename)
