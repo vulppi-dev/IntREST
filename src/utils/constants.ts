@@ -4,13 +4,16 @@ export const globPatterns = {
   env: ['.env', '.env.*'],
   app: ['routes', 'src/routes'],
   config: 'intrest.config.{mjs,cjs,js}',
+  bootstrap: 'bootstrap.ts',
+  bootstrapCompiled: 'bootstrap.mjs',
   route: '**/{route,middleware}.ts',
 } as const
 
 export const regexpPatterns = {
   env: /^\.env(?:\.[a-z-_]*)?$/,
-  config: /^intrest.config.[mc]?js$/,
-  route: /(^|\/)(route|middleware).ts$/,
+  config: /^intrest\.config\.[mc]?js$/,
+  bootstrap: /^bootstrap\.ts$/,
+  route: /(^|\/)(route|middleware)\.ts$/,
   reservedChars: /([.*+?^=!:${}()|\[\]\/\\])/g,
   startSlashesOrNot: /^[\\\/]*/,
   endSlashesOrNot: /[\\\/]*$/,

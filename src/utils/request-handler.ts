@@ -4,7 +4,7 @@ import concat from 'concat-stream'
 import cookie from 'cookie'
 import { randomUUID } from 'crypto'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
-import { createWriteStream } from 'fs'
+import { createWriteStream, rmSync } from 'fs'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
@@ -15,7 +15,7 @@ import {
   parseStringBytesToNumber,
   parseStringToAutoDetectValue,
 } from './parser'
-import { getConfigModule, globFind, join } from './path'
+import { getModule, globFind, join } from './path'
 import { getReasonPhrase } from 'http-status-codes'
 
 export async function requestHandler(
@@ -26,7 +26,7 @@ export async function requestHandler(
   const basePath = process.cwd()
   // Try find the config module
   const configPath = await globFind(basePath, globPatterns.config)
-  const config = await getConfigModule(configPath)
+  const config = ((await getModule(configPath)).default || {}) as IntREST.Config
   // Get the temp path for upload files
   const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
 
@@ -133,7 +133,7 @@ export async function requestHandler(
       }),
     )
   }
-
+  const filesToBeRemoved: string[] = []
   // Parse the body if the method is not GET
   if (!/^get$/i.test(method)) {
     // x-www-form-urlencoded and multipart/form-data
@@ -151,6 +151,7 @@ export async function requestHandler(
             mimetype,
           } as IntREST.FileMetadata
           _.set(body, name, fileMetadata)
+          filesToBeRemoved.push(filePath)
           const fileWriter = createWriteStream(filePath, {
             flags: 'w',
           })
@@ -258,6 +259,18 @@ export async function requestHandler(
             getReasonPhrase(res.statusCode || 200),
             ck.bold(path),
           )
+          if (
+            filesToBeRemoved.length &&
+            config.removeUploadFilesAfterResponse
+          ) {
+            for (const file of filesToBeRemoved) {
+              try {
+                rmSync(file)
+              } catch (err: any) {
+                console.error(`Error removing file ${file}`, err.message)
+              }
+            }
+          }
           res.end()
         }
       },

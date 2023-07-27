@@ -5,7 +5,7 @@ import { defaultPaths, globPatterns } from '../utils/constants'
 import {
   escapePath,
   getAppPath,
-  getConfigModule,
+  getModule,
   globFind,
   globFindAll,
   join,
@@ -25,7 +25,7 @@ export async function handler(): Promise<void> {
   // Try to find the config file
   const configPath = await globFind(projectPath, globPatterns.config)
   // Try to get the config module
-  const config = await getConfigModule(configPath)
+  const config = ((await getModule(configPath)).default || {}) as IntREST.Config
 
   console.info('\nBuilding application...')
   console.log('Project folder: %s\n', ck.blue(projectPath))
@@ -33,11 +33,15 @@ export async function handler(): Promise<void> {
   // Get the application folder
   const appFolder = await getAppPath(projectPath)
   console.info(
-    '\tApplication path: %s',
+    '    Application path: %s\n',
     ck.blue.bold(escapePath(appFolder, projectPath)),
   )
   // Get all the route and middleware files in the application folder
   const appFiles = await globFindAll(appFolder, globPatterns.route)
+  const bootstrapFile = await globFind(appFolder, globPatterns.bootstrap)
+  if (bootstrapFile) {
+    appFiles.push(bootstrapFile)
+  }
   // Get the compiled folder
   const compiledFolder = join(projectPath, defaultPaths.compiled)
   // If the compiled folder exists, delete it

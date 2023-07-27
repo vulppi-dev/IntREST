@@ -24,5 +24,5 @@ export const handler = async (): Promise<void> => {
     recursive: true,
     filter: () => true,
   })
-  console.log('\nProject created successfully! 🤩🎉\n')
+  console.log('Project created successfully! 🤩🎉\n')
 }

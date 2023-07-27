@@ -4,21 +4,21 @@ import { pathToFileURL } from 'url'
 import { globPatterns } from './constants'
 
 /**
- * Get the config module from the given path
+ * Get the module from the given path
  * If the path is not given or the module is not found, return empty object
  */
-export async function getConfigModule(configPath?: string) {
-  if (!configPath) return {} as IntREST.Config
+export async function getModule(configPath?: string) {
+  if (!configPath) return {} as Record<string, any>
   const configURL = pathToFileURL(configPath)
   configURL.searchParams.set('update', Date.now().toString())
   try {
     return (
       (await import(configURL.toString()).then(
-        (m) => m.default as IntREST.Config,
+        (m) => m as Record<string, any>,
       )) || {}
     )
   } catch (err) {
-    return {} as IntREST.Config
+    return {} as Record<string, any>
   }
 }
 

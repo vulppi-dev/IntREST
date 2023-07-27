@@ -8,7 +8,7 @@ import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
 import {
   escapePath,
   getAppPath,
-  getConfigModule,
+  getModule,
   getEnvPath,
   globFind,
   globFindAll,
@@ -119,14 +119,21 @@ async function restartServer(
       app = null
       first = false
     }
-    const config = await getConfigModule(configPath)
+    const config = ((await getModule(configPath)).default ||
+      {}) as IntREST.Config
 
     // If it is the first time, start the router builder
     if (!first) {
-      console.info('Restarting the application...\n')
+      console.info('\n    Restarting the application...')
     } else {
-      console.info('Starting the application...\n')
-      await startRouterBuilder(projectPath, config)
+      console.info('    Starting the application...\n')
+      await startRouterBuilder(projectPath, config, () => {
+        if (first) {
+          first = false
+          return
+        }
+        restartServer(projectPath, configPath, envPath)
+      })
     }
 
     // Merge and expand the environment variables
@@ -158,11 +165,15 @@ async function restartServer(
   }, 1000)
 }
 
-async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
+async function startRouterBuilder(
+  basePath: string,
+  config?: IntREST.Config,
+  restart?: VoidFunction,
+) {
   const appFolder = await getAppPath(basePath)
 
   console.info(
-    'Application path: %s',
+    '    Application path: %s\n',
     ck.blue.bold(escapePath(appFolder, basePath)),
   )
   watch(appFolder, { recursive: true }, async (state, filename) => {
@@ -174,22 +185,55 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
     // If the file is a directory, ignore it
     if (exists) {
       const stat = lstatSync(absolute)
-      if (stat.isDirectory()) return
+      if (stat.isDirectory()) {
+        const appFiles = await globFindAll(
+          appFolder,
+          filename,
+          globPatterns.route,
+        )
+
+        return await Promise.all(
+          appFiles.map(async (filename) => {
+            const escapedPath = escapePath(filename, appFolder)
+            // If the file is a directory, ignore it
+            if (existsSync(filename)) {
+              const stat = lstatSync(filename)
+              if (stat.isDirectory()) return
+            }
+            await startWatchBuild({
+              input: appFolder,
+              output: join(basePath, defaultPaths.compiled),
+              entry: escapedPath,
+              config,
+              restart,
+            })
+          }),
+        )
+      }
     }
 
-    if (regexpPatterns.route.test(normalizedFilename)) {
+    if (
+      regexpPatterns.route.test(normalizedFilename) ||
+      regexpPatterns.bootstrap.test(normalizedFilename)
+    ) {
       await startWatchBuild({
         input: appFolder,
         output: join(basePath, defaultPaths.compiled),
         entry: normalizedFilename,
         config,
+        restart,
       })
     }
   })
 
-  const appFiles = await globFindAll(appFolder, globPatterns.route)
   const compiledFolder = join(basePath, defaultPaths.compiled)
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
+
+  const appFiles = await globFindAll(appFolder, globPatterns.route)
+  const bootstrapFile = await globFind(appFolder, globPatterns.bootstrap)
+  if (bootstrapFile) {
+    appFiles.push(bootstrapFile)
+  }
 
   return Promise.all(
     appFiles.map(async (filename) => {
@@ -204,6 +248,7 @@ async function startRouterBuilder(basePath: string, config?: IntREST.Config) {
         output: join(basePath, defaultPaths.compiled),
         entry: escapedPath,
         config,
+        restart,
       })
     }),
   )

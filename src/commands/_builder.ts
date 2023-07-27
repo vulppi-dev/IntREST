@@ -3,7 +3,7 @@ import ck from 'chalk'
 import { build, context, type BuildContext } from 'esbuild'
 import { existsSync, rmSync } from 'fs'
 import { getTsconfig } from 'get-tsconfig'
-import { defaultPaths } from '../utils/constants'
+import { defaultPaths, regexpPatterns } from '../utils/constants'
 import { clearExtension, join } from '../utils/path'
 
 interface StartBuildProps {
@@ -11,6 +11,7 @@ interface StartBuildProps {
   output: string
   entry: string
   config?: IntREST.Config
+  restart?: VoidFunction
 }
 
 export async function callBuild({
@@ -72,6 +73,7 @@ export async function startWatchBuild({
   output,
   entry,
   config,
+  restart,
 }: StartBuildProps) {
   // Generate the output path for the compiled app
   const appPath = join(output, defaultPaths.compiledApp)
@@ -122,6 +124,10 @@ export async function startWatchBuild({
             } else {
               console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
             }
+
+            if (regexpPatterns.bootstrap.test(entry)) {
+              restart?.()
+            }
           })
           // Remove the compiled file when the build is disposed
           build.onDispose(async () => {
@@ -130,6 +136,10 @@ export async function startWatchBuild({
             )
             existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
             console.info('%s Removed - %s', ck.red('◉'), ck.bold.blue(entry))
+
+            if (regexpPatterns.bootstrap.test(entry)) {
+              restart?.()
+            }
           })
         },
       },
