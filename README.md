@@ -18,7 +18,7 @@ Thank you for your understanding and support as we work towards delivering a hig
 1. [Introduction](#introduction)
    1. [Key Features](#key-features)
    1. [Future Features](#future-features)
-2. Documentation
+2. [Documentation](#documentation)
    1. [Getting Started](./docs/GET_START.md)
    2. [Core Concepts](./docs/CORE_CONCEPTS.md)
    3. [Usage Guide](./docs/USAGE_GUIDE.md)
@@ -66,6 +66,16 @@ With IntREST, you can expedite your backend development, streamline code organiz
 - Deployment
   - Edge functions
   - Serverless functions
+
+## Documentation
+
+1. [Getting Started](./docs/GET_START.md)
+2. [Core Concepts](./docs/CORE_CONCEPTS.md)
+3. [Usage Guide](./docs/USAGE_GUIDE.md)
+4. [Configuration](./docs/CONFIGURATIONS.md)
+5. [API Reference](./docs/API_REFERENCE.md)
+6. [Troubleshooting](./docs/TROUBLESHOOTING.md)
+7. [Best Practices and Tips](./docs/BEST_PRACTICES_AND_TIPS.md)
 
 ## Contributing and Community
 

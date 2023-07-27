@@ -4,6 +4,7 @@
 
 1. [Routes](#routes)
 2. [Middleware](#middleware)
+3. [Bootstrap](#bootstrap)
 
 ### Application Structure
 
@@ -14,6 +15,7 @@ assets (optional)
 ├── file.txt
 └── image.png
 routes
+├── bootstrap.ts
 ├── route.ts
 ├── my-route
 │   ├── route.ts
@@ -42,7 +44,31 @@ intrest.config.mjs (optional)
 
 ### Routes
 
-The `routes` folder contains all of your application's routes. Each route is defined in a file named `route.ts` inside a folder with the same name as the route. For example, the `routes/my-route/route.ts` file defines the `/my-route` route.
+The `routes` folder contains all of your application's routes. Each route is defined in a file named `route.ts` inside a folder with the same name as the route. For example, the `routes/my-route/route.ts` or `src/routes/my-route/route.ts` file defines the `/my-route` route.
+
+#### Route Methods
+
+You can define multiple methods for a route by exporting multiple functions from the route file. For example, the `routes/my-route/route.ts` file defines the `/my-route` route with `GET` and `POST` methods in example below.
+
+```ts
+// src/routes/my-route/route.ts
+
+import type { IntRequest, IntResponse } from '@vulppi/intrest'
+
+export async function GET(ctx: IntRequest): Promise<IntResponse> {
+  return {
+    status: 200,
+    body: 'Hello World!',
+  }
+}
+
+export async function POST(ctx: IntRequest): Promise<IntResponse> {
+  return {
+    status: 200,
+    body: 'Hello World!',
+  }
+}
+```
 
 #### Route Parameters
 
@@ -61,6 +87,46 @@ You can define route groups by creating a folder with the group name prefixed wi
 You can define middleware for a route by creating a file named `middleware.ts` inside the route's folder. For example, the `routes/my-route/middleware.ts` file defines middleware for the `/my-route` route.
 
 The middleware behavior is different from route handlers. Middleware is executed in chain order, and the route handler is executed after all middleware has been executed and call `next` method. If a middleware returns a response, the route handler will not be executed.
+
+Simple middleware example:
+
+```ts
+// src/routes/my-route/middleware.ts
+
+import type { IntRequest, IntResponse, MiddlewareNext } from '@vulppi/intrest'
+
+export async function middleware(
+  ctx: IntRequest,
+  next: MiddlewareNext,
+): Promise<IntResponse | void> {
+  if (ctx.query.has('error')) {
+    return {
+      status: 400,
+      body: 'Bad Request',
+    }
+  }
+  // Call next middleware or route handler
+  next()
+  // Or send custom data to next middleware or route handler
+  next({ user: { name: 'John' } })
+}
+```
+
+### Bootstrap
+
+You can define bootstrap by creating a file named `bootstrap.ts` inside the route's root folder. For example, the `routes/bootstrap.ts` or `src/routes/bootstrap.ts`. File defines bootstrap exported function with name `bootstrap`.
+
+Simple bootstrap example:
+
+```ts
+// src/routes/bootstrap.ts
+
+import type { Config } from '@vulppi/intrest'
+
+export async function bootstrap(config: Config): Promise<void> {
+  // Do something
+}
+```
 
 ## Next Steps
 
