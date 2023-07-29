@@ -1,16 +1,14 @@
-import { createReadStream, readFileSync } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
+import { unescape } from 'querystring'
 import { pathToFileURL } from 'url'
 import { parentPort } from 'worker_threads'
-import { join } from '../utils/path'
+import { isDev } from '../utils/constants'
 import {
   findMiddlewarePathnames,
   findRoutePathnames,
   sendResponseAll,
 } from '../utils/router-tools'
-import { unescape } from 'querystring'
-import { isDev } from '../utils/constants'
 
 function encapsulateModule(v: string) {
   if (!isDev) return v
@@ -24,15 +22,6 @@ parentPort!.on(
       ...data,
       params: {},
       query: new URLSearchParams(data.query || ''),
-      assetsStream: (path: string) => {
-        return createReadStream(join(basePath, 'assets', path))
-      },
-      assetsRawContent: (path: string) => {
-        return readFileSync(join(basePath, 'assets', path))
-      },
-      assetsContent: (path: string) => {
-        return readFileSync(join(basePath, 'assets', path)).toString()
-      },
     } as IntREST.IntRequest
 
     try {

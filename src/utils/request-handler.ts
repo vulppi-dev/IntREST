@@ -6,17 +6,16 @@ import { randomUUID } from 'crypto'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { createWriteStream, rmSync } from 'fs'
 import type { IncomingMessage, ServerResponse } from 'http'
-import { StatusCodes } from 'http-status-codes'
+import { StatusCodes, getReasonPhrase } from 'http-status-codes'
 import _ from 'lodash'
-import { deflate, gzip } from 'zlib'
 import { callWorker } from './app-tools'
 import { globPatterns, isDev, regexpPatterns } from './constants'
 import {
+  parseDecompressBuffer,
   parseStringBytesToNumber,
   parseStringToAutoDetectValue,
 } from './parser'
 import { getModule, globFind, join } from './path'
-import { getReasonPhrase } from 'http-status-codes'
 
 export async function requestHandler(
   req: IncomingMessage,
@@ -177,7 +176,7 @@ export async function requestHandler(
       const encoding = req.headers['content-encoding'] || 'identity'
 
       const bodyString = (
-        await parseBodyBuffer(
+        await parseDecompressBuffer(
           buffer,
           encoding.split(/, */) as IntREST.RequestEncoding[],
         )
@@ -287,29 +286,4 @@ export async function requestHandler(
       }),
     )
   }
-}
-
-async function parseBodyBuffer(
-  data: Buffer,
-  encoding: IntREST.RequestEncoding[] = ['identity'],
-) {
-  let buffer = data
-  for (const enc of encoding) {
-    if (/^gzip$/i.test(enc)) {
-      buffer = await new Promise<Buffer>((resolve, reject) => {
-        gzip(buffer, (err, res) => {
-          if (err) return reject(err)
-          resolve(res)
-        })
-      })
-    } else if (/^deflate$/i.test(enc)) {
-      buffer = await new Promise<Buffer>((resolve, reject) => {
-        deflate(buffer, (err, res) => {
-          if (err) return reject(err)
-          resolve(res)
-        })
-      })
-    }
-  }
-  return buffer
 }

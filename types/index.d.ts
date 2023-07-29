@@ -1,3 +1,28 @@
+import type { CookieSerializeOptions } from 'cookie'
+import type { IncomingHttpHeaders } from 'http'
+import type { OpenAPIV3_1 } from 'openapi-types'
+import type { Readable } from 'stream'
+
+export * from './lib'
+
+export type Config = IntREST.Config
+export type FileMetadata = IntREST.FileMetadata
+export type CookieOptions = IntREST.CookieOptions
+export type SetCookie = IntREST.SetCookie
+export type ClearCookie = IntREST.ClearCookie
+export type RequestMethods = IntREST.RequestMethods
+export type XMLBody = IntREST.XMLBody
+
+export type IntRequest<
+  Params extends Record<string, string> = Record<string, string>,
+> = IntREST.IntRequest<Params>
+export type IntResponse = IntREST.IntResponse
+
+export type MiddlewareNext = IntREST.MiddlewareNext
+
+export type RequestHandler = IntREST.RequestHandler
+export type MiddlewareHandler = IntREST.MiddlewareHandler
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -145,11 +170,14 @@ declare global {
         license?: string
         licenseUrl?: string
         summary?: string
-        contact?: import('openapi-types').OpenAPIV3_1.ContactObject
-        server?: import('openapi-types').OpenAPIV3_1.ServerObject
+        contact?: OpenAPIV3_1.ContactObject
+        server?: OpenAPIV3_1.ServerObject
       }
     }
 
+    /**
+     * The upload files metadata
+     */
     interface FileMetadata {
       absolutePath: string
       /**
@@ -175,14 +203,6 @@ declare global {
       | 'gzip, deflate'
       | 'deflate, gzip'
 
-    /**
-     * The function to get the content of a file
-     *
-     * @param path The path of the file
-     * @param compress The encoding to compress the file
-     */
-    type StreamAssetFunction<R> = (path: string) => R
-
     type IntRequest<
       Params extends Record<string, string> = Record<string, string>,
       Body extends Record<string, any> = Record<string, any>,
@@ -206,25 +226,10 @@ declare global {
       /**
        * The request headers
        */
-      headers: import('http').IncomingHttpHeaders
+      headers: IncomingHttpHeaders
       /**
-       * The function to get the read stream of a file
-       *
-       * @param path The path of the file
+       * Data merged from middleware handlers when call `next()`
        */
-      assetsStream: StreamAssetFunction<import('fs').ReadStream>
-      /**
-       * The function to get the raw content of a file
-       *
-       * @param path The path of the file
-       */
-      assetsRawContent: StreamAssetFunction<Buffer>
-      /**
-       * The function to get the string content of a file
-       *
-       * @param path The path of the file
-       */
-      assetsContent: StreamAssetFunction<string>
       custom: CustomRequestData
     } & (
       | {
@@ -259,7 +264,7 @@ declare global {
         | Blob
         | ArrayBuffer
         | Uint8Array
-        | import('stream').Writable
+        | Readable
       /**
        * The status code of the response
        */
@@ -278,7 +283,7 @@ declare global {
       clearCookies?: Record<string, CookieOptions>
     }
 
-    type CookieOptions = import('cookie').CookieSerializeOptions
+    type CookieOptions = CookieSerializeOptions
 
     /**
      * The cookie content to set in the response
@@ -332,21 +337,3 @@ declare global {
     [x: string]: any
   }
 }
-
-export type Config = IntREST.Config
-export type FileMetadata = IntREST.FileMetadata
-export type CookieOptions = IntREST.CookieOptions
-export type SetCookie = IntREST.SetCookie
-export type ClearCookie = IntREST.ClearCookie
-export type RequestMethods = IntREST.RequestMethods
-export type XMLBody = IntREST.XMLBody
-
-export type IntRequest<
-  Params extends Record<string, string> = Record<string, string>,
-> = IntREST.IntRequest<Params>
-export type IntResponse = IntREST.IntResponse
-
-export type MiddlewareNext = IntREST.MiddlewareNext
-
-export type RequestHandler = IntREST.RequestHandler
-export type MiddlewareHandler = IntREST.MiddlewareHandler

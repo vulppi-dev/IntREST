@@ -10,6 +10,6 @@
     "start": "irest start"
   },
   "dependencies": {
-    "@vulppi/intrest": "^0.8.3"
+    "@vulppi/intrest": "^0.10.0"
   }
 }

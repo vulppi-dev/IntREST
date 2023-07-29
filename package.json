@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/intrest",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -75,6 +75,7 @@
   },
   "dependencies": {
     "@esbuild-plugins/tsconfig-paths": "^0.1.2",
+    "@types/cookie": "^0.5.1",
     "@vulppi/toolbelt": "^0.6.3",
     "busboy": "^1.6.0",
     "chalk": "^5.3.0",
@@ -108,7 +109,6 @@
     "npm-run-all": "^4.1.5"
   },
   "peerDependencies": {
-    "@types/cookie": "^0.5.1",
     "@types/node": "^20.4.4"
   }
 }
