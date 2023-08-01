@@ -16,6 +16,7 @@ import {
   parseStringToAutoDetectValue,
 } from './parser'
 import { getModule, globFind, join } from './path'
+import { performance } from 'perf_hooks'
 
 export async function requestHandler(
   req: IncomingMessage,
@@ -221,6 +222,7 @@ export async function requestHandler(
 
   try {
     const [path, query] = (req.url || '/').split('?')
+    const startRequestTime = performance.now()
     await callWorker(
       {
         basePath,
@@ -252,11 +254,14 @@ export async function requestHandler(
           res.statusCode = data as ResponseDataMap['status']
         } else if (state === 'end') {
           console.debug(
-            '%s(%s - %s) - %s',
+            '%s(%s - %s) - %s %s',
             ck.yellow(method),
             ck.green(res.statusCode || 200),
             getReasonPhrase(res.statusCode || 200),
             ck.bold(path),
+            ck.cyan(
+              `${(performance.now() - startRequestTime).toPrecision(5)}ms`,
+            ),
           )
           if (
             filesToBeRemoved.length &&

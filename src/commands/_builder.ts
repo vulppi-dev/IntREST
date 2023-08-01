@@ -54,11 +54,11 @@ export async function callBuild({
             console.info(
               '%s Building - %s',
               ck.yellow('◉'),
-              ck.bold.blue(entry),
+              ck.bold.cyan(entry),
             )
           })
           build.onEnd(() => {
-            console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
+            console.info('%s Done - %s', ck.green('◉'), ck.bold.cyan(entry))
           })
         },
       },
@@ -114,7 +114,7 @@ export async function startWatchBuild({
             console.info(
               '%s Building - %s',
               ck.yellow('◉'),
-              ck.bold.blue(entry),
+              ck.bold.cyan(entry),
             )
           })
           build.onEnd(() => {
@@ -122,7 +122,7 @@ export async function startWatchBuild({
             if (!existsEntry) {
               contextMap.get(absoluteEntry)?.dispose()
             } else {
-              console.info('%s Done - %s', ck.green('◉'), ck.bold.blue(entry))
+              console.info('%s Done - %s', ck.green('◉'), ck.bold.cyan(entry))
             }
 
             if (regexpPatterns.bootstrap.test(entry)) {
@@ -135,7 +135,7 @@ export async function startWatchBuild({
               join(appPath, clearExtension(entry) + '.mjs'),
             )
             existsApp && rmSync(join(appPath, clearExtension(entry) + '.mjs'))
-            console.info('%s Removed - %s', ck.red('◉'), ck.bold.blue(entry))
+            console.info('%s Removed - %s', ck.red('◉'), ck.bold.cyan(entry))
 
             if (regexpPatterns.bootstrap.test(entry)) {
               restart?.()

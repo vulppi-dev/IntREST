@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "irest": "irest",
     "dev": "irest dev",
     "build": "irest build",
     "start": "irest start"
   },
   "dependencies": {
-    "@vulppi/intrest": "^0.10.0"
+    "@vulppi/intrest": "^0.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.5"
   }
 }

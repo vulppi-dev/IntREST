@@ -12,7 +12,7 @@ export const describe = 'Initialize a new backend project powered by Vulppi'
 export const handler = async (): Promise<void> => {
   // Get the project root path
   const projectPath = normalizePath(process.cwd())
-  console.log('Project folder: %s\n', ck.blue(projectPath))
+  console.log('Project folder: %s\n', ck.cyan(projectPath))
 
   // Get the template project folder
   const templateFolder = fileURLToPath(

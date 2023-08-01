@@ -28,13 +28,13 @@ export async function handler(): Promise<void> {
   const config = ((await getModule(configPath)).default || {}) as IntREST.Config
 
   console.info('\nBuilding application...')
-  console.log('Project folder: %s\n', ck.blue(projectPath))
+  console.log('Project folder: %s\n', ck.cyan(projectPath))
 
   // Get the application folder
   const appFolder = await getAppPath(projectPath)
   console.info(
     '    Application path: %s\n',
-    ck.blue.bold(escapePath(appFolder, projectPath)),
+    ck.cyan.bold(escapePath(appFolder, projectPath)),
   )
   // Get all the route and middleware files in the application folder
   const appFiles = await globFindAll(appFolder, globPatterns.route)

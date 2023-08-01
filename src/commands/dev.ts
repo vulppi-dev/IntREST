@@ -1,5 +1,5 @@
 import ck from 'chalk'
-import dotenv from 'dotenv'
+import dotenv, { type DotenvConfigOutput, type DotenvParseOutput } from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
 import { existsSync, lstatSync, rmSync, watch } from 'fs'
 import _ from 'lodash'
@@ -29,9 +29,9 @@ export async function handler(): Promise<void> {
   const projectPath = normalizePath(process.cwd())
   console.log(
     '\nStarting the application in %s mode...',
-    ck.bold.blue('development'),
+    ck.bold.cyan('development'),
   )
-  console.log('Project folder: %s\n', ck.blue(projectPath))
+  console.log('Project folder: %s\n', ck.cyan(projectPath))
 
   // Try to find the config file
   let configPath = await globFind(projectPath, globPatterns.config)
@@ -137,19 +137,17 @@ async function restartServer(
     }
 
     // Merge and expand the environment variables
-    const envObject = Object.assign(
-      structuredClone(process.env),
-      _.get(config, 'env', {}),
-    ) as Record<string, string>
     const myEnv = envPath
       ? dotenv.config({
           path: envPath,
-          processEnv: envObject,
           override: true,
         })
-      : {
-          parsed: envObject,
-        }
+      : ({
+          parsed: {},
+        } as DotenvConfigOutput)
+
+    if (!myEnv.parsed) myEnv.parsed = {} as DotenvParseOutput
+    Object.assign(myEnv.parsed, _.get(config, 'env', {}))
     dotenvExpand.expand(myEnv)
 
     // Start the application worker
@@ -157,8 +155,9 @@ async function restartServer(
       new URL(join('..', 'workers', defaultPaths.workerApp), import.meta.url),
       {
         env: {
-          ...envObject,
           NODE_ENV: 'development',
+          ...structuredClone(process.env),
+          ...myEnv.parsed,
         },
       },
     )
@@ -174,7 +173,7 @@ async function startRouterBuilder(
 
   console.info(
     '    Application path: %s\n',
-    ck.blue.bold(escapePath(appFolder, basePath)),
+    ck.cyan.bold(escapePath(appFolder, basePath)),
   )
   watch(appFolder, { recursive: true }, async (state, filename) => {
     if (!filename || state === 'change') return
