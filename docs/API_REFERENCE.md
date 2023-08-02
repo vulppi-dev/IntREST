@@ -12,13 +12,13 @@ The IntREST API is simple and easy to use. Has 4 main interfaces:
 
 ### Methods
 
-- `assetsStream`: The function to get a file stream from the `assets` folder, fonded in root directory of the project. Receive two parameters:
+- `assetsStream`: The function to get a file stream from the `assets` folder, founded in root directory of the project. Receive two parameters:
   - `path`: The path of the file in `assets` folder.
   - `compress`: Possible values are `gzip`, `deflate`, `gzip, deflate` and `deflate, gzip`. If you don't want to compress the file, just set nothing in this parameter.
-- `assetsRawContent`: The function to get a file raw content (`Buffer`) from the `assets` folder, fonded in root directory of the project. Receive two parameters:
+- `assetsRawContent`: The function to get a file raw content (`Buffer`) from the `assets` folder, founded in root directory of the project. Receive two parameters:
   - `path`: The path of the file in `assets` folder.
   - `compress`: Possible values are `gzip`, `deflate`, `gzip, deflate` and `deflate, gzip`. If you don't want to compress the file, just set nothing in this parameter.
-- `assetsContent`: The function to get a file content (`string`) from the `assets` folder, fonded in root directory of the project.
+- `assetsContent`: The function to get a file content (`string`) from the `assets` folder, founded in root directory of the project.
 - `parseCompressBuffer`: The function to parse a compressed buffer. Receive two parameters:
   - `buffer`: The buffer to parse.
   - `encoding`: Is a array of values `gzip` and `deflate`.
