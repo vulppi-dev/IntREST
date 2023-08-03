@@ -1,4 +1,4 @@
-export const isDev = process.env.NODE_ENV === 'development'
+export const isDev = () => process.env.NODE_ENV === 'development'
 
 export const globPatterns = {
   env: ['.env', '.env.*'],
@@ -6,15 +6,18 @@ export const globPatterns = {
   config: 'intrest.config.{mjs,cjs,js}',
   bootstrap: 'bootstrap.ts',
   bootstrapCompiled: 'bootstrap.mjs',
-  route: '**/{route,middleware}.ts',
+  points: '**/{route,middleware}.ts',
+  route: 'route.{mjs,cjs,js,ts}',
+  middleware: 'middleware.{mjs,cjs,js,ts}',
 } as const
 
 export const regexpPatterns = {
   env: /^\.env(?:\.[a-z-_]*)?$/,
   config: /^intrest\.config\.[mc]?js$/,
   bootstrap: /^bootstrap\.ts$/,
-  route: /(^|\/)(route|middleware)\.ts$/,
-  reservedChars: /([.*+?^=!:${}()|\[\]\/\\])/g,
+  route: /(?:^|\/)(?:route|middleware)\.ts$/,
+  observable: /(?:route)\.ts$/,
+  reservedChars: /(?:[.*+?^=!:${}()|\[\]\/\\])/g,
   startSlashesOrNot: /^[\\\/]*/,
   endSlashesOrNot: /[\\\/]*$/,
   multiSlashes: /[\\\/]+/g,
@@ -30,6 +33,16 @@ export const defaultPaths = {
   compiledApp: 'routes',
   compiledGenerated: 'generated',
   workerApp: 'app.mjs',
+  workerServerless: 'serverless.mjs',
   workerRouter: 'router.mjs',
-  workerOpenapi: 'openapi.mjs',
+  routesMap: 'routes-map.mjs',
+} as const
+
+export const defaultVariables = {
+  paramExtract: '$$paramExtract',
+  paramKeys: '$$paramKeys',
+  pathname: '$$pathname',
+  route: '$$route',
+  getHandlers: 'getHandlers',
+  getMiddlewares: 'getMiddlewares',
 } as const

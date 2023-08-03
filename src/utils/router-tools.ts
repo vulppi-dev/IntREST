@@ -4,7 +4,6 @@ import _ from 'lodash'
 import { dirname } from 'path'
 import rangeParser from 'range-parser'
 import { Readable } from 'stream'
-import { parentPort } from 'worker_threads'
 import { defaultPaths } from '../utils/constants'
 import { escapePath, globFindAll, join, normalizePath } from '../utils/path'
 import { isBuffer } from './compare'
@@ -24,14 +23,15 @@ function isRange(
  * Send the response data to the client through the worker port
  * auto detect the type of response and send the data
  */
-export async function sendResponseAll(
+export async function sendResponseParser(
   res: IntREST.IntResponse,
   reqHeaders: IntREST.IntRequest['headers'],
   requestId: string,
+  sendMessage: (msg: TransferResponse) => void,
 ) {
   // Check if the response has headers to send to the client
   for (const entry of Object.entries(res.headers || {})) {
-    sendResponse({
+    sendMessage({
       requestId,
       state: 'set',
       data: entry,
@@ -39,7 +39,7 @@ export async function sendResponseAll(
   }
   // Check if the response has cookies to send to the client
   for (const entry of Object.entries(res.cookies || {})) {
-    sendResponse({
+    sendMessage({
       requestId,
       state: 'cookie',
       data: {
@@ -51,7 +51,7 @@ export async function sendResponseAll(
   }
   // Check if the response has cookies to clear in the client
   for (const entry of Object.entries(res.clearCookies || {})) {
-    sendResponse({
+    sendMessage({
       requestId,
       state: 'clear-cookie',
       data: {
@@ -87,7 +87,7 @@ export async function sendResponseAll(
       // If the response has no content type
       // set the content type to text/plain
       if (!contentType) {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'set',
           data: ['Content-Type', 'text/plain'],
@@ -97,13 +97,13 @@ export async function sendResponseAll(
       // If the response has a range header
       // send only the range of the buffer
       if (isRange(range)) {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'write',
           data: data.subarray(range[0].start, range[0].end + 1),
         })
       } else {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'write',
           data,
@@ -114,7 +114,7 @@ export async function sendResponseAll(
       // If the response not has a content type
       // set the content type to application/octet-stream
       if (!contentType) {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'set',
           data: ['Content-Type', 'application/octet-stream'],
@@ -140,7 +140,7 @@ export async function sendResponseAll(
               return
             }
             const data = chunk.subarray(offset, offset + length)
-            sendResponse({
+            sendMessage({
               requestId,
               state: 'write',
               data,
@@ -156,7 +156,7 @@ export async function sendResponseAll(
       } else {
         await new Promise<void>((resolve, reject) => {
           reader.on('data', (chunk) => {
-            sendResponse({
+            sendMessage({
               requestId,
               state: 'write',
               data: chunk,
@@ -173,7 +173,7 @@ export async function sendResponseAll(
     } else {
       // If the response body is a object
       if (!contentType) {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'set',
           data: ['Content-Type', 'application/json'],
@@ -182,13 +182,13 @@ export async function sendResponseAll(
       const body = JSON.stringify(res.body)
       const data = Buffer.from(body)
       if (isRange(range)) {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'write',
           data: data.subarray(range[0].start, range[0].end + 1),
         })
       } else {
-        sendResponse({
+        sendMessage({
           requestId,
           state: 'write',
           data,
@@ -198,7 +198,7 @@ export async function sendResponseAll(
   }
 
   // Send the status code to the client
-  sendResponse({
+  sendMessage({
     requestId,
     state: 'status',
     data:
@@ -207,15 +207,11 @@ export async function sendResponseAll(
         : res.status || StatusCodes.OK,
   })
   // Send the end of the response to the client
-  sendResponse({
+  sendMessage({
     requestId,
     state: 'end',
     data: undefined,
   })
-}
-
-export function sendResponse(res: TransferResponse) {
-  parentPort?.postMessage(res)
 }
 
 /**
@@ -273,7 +269,7 @@ export function parseRoutePathname(pathname: string) {
       // Remove groups
       .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
       // Remove filename and extension
-      .replace(/route\.mjs$/, '')
+      .replace(/route\.(mj|cj|j|t)s$/, '')
       // Remove the '\' of end of the path
       .replace(/\/*$/, '')
       // Ensure that starts with `/`
@@ -281,41 +277,43 @@ export function parseRoutePathname(pathname: string) {
   )
 }
 
+export function parseRoutePathnameToRegexp(pathname: string, basePath: string) {
+  const escapedRoute = escapePath(pathname, basePath)
+  const cleanedRoute = parseRoutePathname(escapedRoute)
+
+  if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
+    throw new Error(`Invalid route path: ${escapedRoute}`)
+  }
+
+  // Compile the route path to a regexp
+  return {
+    pathname,
+    route: cleanedRoute,
+    vars: Array.from(
+      cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_\$]+)\]/g),
+    ).map((m) => m[1]),
+    paramRegexp: new RegExp(
+      cleanedRoute
+        .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$%]+)')
+        .replace(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g, '?([A-zÀ-ú0-9-_:\\$%/]*)')
+        .replace(/[\/\\]/, '\\/')
+        .replace(/^\^*/, '^')
+        .replace(/\$*$/, '\\/?$'),
+    ),
+  }
+}
+
 /**
  * Find the route pathnames in the compiled directory
  */
 export async function findRoutePathnames(basePath: string, route?: string) {
   const routesPathnames = await getAllRoutePathnames(basePath)
-
-  // Normalize the route path
-  const maps = routesPathnames.map((r) => {
-    const escapedRoute = escapePath(
+  const maps = routesPathnames.map((r) =>
+    parseRoutePathnameToRegexp(
       r,
       join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
-    )
-    const cleanedRoute = parseRoutePathname(escapedRoute)
-
-    if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
-      throw new Error(`Invalid route path: ${escapedRoute}`)
-    }
-
-    // Compile the route path to a regexp
-    return {
-      pathname: r,
-      route: cleanedRoute,
-      vars: Array.from(
-        cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_\$]+)\]/g),
-      ).map((m) => m[1]),
-      paramRegexp: new RegExp(
-        cleanedRoute
-          .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$%]+)')
-          .replace(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g, '?([A-zÀ-ú0-9-_:\\$%/]*)')
-          .replace(/[\/\\]/, '\\/')
-          .replace(/^\^*/, '^')
-          .replace(/\$*$/, '\\/?$'),
-      ),
-    }
-  })
+    ),
+  )
 
   // Filter the list to get only the match routes if route is defined
   if (route) {

@@ -37,7 +37,7 @@ export async function handler(): Promise<void> {
     ck.cyan.bold(escapePath(appFolder, projectPath)),
   )
   // Get all the route and middleware files in the application folder
-  const appFiles = await globFindAll(appFolder, globPatterns.route)
+  const appFiles = await globFindAll(appFolder, globPatterns.points)
   const bootstrapFile = await globFind(appFolder, globPatterns.bootstrap)
   if (bootstrapFile) {
     appFiles.push(bootstrapFile)

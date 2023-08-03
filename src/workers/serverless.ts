@@ -1,10 +1,10 @@
 import ck from 'chalk'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createServer } from 'http'
-import { workerTunnel, startWorker } from '../utils/app-tools'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import { getModule, globFind, join } from '../utils/path'
 import { buildRequestHandler } from '../utils/request-handler'
+import { tunnel } from '../utils/tunnel'
 
 const basePath = process.cwd()
 const configPath = await globFind(basePath, globPatterns.config)
@@ -29,11 +29,7 @@ if (existsSync(appTempPath)) {
   rmSync(appTempPath, { recursive: true })
 }
 mkdirSync(appTempPath, { recursive: true })
-startWorker(config.limits?.minWorkerPoolSize || 5)
-const server = createServer(
-  { noDelay: true },
-  buildRequestHandler(workerTunnel),
-)
+const server = createServer({ noDelay: true }, buildRequestHandler(tunnel))
 server.listen(appPort, () => {
   console.log(`\n    Server running on port %s`, ck.yellow(appPort))
   console.log(

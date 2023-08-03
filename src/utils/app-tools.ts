@@ -32,7 +32,7 @@ export async function startWorker(size: number) {
   }
 }
 
-export async function callWorker(
+export async function workerTunnel(
   { basePath, data, config }: Omit<WorkerProps, 'requestId'>,
   cb: (state: ResponseState, data: ResponseData) => void,
 ) {

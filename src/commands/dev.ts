@@ -17,14 +17,28 @@ import {
 } from '../utils/path'
 import { startWatchBuild } from './_builder'
 import { getChecksum } from './_common'
+import type { CommandBuilder } from 'yargs'
 
 export const command = 'dev'
 
 export const aliases = ['develop']
 
+export const builder = {
+  serverless: {
+    alias: 's',
+    type: 'boolean',
+    default: false,
+    description: 'Start the serverless mode',
+  },
+} satisfies CommandBuilder
+
 export const describe = 'Start the development server'
 
-export async function handler(): Promise<void> {
+interface Args {
+  serverless: boolean
+}
+
+export async function handler({ serverless }: Args): Promise<void> {
   // Get project root path
   const projectPath = normalizePath(process.cwd())
   console.log(
@@ -32,6 +46,10 @@ export async function handler(): Promise<void> {
     ck.bold.cyan('development'),
   )
   console.log('Project folder: %s\n', ck.cyan(projectPath))
+  if (!process.env.NODE_ENV) {
+    // @ts-ignore
+    process.env.NODE_ENV = 'development'
+  }
 
   // Try to find the config file
   let configPath = await globFind(projectPath, globPatterns.config)
@@ -43,7 +61,7 @@ export async function handler(): Promise<void> {
   let envChecksum = envPath ? await getChecksum(envPath) : ''
 
   // Start application worker and watch for changes
-  restartServer(projectPath, configPath, envPath)
+  restartServer(projectPath, configPath, envPath, serverless)
 
   // If root dependencies (env, config) are changed, restart the application
   watch(projectPath, async (_, filename) => {
@@ -94,7 +112,7 @@ export async function handler(): Promise<void> {
       }
     }
     if (changeConfig || changeEnv) {
-      restartServer(projectPath, configPath, envPath)
+      restartServer(projectPath, configPath, envPath, serverless)
     }
   })
 }
@@ -105,6 +123,7 @@ async function restartServer(
   projectPath: string,
   configPath?: string,
   envPath?: string,
+  serverless?: boolean,
 ) {
   let first = true
   if (debounceApp) {
@@ -132,7 +151,7 @@ async function restartServer(
           first = false
           return
         }
-        restartServer(projectPath, configPath, envPath)
+        restartServer(projectPath, configPath, envPath, serverless)
       })
     }
 
@@ -152,7 +171,14 @@ async function restartServer(
 
     // Start the application worker
     app = new Worker(
-      new URL(join('..', 'workers', defaultPaths.workerApp), import.meta.url),
+      new URL(
+        join(
+          '..',
+          'workers',
+          serverless ? defaultPaths.workerServerless : defaultPaths.workerApp,
+        ),
+        import.meta.url,
+      ),
       {
         env: {
           NODE_ENV: 'development',
@@ -188,7 +214,7 @@ async function startRouterBuilder(
         const appFiles = await globFindAll(
           appFolder,
           filename,
-          globPatterns.route,
+          globPatterns.points,
         )
 
         return await Promise.all(
@@ -228,7 +254,7 @@ async function startRouterBuilder(
   const compiledFolder = join(basePath, defaultPaths.compiled)
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
-  const appFiles = await globFindAll(appFolder, globPatterns.route)
+  const appFiles = await globFindAll(appFolder, globPatterns.points)
   const bootstrapFile = await globFind(appFolder, globPatterns.bootstrap)
   if (bootstrapFile) {
     appFiles.push(bootstrapFile)

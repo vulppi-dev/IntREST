@@ -1,7 +1,7 @@
 import { glob } from 'glob'
 import path from 'path'
 import { pathToFileURL } from 'url'
-import { globPatterns } from './constants'
+import { globPatterns, isDev } from './constants'
 
 /**
  * Get the module from the given path
@@ -84,8 +84,8 @@ export async function globFindAllList(
 /**
  * Escape the path with the given escape string
  */
-export function escapePath(path: string, ...escape: string[]) {
-  return normalizePath(path)
+export function escapePath(pathname: string, ...escape: string[]) {
+  return normalizePath(pathname)
     .replace(join(...escape), '')
     .replace(/^\//, '')
 }
@@ -129,4 +129,13 @@ export async function getAppPath(basePath: string) {
     (await globFindAllList(...globPatterns.app.map((p) => [basePath, p])))[0] ||
     globPatterns.app[1]
   )
+}
+
+/**
+ * Add the update query to the module path for development
+ * to prevent the module from being cached
+ */
+export function encapsulateModule(v: string) {
+  if (!isDev()) return v
+  return `${v}?update=${Date.now()}`
 }
