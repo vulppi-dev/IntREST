@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "irest dev"
+    "dev": "intrest dev",
+    "build": "intrest build",
+    "start": "intrest start"
   },
   "dependencies": {
     "@vulppi/intrest": "^0.4.0"

@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "irest dev",
-    "build": "irest build",
-    "start": "irest start"
+    "dev": "intrest dev",
+    "build": "intrest build",
+    "start": "intrest start"
   },
   "dependencies": {
     "@vulppi/intrest": "^0.10.1"

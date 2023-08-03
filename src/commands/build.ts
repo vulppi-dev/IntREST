@@ -59,4 +59,7 @@ export async function handler(): Promise<void> {
       })
     }),
   )
+
+  console.log('\n%s Application built successfully!\n', ck.green('✔'))
+  console.log('    run %s to start the application\n', ck.cyan('intrest start'))
 }

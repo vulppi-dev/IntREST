@@ -191,6 +191,8 @@ function IntRESTPlugin({
       })
       // Remove the compiled file when the build is disposed
       build.onDispose(async () => {
+        if (!restart) return
+
         const existsApp = existsSync(
           join(input, clearExtension(entry) + '.mjs'),
         )
@@ -198,7 +200,7 @@ function IntRESTPlugin({
         console.info('%s Removed - %s', ck.red('◉'), ck.bold.cyan(entry))
 
         if (regexpPatterns.bootstrap.test(entry)) {
-          restart?.()
+          restart()
         }
       })
     },
