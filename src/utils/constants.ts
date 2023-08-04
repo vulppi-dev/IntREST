@@ -48,3 +48,7 @@ export const defaultVariables = {
   getHandlers: 'getHandlers',
   getMiddlewares: 'getMiddlewares',
 } as const
+
+export const defaultOutputPaths = {
+  vercel: '.vercel/output',
+}

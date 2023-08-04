@@ -5,6 +5,8 @@
 1. [Routes](#routes)
 2. [Middleware](#middleware)
 3. [Bootstrap](#bootstrap)
+4. [Assets files](#assets-files)
+5. [Static files](#static-files)
 
 ### Application Structure
 
@@ -12,6 +14,9 @@ IntREST projects follow a specific structure to ensure that your application is 
 
 ```
 assets (optional)
+├── file.txt
+└── image.png
+static (optional)
 ├── file.txt
 └── image.png
 routes
@@ -44,7 +49,7 @@ intrest.config.mjs (optional)
 
 ### Routes
 
-The `routes` folder contains all of your application's routes. Each route is defined in a file named `route.ts` inside a folder with the same name as the route. For example, the `routes/my-route/route.ts` or `src/routes/my-route/route.ts` file defines the `/my-route` route.
+The `routes` folder contains all of your application's entries. Each route is defined in a file named `route.ts` inside a folder with the same name as the route. For example, the `routes/my-route/route.ts` or `src/routes/my-route/route.ts` file defines the `/my-route` route.
 
 #### Route Methods
 
@@ -84,9 +89,9 @@ You can define route groups by creating a folder with the group name prefixed wi
 
 ### Middleware
 
-You can define middleware for a route by creating a file named `middleware.ts` inside the route's folder. For example, the `routes/my-route/middleware.ts` file defines middleware for the `/my-route` route.
+Middleware is a entry too in the `routes` folder. You can define middleware for a route by creating a file named `middleware.ts` inside the route's folder. For example, the `routes/my-route/middleware.ts` file defines middleware for the `/my-route` route.
 
-The middleware behavior is different from route handlers. Middleware is executed in chain order, and the route handler is executed after all middleware has been executed and call `next` method. If a middleware returns a response, the route handler will not be executed.
+The middleware behavior is different from route handlers. Middleware is executed in chain order, and the route handler is executed after all middleware has been executed and call `next` method. If a middleware returns a response, the route handler will not be executed. And if the `next` method is not called, it's throw an error of timeout. The default timeout is 5 seconds.
 
 Simple middleware example:
 
@@ -116,6 +121,9 @@ export async function middleware(
 
 You can define bootstrap by creating a file named `bootstrap.ts` inside the route's root folder. For example, the `routes/bootstrap.ts` or `src/routes/bootstrap.ts`. File defines bootstrap exported function with name `bootstrap`.
 
+> **Note:** In your projects you can only have one bootstrap file!
+> Bootstrap is executed before the server starts and only once. If you want to execute something before each request, use middleware.
+
 Simple bootstrap example:
 
 ```ts
@@ -127,6 +135,17 @@ export async function bootstrap(config: Config): Promise<void> {
   // Do something
 }
 ```
+
+## Assets files
+
+The `assets` folder contains all of your application's assets files. For example, the `assets/file.txt` or `src/assets/file.txt` file defines the `/file.txt` route.
+
+You can access the file using the methods in this package.
+Are they: [assetsStream](./API_REFERENCE.md), [assetsRawContent](./API_REFERENCE.md), [assetsContent](./API_REFERENCE.md).
+
+## Static files
+
+The `static` folder contains all of your application's static files. For example, the `static/file.txt` or `src/static/file.txt` file defines the `/file.txt` route.
 
 ## Next Steps
 
