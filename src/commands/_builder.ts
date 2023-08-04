@@ -293,7 +293,7 @@ function ${defaultVariables.getHandlers}(route) {
 
 function ${defaultVariables.getMiddlewares}(pathname) {
   const pathnames = pathname.split('/').map((_, i, l) => l.slice(0, i + 1).join('/'));
-  return pathnames.map((p) => ({ handler: ms[p], pathname: p})).filter((m) => typeof m.handler === 'function')
+  return pathnames.map((p) => ({ handler: ms[p]?.middleware, pathname: p})).filter((m) => typeof m.handler === 'function')
 }
 
 function sortCompiledRoutes(a, b) {
