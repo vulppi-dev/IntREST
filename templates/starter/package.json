@@ -6,12 +6,17 @@
   "scripts": {
     "dev": "intrest dev",
     "build": "intrest build",
-    "start": "intrest start"
+    "start": "intrest start",
+    "test": "intrest build && mocha src/**/*.test.mjs"
   },
   "dependencies": {
-    "@vulppi/intrest": "^0.11.2"
+    "@vulppi/intrest": "^0.12.1"
   },
   "devDependencies": {
-    "@types/node": "^20.4.7"
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.4.7",
+    "@types/supertest": "^2.0.12",
+    "mocha": "^10.2.0",
+    "supertest": "^6.3.3"
   }
 }

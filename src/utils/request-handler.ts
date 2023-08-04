@@ -74,6 +74,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
 
     // Set default headers
     res.setHeader('Server', 'IntREST')
+
     res.setHeader('Accept', [
       'application/json',
       'application/xml',
@@ -98,9 +99,9 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     ])
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     res.setHeader('Access-Control-Max-Age', '86400')
-    res.setHeader('Connection', 'keep-alive')
-    res.setHeader('Keep-Alive', ['timeout=5', 'max=10000'])
     res.setHeader('Accept-Ranges', 'bytes')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Keep-Alive', ['timeout=5', 'max=30'])
 
     if (/^options$/i.test(method)) {
       res.statusCode = StatusCodes.NO_CONTENT

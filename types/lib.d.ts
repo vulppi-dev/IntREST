@@ -1,3 +1,5 @@
+import type { Stats } from 'fs'
+import type { IncomingMessage, ServerResponse } from 'http'
 import type { Readable } from 'stream'
 
 /**
@@ -73,3 +75,24 @@ export function parseCompressStream(
   data: Readable,
   encoding?: IntREST.RequestEncoding[],
 ): Promise<Readable>
+
+/**
+ * globalRequestHandler is a function that can be used as a request handler
+ * for http.createServer or tests like supertest
+ *
+ * > **NOTE:** The project must be built before using this function
+ *
+ * @param req
+ * @param res
+ */
+export function globalRequestHandler(
+  req: IncomingMessage,
+  res: ServerResponse<IncomingMessage>,
+): Promise<ServerResponse<IncomingMessage> | undefined>
+
+/**
+ * The function to get the stats of a file
+ *
+ * @param path The path of the file
+ */
+export function assetsStats(path: string): Promise<Stats>

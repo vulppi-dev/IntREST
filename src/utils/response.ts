@@ -4,8 +4,8 @@ import _ from 'lodash'
 import { dirname } from 'path'
 import rangeParser from 'range-parser'
 import { Readable } from 'stream'
-import { defaultPaths } from '../utils/constants'
-import { escapePath, globFindAll, join, normalizePath } from '../utils/path'
+import { defaultPaths } from './constants'
+import { escapePath, globFindAll, join, normalizePath } from './path'
 import { isBuffer } from './compare'
 
 function isRange(
@@ -29,6 +29,40 @@ export async function sendResponseParser(
   requestId: string,
   sendMessage: (msg: TransferResponse) => void,
 ) {
+  // Get content length and type from the response headers
+  const lengthHeaderKey = Object.keys(res.headers || {}).find((k) =>
+    /^content-length$/i.test(k),
+  )
+  const typeHeaderKey = Object.keys(res.headers || {}).find((k) =>
+    /^content-type$/i.test(k),
+  )
+  const contentLength = _.get(
+    res.headers || {},
+    lengthHeaderKey || 'Content-Length',
+    Infinity,
+  )
+  const contentType = _.get(res.headers || {}, typeHeaderKey || 'Content-Type')
+
+  // Get the range from the request headers
+  const range = reqHeaders.range
+    ? rangeParser(+contentLength, reqHeaders.range, { combine: true })
+    : undefined
+
+  // If has range in request header, add content range and status code and remove content-length
+  if (isRange(range)) {
+    res.status =
+      !res.status || res.status === StatusCodes.OK
+        ? StatusCodes.PARTIAL_CONTENT
+        : res.status
+    res.headers = {
+      ...res.headers,
+      'Content-Range':
+        `bytes ${range[0].start}-${range[0].end}` +
+        (contentLength && isFinite(+contentLength) ? `/${contentLength}` : ''),
+    }
+    delete res.headers[lengthHeaderKey || 'Content-Length']
+  }
+
   // Check if the response has headers to send to the client
   for (const entry of Object.entries(res.headers || {})) {
     sendMessage({
@@ -60,24 +94,6 @@ export async function sendResponseParser(
       },
     })
   }
-  // Get content length and type from the response headers
-  const lengthHeaderKey = Object.keys(res.headers || {}).find((k) =>
-    /^content-length$/i.test(k),
-  )
-  const typeHeaderKey = Object.keys(res.headers || {}).find((k) =>
-    /^content-type$/i.test(k),
-  )
-  const contentLength = _.get(
-    res.headers || {},
-    lengthHeaderKey || 'Content-Length',
-    Infinity,
-  )
-  const contentType = _.get(res.headers || {}, typeHeaderKey || 'Content-Type')
-
-  // Get the range from the request headers
-  const range = reqHeaders.range
-    ? rangeParser(+contentLength, reqHeaders.range, { combine: true })
-    : undefined
 
   // Check if the response has a body to send to the client
   if (res.body) {
@@ -124,9 +140,8 @@ export async function sendResponseParser(
       if (isRange(range)) {
         const start = range[0].start
         const end = range[0].end
-
-        let rangeLength = end - start + 1
         let readed = 0
+
         await new Promise<void>((resolve, reject) => {
           reader.on('data', (c) => {
             const chunk = Buffer.from(c)
@@ -134,11 +149,13 @@ export async function sendResponseParser(
               readed += chunk.length
               return
             }
-            const offset = start - readed
-            const length = Math.min(rangeLength, chunk.length - offset)
-            if (length <= 0) {
-              return
+            if (readed > end) {
+              reader.destroy()
+              return resolve()
             }
+            const offset = Math.max(start - readed, 0)
+            const length = Math.min(end + 1 - readed, chunk.length)
+            readed += length
             const data = chunk.subarray(offset, offset + length)
             sendMessage({
               requestId,
@@ -201,11 +218,9 @@ export async function sendResponseParser(
   sendMessage({
     requestId,
     state: 'status',
-    data:
-      isRange(range) && res.status === 200
-        ? StatusCodes.PARTIAL_CONTENT
-        : res.status || StatusCodes.OK,
+    data: res.status || StatusCodes.OK,
   })
+
   // Send the end of the response to the client
   sendMessage({
     requestId,

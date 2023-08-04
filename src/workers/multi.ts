@@ -31,7 +31,13 @@ if (existsSync(appTempPath)) {
 mkdirSync(appTempPath, { recursive: true })
 startWorker(config.limits?.minWorkerPoolSize || 5)
 const server = createServer(
-  { noDelay: true },
+  {
+    noDelay: true,
+    keepAlive: true,
+    keepAliveTimeout: 30000,
+    keepAliveInitialDelay: 5000,
+    connectionsCheckingInterval: 5000,
+  },
   buildRequestHandler(workerTunnel),
 )
 server.listen(appPort, () => {

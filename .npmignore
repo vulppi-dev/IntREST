@@ -30,6 +30,7 @@ yarn.lock
 src/
 scripts/
 examples/
+tests/
 
 # docs
 *.md

@@ -29,7 +29,16 @@ if (existsSync(appTempPath)) {
   rmSync(appTempPath, { recursive: true })
 }
 mkdirSync(appTempPath, { recursive: true })
-const server = createServer({ noDelay: true }, buildRequestHandler(tunnel))
+const server = createServer(
+  {
+    noDelay: true,
+    keepAlive: true,
+    keepAliveTimeout: 30000,
+    keepAliveInitialDelay: 5000,
+    connectionsCheckingInterval: 5000,
+  },
+  buildRequestHandler(tunnel),
+)
 server.listen(appPort, () => {
   console.log(`\n    Server running on port %s`, ck.yellow(appPort))
   console.log(

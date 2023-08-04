@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/intrest",
-  "version": "0.11.2",
+  "version": "0.12.1",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -60,7 +60,7 @@
   "exports": {
     ".": {
       "import": "./dist/lib/index.mjs",
-      "require": "./dist/lib/index.cjs"
+      "default": "./dist/lib/index.mjs"
     },
     "./types/*": {
       "types": "./types/*"

@@ -8,7 +8,7 @@ export const globPatterns = {
   configFile: 'intrest.config.{mjs,cjs,js}',
   bootstrapEntry: 'bootstrap.ts',
   bootstrapCompiled: 'bootstrap.mjs',
-  entryPoints: '**/{route,middleware}.ts',
+  entryPoints: '**/{route,middleware,validation}.ts',
   routeFile: 'route.{mjs,cjs,js,ts}',
   middlewareFile: 'middleware.{mjs,cjs,js,ts}',
 } as const
@@ -17,7 +17,7 @@ export const regexpPatterns = {
   env: /^\.env(?:\.[a-z-_]*)?$/,
   config: /^intrest\.config\.[mc]?js$/,
   bootstrap: /^bootstrap\.ts$/,
-  entry: /(?:^|\/)(?:route|middleware)\.ts$/,
+  entry: /(?:^|\/)(?:route|middleware|validation)\.ts$/,
   observable: /(?:route)\.ts$/,
   reservedChars: /(?:[.*+?^=!:${}()|\[\]\/\\])/g,
   startSlashesOrNot: /^[\\\/]*/,
@@ -32,7 +32,6 @@ export const regexpPatterns = {
 
 export const defaultPaths = {
   compiledFolder: '.intrest',
-  compiledAdaptedFolder: '.output',
   compiledRoutes: 'routes',
   workerMultiWorker: 'multi.mjs',
   workerSingleWorker: 'single.mjs',

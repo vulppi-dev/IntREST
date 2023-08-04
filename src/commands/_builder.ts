@@ -16,7 +16,7 @@ import {
   globFindAll,
   join,
 } from '../utils/path'
-import { parseRoutePathnameToRegexp } from '../utils/router-tools'
+import { parseRoutePathnameToRegexp } from '../utils/response'
 
 interface StartBuildProps {
   input: string
@@ -292,7 +292,7 @@ function ${defaultVariables.getHandlers}(route) {
 }
 
 function ${defaultVariables.getMiddlewares}(pathname) {
-  const pathnames = pathname.split('/').map((_, i, l) => l.slice(0, i + 1).join('/'));
+  const pathnames = pathname.split('/').map((_, i, l) => i > 0 ? l.slice(0, i + 1).join('/') : '/');
   return pathnames.map((p) => ({ handler: ms[p]?.middleware, pathname: p})).filter((m) => typeof m.handler === 'function')
 }
 

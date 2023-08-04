@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
-import { sendResponseParser } from './router-tools'
+import { sendResponseParser } from './response'
 import { defaultPaths, defaultVariables, globPatterns } from './constants'
 import { pathToFileURL } from 'url'
 import { encapsulateModule, getFolderPath, globFind, join } from './path'

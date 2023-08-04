@@ -23,6 +23,8 @@ export type MiddlewareNext = IntREST.MiddlewareNext
 export type RequestHandler = IntREST.RequestHandler
 export type MiddlewareHandler = IntREST.MiddlewareHandler
 
+export type ValidationHandler = IntREST.ValidationHandler
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -272,7 +274,7 @@ declare global {
       /**
        * The headers of the response
        */
-      headers?: Record<string, string | string[] | undefined>
+      headers?: Record<string, number | string | string[] | undefined>
       /**
        * The cookies to set in the response
        */
@@ -325,12 +327,20 @@ declare global {
       (custom?: CustomRequestData): void
     }
 
+    /**
+     * Type if request body content-type is XML
+     */
     type XMLBody = {
       $text?: string
       $attributes?: Record<string, string>
     } & {
       [x: string]: XMLBody | XMLBody[] | undefined
     }
+
+    /**
+     * Type of validation handler using openapi v3.1 schemas
+     */
+    type ValidationHandler<T extends {} = {}> = OpenAPIV3_1.OperationObject<T>
   }
 
   interface CustomRequestData {
