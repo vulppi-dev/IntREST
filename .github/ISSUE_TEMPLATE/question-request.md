@@ -1,11 +1,9 @@
 ---
 name: Question request
-about: If you wanna have help for use this framework, don't be afraid and send us
-  a question
-title: "[Question]:"
+about: Need help? Just ask!
+title: '[Question]:'
 labels: question
 assignees: ''
-
 ---
 
 **Is your question request related to a problem? Please describe.**

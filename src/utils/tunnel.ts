@@ -1,10 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { sendResponseParser } from './router-tools'
-import { defaultPaths, defaultVariables } from './constants'
+import { defaultPaths, defaultVariables, globPatterns } from './constants'
 import { pathToFileURL } from 'url'
-import { encapsulateModule, join } from './path'
+import { encapsulateModule, getFolderPath, globFind, join } from './path'
 import { unescape } from 'querystring'
+import { lookup } from 'mime-types'
+import { createReadStream } from 'fs'
 
 export async function tunnel(
   { data, config, basePath }: Omit<WorkerProps, 'requestId'>,
@@ -16,17 +18,41 @@ export async function tunnel(
     query: new URLSearchParams(data.query || ''),
   } as IntREST.IntRequest
 
+  // Send response if static file found
+  const staticFolder = await getFolderPath(basePath, globPatterns.staticFolder)
+  if (staticFolder) {
+    const staticFile = await globFind(staticFolder, data.path)
+    if (staticFile) {
+      const mimeType = lookup(staticFile)
+      if (mimeType) {
+        return await sendResponse(
+          {
+            status: StatusCodes.OK,
+            body: createReadStream(staticFile),
+            headers: {
+              'Content-Type': mimeType,
+            },
+          },
+          context.headers,
+          endCallback,
+        )
+      }
+    }
+  }
+
   try {
     // Get route-map module and find router chain
     const { getRoutes, getMiddlewares } = await import(
       encapsulateModule(
         pathToFileURL(
-          join(basePath, defaultPaths.compiled, defaultPaths.routesMap),
+          join(basePath, defaultPaths.compiledFolder, defaultPaths.routesMap),
         ).toString(),
       )
     ).then((m) => ({
       getRoutes: m[defaultVariables.getHandlers] as GetRoutesFunction,
-      getMiddlewares: m[defaultVariables.getHandlers] as GetMiddlewaresFunction,
+      getMiddlewares: m[
+        defaultVariables.getMiddlewares
+      ] as GetMiddlewaresFunction,
     }))
     const routes = getRoutes(context.path)
 

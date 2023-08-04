@@ -7,7 +7,7 @@ import { Worker } from 'worker_threads'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
 import {
   escapePath,
-  getAppPath,
+  getFolderPath,
   getModule,
   getEnvPath,
   globFind,
@@ -24,21 +24,21 @@ export const command = 'dev'
 export const aliases = ['develop']
 
 export const builder = {
-  serverless: {
+  'single-worker': {
     alias: 's',
     type: 'boolean',
     default: false,
-    description: 'Start the serverless mode',
+    description: 'Start the single-worker mode',
   },
 } satisfies CommandBuilder
 
 export const describe = 'Start the development server'
 
 interface Args {
-  serverless: boolean
+  singleWorker: boolean
 }
 
-export async function handler({ serverless }: Args): Promise<void> {
+export async function handler({ singleWorker }: Args): Promise<void> {
   // Get project root path
   const projectPath = normalizePath(process.cwd())
   console.log(
@@ -49,19 +49,25 @@ export async function handler({ serverless }: Args): Promise<void> {
   if (!process.env.NODE_ENV) {
     // @ts-ignore
     process.env.NODE_ENV = 'development'
+  } else if (process.env.NODE_ENV !== 'development') {
+    console.warn(
+      ck.yellow(
+        'The NODE_ENV environment variable is not set to "development".',
+      ),
+    )
   }
 
   // Try to find the config file
-  let configPath = await globFind(projectPath, globPatterns.config)
+  let configPath = await globFind(projectPath, globPatterns.configFile)
   // Try to find the env file
   let envPath = await getEnvPath(projectPath)
 
   // Initialize the config and env checksums
-  let configChecksum = configPath ? await getChecksum(configPath) : ''
-  let envChecksum = envPath ? await getChecksum(envPath) : ''
+  let configChecksum = await getChecksum(configPath)
+  let envChecksum = await getChecksum(envPath)
 
   // Start application worker and watch for changes
-  restartServer(projectPath, configPath, envPath, serverless)
+  restartServer(projectPath, configPath, envPath, singleWorker)
 
   // If root dependencies (env, config) are changed, restart the application
   watch(projectPath, async (_, filename) => {
@@ -71,7 +77,10 @@ export async function handler({ serverless }: Args): Promise<void> {
 
     if (regexpPatterns.config.test(filename)) {
       // If multiple config files are found, exit the process
-      const configFiles = await globFindAll(projectPath, globPatterns.config)
+      const configFiles = await globFindAll(
+        projectPath,
+        globPatterns.configFile,
+      )
       if (configFiles.length > 1) {
         console.error(ck.red('Multiple config files found.'))
         console.error(
@@ -111,8 +120,9 @@ export async function handler({ serverless }: Args): Promise<void> {
         console.info('Env file changed.')
       }
     }
+    // If the config or env file is changed, restart the application
     if (changeConfig || changeEnv) {
-      restartServer(projectPath, configPath, envPath, serverless)
+      restartServer(projectPath, configPath, envPath, singleWorker)
     }
   })
 }
@@ -123,8 +133,9 @@ async function restartServer(
   projectPath: string,
   configPath?: string,
   envPath?: string,
-  serverless?: boolean,
+  singleWorker?: boolean,
 ) {
+  // Create debounce system to avoid multiple restarts
   let first = true
   if (debounceApp) {
     clearTimeout(debounceApp)
@@ -151,7 +162,7 @@ async function restartServer(
           first = false
           return
         }
-        restartServer(projectPath, configPath, envPath, serverless)
+        restartServer(projectPath, configPath, envPath, singleWorker)
       })
     }
 
@@ -175,7 +186,9 @@ async function restartServer(
         join(
           '..',
           'workers',
-          serverless ? defaultPaths.workerServerless : defaultPaths.workerApp,
+          singleWorker
+            ? defaultPaths.workerSingleWorker
+            : defaultPaths.workerMultiWorker,
         ),
         import.meta.url,
       ),
@@ -195,39 +208,40 @@ async function startRouterBuilder(
   config?: IntREST.Config,
   restart?: VoidFunction,
 ) {
-  const appFolder = await getAppPath(basePath)
+  const entryFolder = await getFolderPath(basePath, globPatterns.entryFolder)
 
   console.info(
-    '    Application path: %s\n',
-    ck.cyan.bold(escapePath(appFolder, basePath)),
+    '    Application entry folder: %s\n',
+    ck.cyan.bold(escapePath(entryFolder, basePath)),
   )
-  watch(appFolder, { recursive: true }, async (state, filename) => {
+  // Main watcher for find new entry points and add to build context
+  watch(entryFolder, { recursive: true }, async (state, filename) => {
     if (!filename || state === 'change') return
     const normalizedFilename = normalizePath(filename)
-    const absolute = join(appFolder, normalizedFilename)
+    const absolute = join(entryFolder, normalizedFilename)
     const exists = existsSync(absolute)
 
-    // If the file is a directory, ignore it
+    // If the file is a directory, try to find the entry points
     if (exists) {
       const stat = lstatSync(absolute)
       if (stat.isDirectory()) {
         const appFiles = await globFindAll(
-          appFolder,
+          entryFolder,
           filename,
-          globPatterns.points,
+          globPatterns.entryPoints,
         )
 
         return await Promise.all(
           appFiles.map(async (filename) => {
-            const escapedPath = escapePath(filename, appFolder)
+            const escapedPath = escapePath(filename, entryFolder)
             // If the file is a directory, ignore it
             if (existsSync(filename)) {
               const stat = lstatSync(filename)
               if (stat.isDirectory()) return
             }
             await startWatchBuild({
-              input: appFolder,
-              output: join(basePath, defaultPaths.compiled),
+              input: entryFolder,
+              output: join(basePath, defaultPaths.compiledFolder),
               entry: escapedPath,
               config,
               restart,
@@ -238,12 +252,12 @@ async function startRouterBuilder(
     }
 
     if (
-      regexpPatterns.route.test(normalizedFilename) ||
+      regexpPatterns.entry.test(normalizedFilename) ||
       regexpPatterns.bootstrap.test(normalizedFilename)
     ) {
       await startWatchBuild({
-        input: appFolder,
-        output: join(basePath, defaultPaths.compiled),
+        input: entryFolder,
+        output: join(basePath, defaultPaths.compiledFolder),
         entry: normalizedFilename,
         config,
         restart,
@@ -251,26 +265,29 @@ async function startRouterBuilder(
     }
   })
 
-  const compiledFolder = join(basePath, defaultPaths.compiled)
+  // Start the first build
+
+  // Remove the old compiled folder
+  const compiledFolder = join(basePath, defaultPaths.compiledFolder)
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
-  const appFiles = await globFindAll(appFolder, globPatterns.points)
-  const bootstrapFile = await globFind(appFolder, globPatterns.bootstrap)
+  const entryFiles = await globFindAll(entryFolder, globPatterns.entryPoints)
+  const bootstrapFile = await globFind(entryFolder, globPatterns.bootstrapEntry)
   if (bootstrapFile) {
-    appFiles.push(bootstrapFile)
+    entryFiles.push(bootstrapFile)
   }
 
   return Promise.all(
-    appFiles.map(async (filename) => {
-      const escapedPath = escapePath(filename, appFolder)
+    entryFiles.map(async (filename) => {
+      const escapedPath = escapePath(filename, entryFolder)
       // If the file is a directory, ignore it
       if (existsSync(filename)) {
         const stat = lstatSync(filename)
         if (stat.isDirectory()) return
       }
       await startWatchBuild({
-        input: appFolder,
-        output: join(basePath, defaultPaths.compiled),
+        input: entryFolder,
+        output: join(basePath, defaultPaths.compiledFolder),
         entry: escapedPath,
         config,
         restart,

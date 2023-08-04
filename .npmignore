@@ -26,6 +26,7 @@ pnpm-lock.yaml
 yarn.lock
 
 # source
+.github/
 src/
 scripts/
 examples/

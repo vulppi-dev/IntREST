@@ -4,7 +4,7 @@ import type { Options } from 'yargs'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import {
   escapePath,
-  getAppPath,
+  getFolderPath,
   getModule,
   globFind,
   globFindAll,
@@ -23,37 +23,37 @@ export async function handler(): Promise<void> {
   // Get the project path
   const projectPath = normalizePath(process.cwd())
   // Try to find the config file
-  const configPath = await globFind(projectPath, globPatterns.config)
+  const configPath = await globFind(projectPath, globPatterns.configFile)
   // Try to get the config module
   const config = ((await getModule(configPath)).default || {}) as IntREST.Config
 
   console.info('\nBuilding application...')
   console.log('Project folder: %s\n', ck.cyan(projectPath))
 
-  // Get the application folder
-  const appFolder = await getAppPath(projectPath)
+  // Get the application entry folder
+  const entryFolder = await getFolderPath(projectPath, globPatterns.entryFolder)
   console.info(
-    '    Application path: %s\n',
-    ck.cyan.bold(escapePath(appFolder, projectPath)),
+    '    Application entry folder: %s\n',
+    ck.cyan.bold(escapePath(entryFolder, projectPath)),
   )
-  // Get all the route and middleware files in the application folder
-  const appFiles = await globFindAll(appFolder, globPatterns.points)
-  const bootstrapFile = await globFind(appFolder, globPatterns.bootstrap)
+  // Get all the entry files in the application folder
+  const appFiles = await globFindAll(entryFolder, globPatterns.entryPoints)
+  const bootstrapFile = await globFind(entryFolder, globPatterns.bootstrapEntry)
   if (bootstrapFile) {
     appFiles.push(bootstrapFile)
   }
   // Get the compiled folder
-  const compiledFolder = join(projectPath, defaultPaths.compiled)
+  const compiledFolder = join(projectPath, defaultPaths.compiledFolder)
   // If the compiled folder exists, delete it
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
   // Build the application files
   await Promise.all(
     appFiles.map(async (filename) => {
-      const escapedPath = escapePath(filename, appFolder)
+      const escapedPath = escapePath(filename, entryFolder)
       await callBuild({
-        input: appFolder,
-        output: join(projectPath, defaultPaths.compiled),
+        input: entryFolder,
+        output: join(projectPath, defaultPaths.compiledFolder),
         entry: escapedPath,
         config,
       })

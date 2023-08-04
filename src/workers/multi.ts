@@ -1,19 +1,19 @@
 import ck from 'chalk'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createServer } from 'http'
-import { workerTunnel, startWorker } from '../utils/app-tools'
+import { workerTunnel, startWorker } from '../utils/multi-tools'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import { getModule, globFind, join } from '../utils/path'
 import { buildRequestHandler } from '../utils/request-handler'
 
 const basePath = process.cwd()
-const configPath = await globFind(basePath, globPatterns.config)
+const configPath = await globFind(basePath, globPatterns.configFile)
 const config = ((await getModule(configPath)).default || {}) as IntREST.Config
 
 const bootstrapPath = await globFind(
   basePath,
-  defaultPaths.compiled,
-  defaultPaths.compiledApp,
+  defaultPaths.compiledFolder,
+  defaultPaths.compiledRoutes,
   globPatterns.bootstrapCompiled,
 )
 const bootstrap = await getModule(bootstrapPath)

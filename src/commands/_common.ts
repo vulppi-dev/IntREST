@@ -6,9 +6,9 @@ import _ from 'lodash'
  * Get the checksum of a file
  * If the file does not exist, return an empty string
  */
-export function getChecksum(path: string) {
+export function getChecksum(path?: string) {
   return new Promise<string>(function (resolve, reject) {
-    if (!existsSync(path)) return resolve('')
+    if (!path || !existsSync(path)) return resolve('')
 
     const hash = crypto.createHash('md5')
     const input = fs.createReadStream(path)

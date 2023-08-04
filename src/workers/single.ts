@@ -7,13 +7,13 @@ import { buildRequestHandler } from '../utils/request-handler'
 import { tunnel } from '../utils/tunnel'
 
 const basePath = process.cwd()
-const configPath = await globFind(basePath, globPatterns.config)
+const configPath = await globFind(basePath, globPatterns.configFile)
 const config = ((await getModule(configPath)).default || {}) as IntREST.Config
 
 const bootstrapPath = await globFind(
   basePath,
-  defaultPaths.compiled,
-  defaultPaths.compiledApp,
+  defaultPaths.compiledFolder,
+  defaultPaths.compiledRoutes,
   globPatterns.bootstrapCompiled,
 )
 const bootstrap = await getModule(bootstrapPath)

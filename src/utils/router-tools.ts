@@ -226,7 +226,7 @@ export async function findMiddlewarePathnames(
   const dir = dirname(
     escapePath(
       routeFilePath,
-      join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
+      join(basePath, defaultPaths.compiledFolder, defaultPaths.compiledRoutes),
     ),
   )
   // Get all directories from the route file path recursively
@@ -236,8 +236,8 @@ export async function findMiddlewarePathnames(
     join(
       ...[
         basePath,
-        defaultPaths.compiled,
-        defaultPaths.compiledApp,
+        defaultPaths.compiledFolder,
+        defaultPaths.compiledRoutes,
         r,
         'middleware.mjs',
       ].filter(Boolean),
@@ -253,8 +253,8 @@ export async function findMiddlewarePathnames(
 export async function getAllRoutePathnames(basePath: string) {
   return await globFindAll(
     basePath,
-    defaultPaths.compiled,
-    defaultPaths.compiledApp,
+    defaultPaths.compiledFolder,
+    defaultPaths.compiledRoutes,
     '**',
     'route.mjs',
   )
@@ -311,7 +311,7 @@ export async function findRoutePathnames(basePath: string, route?: string) {
   const maps = routesPathnames.map((r) =>
     parseRoutePathnameToRegexp(
       r,
-      join(basePath, defaultPaths.compiled, defaultPaths.compiledApp),
+      join(basePath, defaultPaths.compiledFolder, defaultPaths.compiledRoutes),
     ),
   )
 

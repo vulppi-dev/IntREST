@@ -124,10 +124,13 @@ export async function getEnvPath(basePath: string) {
  * Find the app folder that match the glob pattern
  * inside the given base path
  */
-export async function getAppPath(basePath: string) {
+export async function getFolderPath(
+  basePath: string,
+  possibleFolders: readonly string[],
+) {
   return (
-    (await globFindAllList(...globPatterns.app.map((p) => [basePath, p])))[0] ||
-    globPatterns.app[1]
+    (await globFindAllList(...possibleFolders.map((p) => [basePath, p])))[0] ||
+    possibleFolders[1]
   )
 }
 

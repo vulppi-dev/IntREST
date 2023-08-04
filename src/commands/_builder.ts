@@ -33,7 +33,7 @@ export async function callBuild({
   config,
 }: StartBuildProps) {
   // Generate the output path for the compiled app
-  const appPath = join(output, defaultPaths.compiledApp)
+  const appPath = join(output, defaultPaths.compiledRoutes)
   // Generate the absolute path for the entry file
   const absoluteEntry = join(input, entry)
 
@@ -73,7 +73,7 @@ export async function startWatchBuild({
   restart,
 }: StartBuildProps) {
   // Generate the output path for the compiled app
-  const appPath = join(output, defaultPaths.compiledApp)
+  const appPath = join(output, defaultPaths.compiledRoutes)
   // Generate the absolute path for the entry file
   const absoluteEntry = join(input, entry)
   // If the entry file is already being watched, do nothing
@@ -226,11 +226,11 @@ async function refreshRoutesMap(output: string) {
     }
 
     debounceRouteMap = setTimeout(async () => {
-      const allRoutes = await globFindAll(output, '**', globPatterns.route)
+      const allRoutes = await globFindAll(output, '**', globPatterns.routeFile)
       const allMiddlewares = await globFindAll(
         output,
         '**',
-        globPatterns.middleware,
+        globPatterns.middlewareFile,
       )
 
       const escapedRoutes = allRoutes.map((route) => escapePath(route, output))
@@ -300,7 +300,7 @@ function sortCompiledRoutes(a, b) {
   const aSlipt = a.${defaultVariables.pathname}.split('/');
   const bSlipt = b.${defaultVariables.pathname}.split('/');
   for (let i = 0; i < aSlipt.length; i++) {
-    if (aSlipt[i][0] === '[' && bSlipt[i][0] === '[') continue;
+    if (aSlipt[i][0] === '[' && bSlipt[i]?.[0] === '[') continue;
     if (aSlipt[i][0] === '[') return 1;
     if (bSlipt[i]?.[0] === '[') return -1;
   }

@@ -2,6 +2,8 @@ import { createReadStream, existsSync, lstatSync, readFileSync } from 'fs'
 import { join } from 'path'
 import type { Readable } from 'stream'
 import { parseCompressBuffer, parseCompressStream } from '../utils/parser'
+import { getFolderPath } from '../utils/path'
+import { globPatterns } from '../utils/constants'
 
 export {
   parseCompressBuffer,
@@ -9,8 +11,6 @@ export {
   parseDecompressBuffer,
   parseDecompressStream,
 } from '../utils/parser'
-
-const assetsPath = join(process.cwd(), 'assets')
 
 async function assertFileExistsAndIsAFile(path: string) {
   const exists = existsSync(path)
@@ -23,6 +23,10 @@ export async function assetsStream(
   path: string,
   compress?: IntREST.CompressEncoding,
 ): Promise<Readable> {
+  const assetsPath = await getFolderPath(
+    process.cwd(),
+    globPatterns.assetsFolder,
+  )
   await assertFileExistsAndIsAFile(join(assetsPath, path))
 
   const encoding = (compress?.split(/, */) || []) as IntREST.RequestEncoding[]
@@ -34,6 +38,10 @@ export async function assetsRawContent(
   path: string,
   compress?: IntREST.CompressEncoding,
 ): Promise<Buffer> {
+  const assetsPath = await getFolderPath(
+    process.cwd(),
+    globPatterns.assetsFolder,
+  )
   await assertFileExistsAndIsAFile(join(assetsPath, path))
 
   const encoding = (compress?.split(/, */) || []) as IntREST.RequestEncoding[]

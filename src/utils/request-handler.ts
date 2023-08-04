@@ -32,7 +32,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     // Get the root path of the project
     const basePath = process.cwd()
     // Try find the config module
-    const configPath = await globFind(basePath, globPatterns.config)
+    const configPath = await globFind(basePath, globPatterns.configFile)
     const config = ((await getModule(configPath)).default ||
       {}) as IntREST.Config
     // Get the temp path for upload files

@@ -2,20 +2,22 @@ export const isDev = () => process.env.NODE_ENV === 'development'
 
 export const globPatterns = {
   env: ['.env', '.env.*'],
-  app: ['routes', 'src/routes'],
-  config: 'intrest.config.{mjs,cjs,js}',
-  bootstrap: 'bootstrap.ts',
+  entryFolder: ['routes', 'src/routes'],
+  assetsFolder: ['assets', 'src/assets'],
+  staticFolder: ['static', 'src/static'],
+  configFile: 'intrest.config.{mjs,cjs,js}',
+  bootstrapEntry: 'bootstrap.ts',
   bootstrapCompiled: 'bootstrap.mjs',
-  points: '**/{route,middleware}.ts',
-  route: 'route.{mjs,cjs,js,ts}',
-  middleware: 'middleware.{mjs,cjs,js,ts}',
+  entryPoints: '**/{route,middleware}.ts',
+  routeFile: 'route.{mjs,cjs,js,ts}',
+  middlewareFile: 'middleware.{mjs,cjs,js,ts}',
 } as const
 
 export const regexpPatterns = {
   env: /^\.env(?:\.[a-z-_]*)?$/,
   config: /^intrest\.config\.[mc]?js$/,
   bootstrap: /^bootstrap\.ts$/,
-  route: /(?:^|\/)(?:route|middleware)\.ts$/,
+  entry: /(?:^|\/)(?:route|middleware)\.ts$/,
   observable: /(?:route)\.ts$/,
   reservedChars: /(?:[.*+?^=!:${}()|\[\]\/\\])/g,
   startSlashesOrNot: /^[\\\/]*/,
@@ -29,11 +31,11 @@ export const regexpPatterns = {
 } as const
 
 export const defaultPaths = {
-  compiled: '.intrest',
-  compiledApp: 'routes',
-  compiledGenerated: 'generated',
-  workerApp: 'app.mjs',
-  workerServerless: 'serverless.mjs',
+  compiledFolder: '.intrest',
+  compiledAdaptedFolder: '.output',
+  compiledRoutes: 'routes',
+  workerMultiWorker: 'multi.mjs',
+  workerSingleWorker: 'single.mjs',
   workerRouter: 'router.mjs',
   routesMap: 'routes-map.mjs',
 } as const
