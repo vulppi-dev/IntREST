@@ -147,53 +147,56 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     // Parse the body if the method is not GET
     if (!/^get$/i.test(method)) {
       // x-www-form-urlencoded and multipart/form-data
-      if (contentType && regexpPatterns.isBusboyContentType.test(contentType)) {
-        await new Promise<void>((resolve, reject) => {
-          const bb = busboy({ headers: req.headers })
-          bb.on('file', (name, file, info) => {
-            const { filename, encoding, mimeType: mimetype } = info
-            const fileHash = randomUUID()
-            const filePath = join(appTempPath, fileHash)
-            const fileMetadata = {
-              absolutePath: filePath,
-              filename,
-              encoding,
-              mimetype,
-            } as IntREST.FileMetadata
-            _.set(body, name, fileMetadata)
-            filesToBeRemoved.push(filePath)
-            const fileWriter = createWriteStream(filePath, {
-              flags: 'w',
+      try {
+        if (
+          contentType &&
+          regexpPatterns.isBusboyContentType.test(contentType)
+        ) {
+          await new Promise<void>((resolve, reject) => {
+            const bb = busboy({ headers: req.headers })
+            bb.on('file', (name, file, info) => {
+              const { filename, encoding, mimeType: mimetype } = info
+              const fileHash = randomUUID()
+              const filePath = join(appTempPath, fileHash)
+              const fileMetadata = {
+                absolutePath: filePath,
+                filename,
+                encoding,
+                mimetype,
+              } as IntREST.FileMetadata
+              _.set(body, name, fileMetadata)
+              filesToBeRemoved.push(filePath)
+              const fileWriter = createWriteStream(filePath, {
+                flags: 'w',
+              })
+              file.pipe(fileWriter, {
+                end: true,
+              })
             })
-            file.pipe(fileWriter, {
+            bb.on('field', (name, val) => {
+              _.set(body, name, parseStringToAutoDetectValue(val))
+            })
+            bb.on('close', resolve)
+            bb.on('error', reject)
+            req.pipe(bb, {
               end: true,
             })
           })
-          bb.on('field', (name, val) => {
-            _.set(body, name, parseStringToAutoDetectValue(val))
+        } else {
+          // application/json and application/xml
+          const buffer = await new Promise<Buffer>((resolve) => {
+            const writer = concat(resolve)
+            req.pipe(writer)
           })
-          bb.on('close', resolve)
-          bb.on('error', reject)
-          req.pipe(bb, {
-            end: true,
-          })
-        })
-      } else {
-        // application/json and application/xml
-        const buffer = await new Promise<Buffer>((resolve) => {
-          const writer = concat(resolve)
-          req.pipe(writer)
-        })
-        const encoding = req.headers['content-encoding'] || 'identity'
+          const encoding = req.headers['content-encoding'] || 'identity'
 
-        const bodyString = (
-          await parseDecompressBuffer(
-            buffer,
-            encoding.split(/, */) as IntREST.RequestEncoding[],
-          )
-        ).toString()
+          const bodyString = (
+            await parseDecompressBuffer(
+              buffer,
+              encoding.split(/, */) as IntREST.RequestEncoding[],
+            )
+          ).toString()
 
-        try {
           if (regexpPatterns.isJSONContentType.test(contentType)) {
             body = JSON.parse(bodyString)
           } else {
@@ -216,17 +219,17 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
 
             body = parser.parse(bodyString)
           }
-        } catch (error: any) {
-          res.writeHead(StatusCodes.BAD_REQUEST, {
-            'Content-Type': 'application/json',
-          })
-          return res.end(
-            JSON.stringify({
-              message: 'Invalid body',
-              error: error?.message,
-            }),
-          )
         }
+      } catch (err: any) {
+        res.writeHead(StatusCodes.BAD_REQUEST, {
+          'Content-Type': 'application/json',
+        })
+        return res.end(
+          JSON.stringify({
+            message: 'Invalid body',
+            error: err.message || err.toString(),
+          }),
+        )
       }
     }
 
