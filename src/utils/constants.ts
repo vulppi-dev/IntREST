@@ -23,11 +23,11 @@ export const regexpPatterns = {
   startSlashesOrNot: /^[\\\/]*/,
   endSlashesOrNot: /[\\\/]*$/,
   multiSlashes: /[\\\/]+/g,
-  isBusboyContentType: /^(?:x-www-form-urlencoded|multipart\/form-data)$/i,
+  isBusboyContentType: /^(?:x-www-form-urlencoded|multipart\/form-data.*)$/i,
   isJSONContentType: /^application\/json$/i,
   isXMLContentType: /^application\/xml$/i,
   isAcceptableContentType:
-    /^(?:x-www-form-urlencoded|multipart\/form-data|application\/(?:json|xml))$/i,
+    /^(?:x-www-form-urlencoded|multipart\/form-data.*|application\/(?:json|xml))$/i,
 } as const
 
 export const defaultPaths = {

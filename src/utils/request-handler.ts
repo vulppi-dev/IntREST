@@ -24,6 +24,22 @@ interface TunnelFunction {
   ): Promise<void>
 }
 
+function debugRequest(
+  startRequestTime: number,
+  method: string,
+  path: string,
+  status: number = 200,
+) {
+  console.debug(
+    '%s(%s - %s) - %s %s',
+    ck.yellow(method),
+    ck.green(status),
+    getReasonPhrase(status),
+    ck.bold(path),
+    ck.cyan(`${(performance.now() - startRequestTime).toPrecision(5)}ms`),
+  )
+}
+
 export function buildRequestHandler(tunnel: TunnelFunction) {
   return async function requestHandler(
     req: IncomingMessage,
@@ -38,10 +54,11 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     // Get the temp path for upload files
     const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
 
-    // Get the request method and content type
-    const contentType = req.headers['content-type'] || 'application/json'
+    // Get the request method, path, query and content type
     const method = (req.method?.toUpperCase() ||
       'GET') as IntREST.RequestMethods
+    const [path, query] = (req.url || '/').split('?')
+    const contentType = req.headers['content-type'] || 'application/json'
 
     // Prepare origin for CORS
     const pureOrigin = req.headers.origin || req.headers.host || ''
@@ -103,6 +120,9 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     res.setHeader('Connection', 'keep-alive')
     res.setHeader('Keep-Alive', ['timeout=5', 'max=30'])
 
+    // Start the request time
+    const startRequestTime = performance.now()
+
     if (/^options$/i.test(method)) {
       res.statusCode = StatusCodes.NO_CONTENT
       res.end()
@@ -114,6 +134,12 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       res.writeHead(StatusCodes.UNSUPPORTED_MEDIA_TYPE, {
         'Content-Type': 'application/json',
       })
+      debugRequest(
+        startRequestTime,
+        method,
+        path,
+        StatusCodes.UNSUPPORTED_MEDIA_TYPE,
+      )
       return res.end(
         JSON.stringify({
           message:
@@ -136,6 +162,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       res.writeHead(StatusCodes.REQUEST_TOO_LONG, {
         'Content-Type': 'application/json',
       })
+      debugRequest(startRequestTime, method, path, StatusCodes.REQUEST_TOO_LONG)
       return res.end(
         JSON.stringify({
           message:
@@ -224,6 +251,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
         res.writeHead(StatusCodes.BAD_REQUEST, {
           'Content-Type': 'application/json',
         })
+        debugRequest(startRequestTime, method, path, StatusCodes.BAD_REQUEST)
         return res.end(
           JSON.stringify({
             message: 'Invalid body',
@@ -234,8 +262,6 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     }
 
     try {
-      const [path, query] = (req.url || '/').split('?')
-      const startRequestTime = performance.now()
       await tunnel(
         {
           basePath,
@@ -269,16 +295,6 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
           } else if (state === 'status') {
             res.statusCode = data as ResponseDataMap['status']
           } else if (state === 'end') {
-            console.debug(
-              '%s(%s - %s) - %s %s',
-              ck.yellow(method),
-              ck.green(res.statusCode || 200),
-              getReasonPhrase(res.statusCode || 200),
-              ck.bold(path),
-              ck.cyan(
-                `${(performance.now() - startRequestTime).toPrecision(5)}ms`,
-              ),
-            )
             if (
               filesToBeRemoved.length &&
               config.removeUploadFilesAfterResponse
@@ -291,6 +307,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
                 }
               }
             }
+            debugRequest(startRequestTime, method, path, res.statusCode)
             res.end()
           }
         },
@@ -300,6 +317,12 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       res.writeHead(StatusCodes.INTERNAL_SERVER_ERROR, {
         'Content-Type': 'application/json',
       })
+      debugRequest(
+        startRequestTime,
+        method,
+        path,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
       return res.end(
         JSON.stringify({
           message:
