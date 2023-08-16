@@ -166,8 +166,17 @@ function IntRESTPlugin({
       )
       build.onEnd(async () => {
         const existsEntry = existsSync(absoluteEntry)
+        console.log(
+          existsEntry,
+          !!restart,
+          contextMap.has(absoluteEntry),
+          absoluteEntry,
+        )
         if (!existsEntry) {
-          return contextMap.get(absoluteEntry)?.dispose()
+          const ctx = contextMap.get(absoluteEntry)
+          ctx?.dispose()
+          contextMap.delete(absoluteEntry)
+          return
         } else {
           console.info('%s Done - %s', ck.green('◉'), ck.bold.cyan(entry))
         }
@@ -179,28 +188,20 @@ function IntRESTPlugin({
       // Remove the compiled file when the build is disposed
       build.onDispose(async () => {
         if (!restart) return
-        const existsApp = existsSync(
-          join(output, clearExtension(entry) + '.mjs'),
+        const absoluteOutEntry = join(
+          output,
+          defaultPaths.compiledRoutes,
+          clearExtension(entry) + '.mjs',
         )
-
-        existsApp &&
-          rmSync(
-            join(
-              output,
-              defaultPaths.compiledRoutes,
-              clearExtension(entry) + '.mjs',
-            ),
-          )
-        console.info('%s Removed - %s', ck.red('◉'), ck.bold.cyan(entry))
+        const existsApp = existsSync(absoluteOutEntry)
+        existsApp && rmSync(absoluteOutEntry)
 
         const identityFilePath = join(
-          entry.replace(/\/?route\.ts$/, ''),
+          dirname(absoluteOutEntry),
           defaultPaths.routeIdentity,
         )
-        const existsIdentity = existsSync(
-          join(output, defaultPaths.compiledRoutes, identityFilePath),
-        )
-        existsIdentity && rmSync(join(output, identityFilePath))
+        const existsIdentity = existsSync(identityFilePath)
+        existsIdentity && rmSync(identityFilePath)
 
         if (regexpPatterns.bootstrap.test(entry)) {
           restart()

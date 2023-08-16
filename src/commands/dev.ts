@@ -225,20 +225,13 @@ async function startRouterBuilder(
     if (exists) {
       const stat = lstatSync(absolute)
       if (stat.isDirectory()) {
-        const appFiles = await globFindAll(
-          entryFolder,
-          filename,
-          globPatterns.entryPoints,
-        )
-
+        const appFiles = await globFindAll(absolute, globPatterns.entryPoints)
         return await Promise.all(
           appFiles.map(async (filename) => {
             const escapedPath = escapePath(filename, entryFolder)
             // If the file is a directory, ignore it
-            if (existsSync(filename)) {
-              const stat = lstatSync(filename)
-              if (stat.isDirectory()) return
-            }
+            const stat = lstatSync(filename)
+            if (stat.isDirectory()) return
             await startWatchBuild({
               input: entryFolder,
               output: join(basePath, defaultPaths.compiledFolder),
