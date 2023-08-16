@@ -1,8 +1,9 @@
 import ck from 'chalk'
+import { join } from 'path/posix'
 import { Worker } from 'worker_threads'
-import { defaultPaths } from '../utils/constants'
-import { join, normalizePath } from '../utils/path'
 import type { CommandBuilder } from 'yargs'
+import { defaultPaths } from '../utils/constants'
+import { normalizePath } from '../utils/path'
 
 export const command = 'start'
 

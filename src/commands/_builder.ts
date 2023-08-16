@@ -1,21 +1,11 @@
 import { TsconfigPathsPlugin } from '@esbuild-plugins/tsconfig-paths'
 import ck from 'chalk'
 import { build, context, type BuildContext, type Plugin } from 'esbuild'
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { getTsconfig } from 'get-tsconfig'
-import {
-  defaultPaths,
-  defaultVariables,
-  globPatterns,
-  regexpPatterns,
-} from '../utils/constants'
-import {
-  clearExtension,
-  encapsulateModule,
-  escapePath,
-  globFindAll,
-  join,
-} from '../utils/path'
+import { dirname, join } from 'path/posix'
+import { defaultPaths, regexpPatterns } from '../utils/constants'
+import { clearExtension, escapePath, normalizePath } from '../utils/path'
 import { parseRoutePathnameToRegexp } from '../utils/response'
 
 interface StartBuildProps {
@@ -42,7 +32,7 @@ export async function callBuild({
       [clearExtension(entry)]: absoluteEntry,
     },
     bundle: true,
-    minify: false,
+    minify: true,
     packages: 'external',
     target: 'node18',
     platform: 'node',
@@ -55,7 +45,9 @@ export async function callBuild({
         // The tsconfig import in lib '@esbuild-plugins/tsconfig-paths' is not working
         // so we need to use the get-tsconfig package to get the tsconfig object
         tsconfig: getTsconfig(
-          join(process.cwd(), config?.paths?.tsConfig || 'tsconfig.json'),
+          normalizePath(
+            join(process.cwd(), config?.paths?.tsConfig || 'tsconfig.json'),
+          ),
         )?.config,
       }),
       IntRESTPlugin({ entry, absoluteEntry, input, output }),
@@ -143,45 +135,40 @@ function IntRESTPlugin({
       build.onStart(async () => {
         console.info('%s Building - %s', ck.yellow('◉'), ck.bold.cyan(entry))
       })
-      build.onLoad({ filter: regexpPatterns.observable }, async ({ path }) => {
-        const exists = existsSync(path)
-        if (!exists) {
-          return null
-        }
+      build.onResolve(
+        { filter: regexpPatterns.observable },
+        async ({ path, kind }) => {
+          if (kind !== 'entry-point') return null
 
-        const regexpValues = parseRoutePathnameToRegexp(path, input)
-        const contents = [readFileSync(path).toString()] as string[]
-        contents.push(
-          `export const ${defaultVariables.paramExtract} = ${regexpValues.paramRegexp};`,
-        )
-        contents.push(
-          `export const ${defaultVariables.paramKeys} = ${JSON.stringify(
-            regexpValues.vars,
-          )};`,
-        )
-        contents.push(
-          `export const ${defaultVariables.pathname} = "${escapePath(
-            regexpValues.pathname,
-            input,
+          const identityFilePath = join(
+            escapePath(path, input).replace(/\/?route\.ts$/, ''),
+            defaultPaths.routeIdentity,
           )
-            .replace(/\/?route\.ts$/, '')
-            .replace(/^\/*/, '/')}";`,
-        )
-        contents.push(
-          `export const ${defaultVariables.route} = "${regexpValues.route}";`,
-        )
+          const absoluteIdentityFilePath = join(
+            output,
+            defaultPaths.compiledRoutes,
+            identityFilePath,
+          )
+          const dir = dirname(absoluteIdentityFilePath)
+          if (!existsSync(dir)) {
+            mkdirSync(dir, { recursive: true })
+          }
 
-        return {
-          loader: 'ts',
-          contents: contents.join('\n'),
-        }
-      })
+          writeFileSync(
+            absoluteIdentityFilePath,
+            getRouteIdentity(path, input),
+            {
+              flag: 'w+',
+            },
+          )
+          return null
+        },
+      )
       build.onEnd(async () => {
         const existsEntry = existsSync(absoluteEntry)
         if (!existsEntry) {
           return contextMap.get(absoluteEntry)?.dispose()
         } else {
-          await refreshRoutesMap(output)
           console.info('%s Done - %s', ck.green('◉'), ck.bold.cyan(entry))
         }
 
@@ -192,12 +179,28 @@ function IntRESTPlugin({
       // Remove the compiled file when the build is disposed
       build.onDispose(async () => {
         if (!restart) return
-
         const existsApp = existsSync(
-          join(input, clearExtension(entry) + '.mjs'),
+          join(output, clearExtension(entry) + '.mjs'),
         )
-        existsApp && rmSync(join(input, clearExtension(entry) + '.mjs'))
+
+        existsApp &&
+          rmSync(
+            join(
+              output,
+              defaultPaths.compiledRoutes,
+              clearExtension(entry) + '.mjs',
+            ),
+          )
         console.info('%s Removed - %s', ck.red('◉'), ck.bold.cyan(entry))
+
+        const identityFilePath = join(
+          entry.replace(/\/?route\.ts$/, ''),
+          defaultPaths.routeIdentity,
+        )
+        const existsIdentity = existsSync(
+          join(output, defaultPaths.compiledRoutes, identityFilePath),
+        )
+        existsIdentity && rmSync(join(output, identityFilePath))
 
         if (regexpPatterns.bootstrap.test(entry)) {
           restart()
@@ -207,105 +210,19 @@ function IntRESTPlugin({
   } satisfies Plugin
 }
 
-let debounceRouteMap: NodeJS.Timeout | null = null
-let clearRouteMap: VoidFunction | null = null
+function getRouteIdentity(path: string, input: string) {
+  const regexpValues = parseRoutePathnameToRegexp(path, input)
+  const contents = [] as string[]
+  contents.push(`export const paramExtract = ${regexpValues.paramRegexp};`)
+  contents.push(
+    `export const paramKeys = ${JSON.stringify(regexpValues.vars)};`,
+  )
+  contents.push(
+    `export const pathname = "${escapePath(regexpValues.pathname, input)
+      .replace(/\/?route\.ts$/, '')
+      .replace(/^\/*/, '/')}";`,
+  )
+  contents.push(`export const route = "${regexpValues.route}";`)
 
-async function refreshRoutesMap(output: string) {
-  if (clearRouteMap) {
-    clearRouteMap()
-    clearRouteMap = null
-  }
-
-  return new Promise<void>((resolve) => {
-    clearRouteMap = () => {
-      if (debounceRouteMap) {
-        clearTimeout(debounceRouteMap)
-        debounceRouteMap = null
-      }
-      resolve()
-    }
-
-    debounceRouteMap = setTimeout(async () => {
-      const allRoutes = await globFindAll(output, '**', globPatterns.routeFile)
-      const allMiddlewares = await globFindAll(
-        output,
-        '**',
-        globPatterns.middlewareFile,
-      )
-
-      const escapedRoutes = allRoutes.map((route) => escapePath(route, output))
-      const escapedMiddlewares = allMiddlewares.map((middleware) =>
-        escapePath(middleware, output),
-      )
-
-      const contents: string[] = ['// Auto generated by InteREST']
-      contents.push(
-        escapedRoutes
-          .map(
-            (route, i) =>
-              `import * as _${i} from './${encapsulateModule(route)}'`,
-          )
-          .join('\n') + '\n',
-      )
-      contents.push(
-        escapedMiddlewares
-          .map(
-            (middleware, i) =>
-              `import * as _m_${i} from './${encapsulateModule(middleware)}'`,
-          )
-          .join('\n') + '\n',
-      )
-
-      contents.push('const rs = [')
-      contents.push(escapedRoutes.map((_, i) => `_${i}`).join(', '))
-      contents.push(']')
-      contents.push('const ms = {')
-      contents.push(
-        escapedMiddlewares
-          .map(
-            (m, i) =>
-              `  "${escapePath(m, output)
-                .replace(/\/?middleware\.mjs$/, '')
-                .replace(/^\/?routes\/?/, '')
-                .replace(/^\/*/, '/')}": _m_${i},`,
-          )
-          .join('\n'),
-      )
-      contents.push('}')
-      contents.push(routesFunction)
-      contents.push(
-        `export { ${defaultVariables.getHandlers}, ${defaultVariables.getMiddlewares} }`,
-      )
-
-      writeFileSync(join(output, defaultPaths.routesMap), contents.join('\n'), {
-        flag: 'w+',
-      })
-      resolve()
-    }, 50)
-  })
+  return contents.join('\n')
 }
-
-const routesFunction = `
-function ${defaultVariables.getHandlers}(route) {
-  return rs.filter((r) => r.${defaultVariables.paramExtract}.test(route))
-    .sort(sortCompiledRoutes)
-}
-
-function ${defaultVariables.getMiddlewares}(pathname) {
-  const pathnames = pathname.split('/').map((_, i, l) => i > 0 ? l.slice(0, i + 1).join('/') : '/');
-  return pathnames.map((p) => ({ handler: ms[p]?.middleware, pathname: p})).filter((m) => typeof m.handler === 'function')
-}
-
-function sortCompiledRoutes(a, b) {
-  const aSlipt = a.${defaultVariables.pathname}.split('/');
-  const bSlipt = b.${defaultVariables.pathname}.split('/');
-  for (let i = 0; i < aSlipt.length; i++) {
-    if (aSlipt[i][0] === '[' && bSlipt[i]?.[0] === '[') continue;
-    if (aSlipt[i][0] === '[') return 1;
-    if (bSlipt[i]?.[0] === '[') return -1;
-  }
-  if (b.${defaultVariables.route}.toLowerCase() > a.${defaultVariables.route}.toLowerCase()) return -1;
-  if (b.${defaultVariables.route}.toLowerCase() < a.${defaultVariables.route}.toLowerCase()) return 1;
-  return b.${defaultVariables.pathname}.length - a.${defaultVariables.pathname}.length;
-}
-`

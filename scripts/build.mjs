@@ -1,7 +1,17 @@
 import { build } from 'esbuild'
 import { glob } from 'glob'
 import { dirname, isAbsolute, resolve } from 'path'
+import { join, normalize } from 'path/posix'
 import { fileURLToPath } from 'url'
+
+/**
+ *
+ * @param {string} pathname
+ * @returns {string}
+ */
+function normalizePath(pathname) {
+  return normalize(pathname).replace(/[\/\\]+/g, '/')
+}
 
 /**
  *
@@ -21,24 +31,6 @@ async function moduleResolver(path, parent = import.meta.url) {
 /**
  *
  * @param {string} path
- * @returns {string}
- */
-function normalizePath(path) {
-  return path.replace(/[\\\/]+/g, '/').replace(/^[\/\\]*/, '')
-}
-
-/**
- *
- * @param  {...string} paths
- * @returns {string}
- */
-function join(...paths) {
-  return normalizePath(paths.join('/'))
-}
-
-/**
- *
- * @param {string} path
  * @param {string} ext
  * @returns {string[]}
  */
@@ -46,7 +38,7 @@ async function getEntries(path, ext) {
   const basePath = await moduleResolver('../src')
   const entry = join(basePath, path)
   const globPath = join(entry, ext)
-  return await glob(globPath).then((paths) =>
+  return await glob(normalizePath(globPath)).then((paths) =>
     paths.map((p) => normalizePath(p.replace(basePath, ''))),
   )
 }
@@ -75,7 +67,7 @@ async function callBuild() {
   await build({
     entryPoints: entries,
     bundle: true,
-    minify: false,
+    minify: true,
     sourcemap: true,
     packages: 'external',
     target: 'node18',

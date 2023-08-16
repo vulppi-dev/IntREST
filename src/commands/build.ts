@@ -1,5 +1,6 @@
 import ck from 'chalk'
 import { existsSync, rmSync } from 'fs'
+import { join } from 'path/posix'
 import type { Options } from 'yargs'
 import { defaultPaths, globPatterns } from '../utils/constants'
 import {
@@ -8,7 +9,6 @@ import {
   getModule,
   globFind,
   globFindAll,
-  join,
   normalizePath,
 } from '../utils/path'
 import { callBuild } from './_builder'

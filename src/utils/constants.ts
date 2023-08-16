@@ -9,6 +9,8 @@ export const globPatterns = {
   bootstrapEntry: 'bootstrap.ts',
   bootstrapCompiled: 'bootstrap.mjs',
   entryPoints: '**/{route,middleware,validation}.ts',
+  identityPoints: '**/__identity.mjs',
+  middlewarePoints: '**/middleware.mjs',
   routeFile: 'route.{mjs,cjs,js,ts}',
   middlewareFile: 'middleware.{mjs,cjs,js,ts}',
 } as const
@@ -36,16 +38,7 @@ export const defaultPaths = {
   workerMultiWorker: 'multi.mjs',
   workerSingleWorker: 'single.mjs',
   workerRouter: 'router.mjs',
-  routesMap: 'routes-map.mjs',
-} as const
-
-export const defaultVariables = {
-  paramExtract: '$$paramExtract',
-  paramKeys: '$$paramKeys',
-  pathname: '$$pathname',
-  route: '$$route',
-  getHandlers: 'getHandlers',
-  getMiddlewares: 'getMiddlewares',
+  routeIdentity: '__identity.mjs',
 } as const
 
 export const defaultOutputPaths = {

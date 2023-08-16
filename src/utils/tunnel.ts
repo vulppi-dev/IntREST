@@ -1,12 +1,13 @@
+import { createReadStream } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
-import { sendResponseParser } from './response'
-import { defaultPaths, defaultVariables, globPatterns } from './constants'
-import { pathToFileURL } from 'url'
-import { encapsulateModule, getFolderPath, globFind, join } from './path'
-import { unescape } from 'querystring'
 import { lookup } from 'mime-types'
-import { createReadStream } from 'fs'
+import { join } from 'path/posix'
+import { unescape } from 'querystring'
+import { pathToFileURL } from 'url'
+import { defaultPaths, globPatterns } from './constants'
+import { encapsulateModule, getFolderPath, globFind, globFindAll } from './path'
+import { sendResponseParser } from './response'
 
 export async function tunnel(
   { data, config, basePath }: Omit<WorkerProps, 'requestId'>,
@@ -21,7 +22,7 @@ export async function tunnel(
   // Send response if static file found
   const staticFolder = await getFolderPath(basePath, globPatterns.staticFolder)
   if (staticFolder) {
-    const staticFile = await globFind(staticFolder, data.path)
+    const staticFile = await globFind(staticFolder, context.path)
     if (staticFile) {
       const mimeType = lookup(staticFile)
       if (mimeType) {
@@ -41,23 +42,10 @@ export async function tunnel(
   }
 
   try {
-    // Get route-map module and find router chain
-    const { getRoutes, getMiddlewares } = await import(
-      encapsulateModule(
-        pathToFileURL(
-          join(basePath, defaultPaths.compiledFolder, defaultPaths.routesMap),
-        ).toString(),
-      )
-    ).then((m) => ({
-      getRoutes: m[defaultVariables.getHandlers] as GetRoutesFunction,
-      getMiddlewares: m[
-        defaultVariables.getMiddlewares
-      ] as GetMiddlewaresFunction,
-    }))
-    const routes = getRoutes(context.path)
+    const identities = await getIdentities(context.path)
 
     // Send response not found if no route found
-    if (!routes.length) {
+    if (!identities.length) {
       return await sendResponse(
         {
           status: StatusCodes.NOT_FOUND,
@@ -74,11 +62,29 @@ export async function tunnel(
     }
 
     const method = context.method
-    const route = routes.find((r) => typeof r[method] === 'function')
-    const handler = route?.[method]
+    const basePathCompiled = join(
+      defaultPaths.compiledFolder,
+      defaultPaths.compiledRoutes,
+    )
+    const routes = await Promise.all(
+      identities.map(async (i) => {
+        const routeModule = await import(
+          encapsulateModule(
+            pathToFileURL(
+              join(basePathCompiled, i.pathname, 'route.mjs'),
+            ).toString(),
+          )
+        )
+        return {
+          handler: routeModule[method] as IntREST.RequestHandler | undefined,
+          identity: i,
+        }
+      }),
+    )
+    const route = routes.find((r) => typeof r.handler === 'function')
 
     // Send response not allowed if method not found in route
-    if (!route || !handler) {
+    if (!route?.handler) {
       return await sendResponse(
         {
           status: StatusCodes.METHOD_NOT_ALLOWED,
@@ -93,32 +99,17 @@ export async function tunnel(
         context.headers,
         endCallback,
       )
-    } else if (typeof handler !== 'function') {
-      return await sendResponse(
-        {
-          status: StatusCodes.INTERNAL_SERVER_ERROR,
-          body: {
-            message:
-              config.messages?.INTERNAL_SERVER_ERROR || 'Internal server error',
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-        context.headers,
-        endCallback,
-      )
     }
 
-    const paramExtract = route[defaultVariables.paramExtract]
-    const pathname = route[defaultVariables.pathname]
-    const paramKeys = route[defaultVariables.paramKeys]
+    const paramExtract = route.identity.paramExtract
+    const pathname = route.identity.pathname
+    const paramKeys = route.identity.paramKeys
     const paramValues = Array.from(data.path.match(paramExtract) || []).slice(1)
     context.params = _.zipObject(paramKeys, paramValues.map(unescape))
 
     let response: IntREST.IntResponse | null = null
 
-    const middlewares = getMiddlewares(pathname)
+    const middlewares = await getMiddlewares(pathname)
     for (const middleware of middlewares) {
       response = await new Promise<IntREST.IntResponse | null>(
         async (resolve, reject) => {
@@ -150,7 +141,7 @@ export async function tunnel(
     }
 
     if (!response) {
-      response = (await handler(context)) ?? null
+      response = (await route.handler(context)) ?? null
     }
 
     if (response) {
@@ -196,4 +187,66 @@ async function sendResponse(
     const { state, data } = ev
     endCallback(state, data)
   })
+}
+
+async function getIdentities(route: string) {
+  const basePath = join(
+    process.cwd(),
+    defaultPaths.compiledFolder,
+    defaultPaths.compiledRoutes,
+  )
+  const identitiesPaths = await globFindAll(
+    basePath,
+    globPatterns.identityPoints,
+  )
+  const identitiesModules = await Promise.all(
+    identitiesPaths.map((p) =>
+      import(encapsulateModule(pathToFileURL(p).toString())).then(
+        (m) => m as AutoGeneratedVars,
+      ),
+    ),
+  )
+  return identitiesModules
+    .filter((m) => m.paramExtract.test(route))
+    .sort(sortCompiledRoutes)
+}
+
+async function getMiddlewares(pathname: string) {
+  const basePath = join(
+    process.cwd(),
+    defaultPaths.compiledFolder,
+    defaultPaths.compiledRoutes,
+  )
+  const pathnames = pathname
+    .split('/')
+    .map((_, i, l) => (i > 0 ? l.slice(0, i + 1).join('/') : '/'))
+  const middlewarePaths = await globFindAll(
+    basePath,
+    globPatterns.middlewarePoints,
+  )
+  const validMiddlewarePaths = middlewarePaths.filter((p) =>
+    pathnames.some((pn) => p.includes(pn)),
+  )
+  const middlewareModules = await Promise.all(
+    validMiddlewarePaths.map(async (p) => ({
+      handler: await import(
+        encapsulateModule(pathToFileURL(p).toString())
+      ).then((m) => m.handler as IntREST.MiddlewareHandler),
+      pathname: p.replace(basePath, ''),
+    })),
+  )
+  return middlewareModules.filter((m) => typeof m.handler === 'function')
+}
+
+function sortCompiledRoutes(a: AutoGeneratedVars, b: AutoGeneratedVars) {
+  const aSlipt = a.pathname.split('/')
+  const bSlipt = b.pathname.split('/')
+  for (let i = 0; i < aSlipt.length; i++) {
+    if (aSlipt[i][0] === '[' && bSlipt[i]?.[0] === '[') continue
+    if (aSlipt[i][0] === '[') return 1
+    if (bSlipt[i]?.[0] === '[') return -1
+  }
+  if (b.route.toLowerCase() > a.route.toLowerCase()) return -1
+  if (b.route.toLowerCase() < a.route.toLowerCase()) return 1
+  return b.pathname.length - a.pathname.length
 }

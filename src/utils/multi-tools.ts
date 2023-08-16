@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { Worker } from 'worker_threads'
 import { defaultPaths } from './constants'
-import { join } from './path'
+import { join } from 'path/posix'
 
 function workerURL(path: string) {
   return new URL(join('.', path), import.meta.url)
@@ -30,6 +30,13 @@ export async function startWorker(size: number) {
       workerId: worker.threadId,
     })
   }
+}
+
+export async function stopWorkers() {
+  for (const worker of workerPool.values()) {
+    worker.worker.terminate()
+  }
+  workerPool.clear()
 }
 
 export async function workerTunnel(

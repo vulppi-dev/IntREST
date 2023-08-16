@@ -8,6 +8,7 @@ import { createWriteStream, rmSync } from 'fs'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { StatusCodes, getReasonPhrase } from 'http-status-codes'
 import _ from 'lodash'
+import { join } from 'path/posix'
 import { performance } from 'perf_hooks'
 import { globPatterns, isDev, regexpPatterns } from './constants'
 import {
@@ -15,7 +16,7 @@ import {
   parseStringBytesToNumber,
   parseStringToAutoDetectValue,
 } from './parser'
-import { getModule, globFind, join } from './path'
+import { getModule, globFind } from './path'
 
 interface TunnelFunction {
   (

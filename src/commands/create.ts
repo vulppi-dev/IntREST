@@ -1,7 +1,8 @@
 import ck from 'chalk'
 import { cpSync, writeFileSync } from 'fs'
+import { join } from 'path/posix'
 import { fileURLToPath } from 'url'
-import { join, normalizePath } from '../utils/path'
+import { normalizePath } from '../utils/path'
 
 export const command = 'create'
 
@@ -64,6 +65,7 @@ dist/
 *.swp
 *temp/
 *tmp/
+*env.*
 
 # test
 coverage/

@@ -2,11 +2,12 @@ import { existsSync } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import { dirname } from 'path'
+import { join } from 'path/posix'
 import rangeParser from 'range-parser'
 import { Readable } from 'stream'
-import { defaultPaths } from './constants'
-import { escapePath, globFindAll, join, normalizePath } from './path'
 import { isBuffer } from './compare'
+import { defaultPaths } from './constants'
+import { escapePath, globFindAll, normalizePath } from './path'
 
 function isRange(
   range?: rangeParser.Result | rangeParser.Ranges,

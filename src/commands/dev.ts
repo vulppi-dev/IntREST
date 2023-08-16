@@ -3,21 +3,21 @@ import dotenv, { type DotenvConfigOutput, type DotenvParseOutput } from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
 import { existsSync, lstatSync, rmSync, watch } from 'fs'
 import _ from 'lodash'
+import { join } from 'path/posix'
 import { Worker } from 'worker_threads'
+import type { CommandBuilder } from 'yargs'
 import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
 import {
   escapePath,
+  getEnvPath,
   getFolderPath,
   getModule,
-  getEnvPath,
   globFind,
   globFindAll,
-  join,
   normalizePath,
 } from '../utils/path'
 import { startWatchBuild } from './_builder'
 import { getChecksum } from './_common'
-import type { CommandBuilder } from 'yargs'
 
 export const command = 'dev'
 

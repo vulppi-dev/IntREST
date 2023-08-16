@@ -1,8 +1,9 @@
 import ck from 'chalk'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createServer } from 'http'
+import { join } from 'path/posix'
 import { defaultPaths, globPatterns } from '../utils/constants'
-import { getModule, globFind, join } from '../utils/path'
+import { getModule, globFind } from '../utils/path'
 import { buildRequestHandler } from '../utils/request-handler'
 import { tunnel } from '../utils/tunnel'
 

@@ -1,7 +1,17 @@
 import { glob } from 'glob'
-import path from 'path'
+import { join, normalize } from 'path/posix'
 import { pathToFileURL } from 'url'
 import { globPatterns, isDev } from './constants'
+
+/**
+ * Normalize the path and replace all backslash with slash
+ *
+ * @param pathname
+ * @returns
+ */
+export function normalizePath(pathname: string) {
+  return normalize(pathname).replace(/[\/\\]+/g, '/')
+}
 
 /**
  * Get the module from the given path
@@ -20,13 +30,6 @@ export async function getModule(configPath?: string) {
   } catch (err) {
     return {} as Record<string, any>
   }
-}
-
-/**
- * Join path and normalize it
- */
-export function join(...paths: string[]) {
-  return normalizePath(path.join(...paths))
 }
 
 /**
@@ -88,13 +91,6 @@ export function escapePath(pathname: string, ...escape: string[]) {
   return normalizePath(pathname)
     .replace(join(...escape), '')
     .replace(/^\//, '')
-}
-
-/**
- * Normalize the path, replace all backslash and multiple slashes with single slash
- */
-export function normalizePath(path: string) {
-  return path.replace(/[\\\/]+/g, '/')
 }
 
 /**
