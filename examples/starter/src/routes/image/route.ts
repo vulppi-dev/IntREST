@@ -1,14 +1,16 @@
-import { type IntRequest, type IntResponse } from '@vulppi/intrest'
-import { getImage } from './data'
+import {
+  assetsRawContent,
+  type IntRequest,
+  type IntResponse,
+} from '@vulppi/intrest'
 
 export async function GET(ctx: IntRequest): Promise<IntResponse> {
-  const stream = await getImage()
+  const body = await assetsRawContent('image.jpg')
   return {
     status: 200,
-    body: stream,
+    body,
     headers: {
       'Content-Type': 'image/jpg',
-      'Content-Encoding': 'gzip, deflate',
     },
   }
 }

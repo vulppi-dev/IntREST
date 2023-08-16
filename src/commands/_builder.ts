@@ -166,12 +166,6 @@ function IntRESTPlugin({
       )
       build.onEnd(async () => {
         const existsEntry = existsSync(absoluteEntry)
-        console.log(
-          existsEntry,
-          !!restart,
-          contextMap.has(absoluteEntry),
-          absoluteEntry,
-        )
         if (!existsEntry) {
           const ctx = contextMap.get(absoluteEntry)
           ctx?.dispose()

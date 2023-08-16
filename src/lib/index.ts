@@ -41,7 +41,7 @@ export async function assetsStream(
   )
   await assertFileExistsAndIsAFile(join(assetsPath, path))
 
-  const encoding = (options?.compress?.split(/, */) ||
+  const encoding = (options?.compress?.split(/, */g) ||
     []) as IntREST.RequestEncoding[]
   const stream = createReadStream(join(assetsPath, path), {
     autoClose: true,
@@ -59,7 +59,7 @@ export async function assetsRawContent(
   )
   await assertFileExistsAndIsAFile(join(assetsPath, path))
 
-  const encoding = (compress?.split(/, */) || []) as IntREST.RequestEncoding[]
+  const encoding = (compress?.split(/, */g) || []) as IntREST.RequestEncoding[]
   const data = readFileSync(join(assetsPath, path))
 
   return parseCompressBuffer(data, encoding)

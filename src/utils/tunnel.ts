@@ -6,7 +6,13 @@ import { join } from 'path/posix'
 import { unescape } from 'querystring'
 import { pathToFileURL } from 'url'
 import { defaultPaths, globPatterns } from './constants'
-import { encapsulateModule, getFolderPath, globFind, globFindAll } from './path'
+import {
+  encapsulateModule,
+  getFolderPath,
+  globFind,
+  globFindAll,
+  normalizePath,
+} from './path'
 import { sendResponseParser } from './response'
 
 export async function tunnel(
@@ -220,18 +226,20 @@ async function getMiddlewares(pathname: string) {
   const pathnames = pathname
     .split('/')
     .map((_, i, l) => (i > 0 ? l.slice(0, i + 1).join('/') : '/'))
+    .map((p) => normalizePath(join(basePath, p, 'middleware.mjs')))
   const middlewarePaths = await globFindAll(
     basePath,
     globPatterns.middlewarePoints,
   )
   const validMiddlewarePaths = middlewarePaths.filter((p) =>
-    pathnames.some((pn) => p.includes(pn)),
+    pathnames.some((pn) => p === pn),
   )
+
   const middlewareModules = await Promise.all(
     validMiddlewarePaths.map(async (p) => ({
       handler: await import(
         encapsulateModule(pathToFileURL(p).toString())
-      ).then((m) => m.handler as IntREST.MiddlewareHandler),
+      ).then((m) => m.middleware as IntREST.MiddlewareHandler),
       pathname: p.replace(basePath, ''),
     })),
   )

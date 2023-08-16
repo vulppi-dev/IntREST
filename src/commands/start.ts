@@ -1,6 +1,5 @@
 import ck from 'chalk'
 import { join } from 'path/posix'
-import { Worker } from 'worker_threads'
 import type { CommandBuilder } from 'yargs'
 import { defaultPaths } from '../utils/constants'
 import { normalizePath } from '../utils/path'
@@ -41,22 +40,15 @@ export async function handler({ singleWorker }: Args): Promise<void> {
 }
 
 async function startServer(singleWorker?: boolean) {
-  new Worker(
-    new URL(
-      join(
-        '..',
-        'workers',
-        singleWorker
-          ? defaultPaths.workerSingleWorker
-          : defaultPaths.workerMultiWorker,
-      ),
-      import.meta.url,
+  const url = new URL(
+    join(
+      '..',
+      'workers',
+      singleWorker
+        ? defaultPaths.workerSingleWorker
+        : defaultPaths.workerMultiWorker,
     ),
-    {
-      env: {
-        NODE_ENV: 'production',
-        ...process.env,
-      },
-    },
+    import.meta.url,
   )
+  await import(url.toString())
 }
