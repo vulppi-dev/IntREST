@@ -19,6 +19,7 @@ export {
   parseDecompressBuffer,
   parseDecompressStream,
 } from '../utils/parser'
+export * from '../utils/middleware-tools'
 
 async function assertFileExistsAndIsAFile(path: string) {
   const exists = existsSync(path)

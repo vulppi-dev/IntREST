@@ -20,9 +20,7 @@ import {
  * @param bytes
  * @returns
  */
-export function parseStringBytesToNumber(
-  bytes: string | number | undefined,
-): number | undefined {
+export function parseStringBytesToNumber(bytes: string | number): number {
   if (typeof bytes !== 'string') return bytes
 
   const [, size, unit] = bytes.match(/^(\d+)([kmgt]b?)$/i) || []

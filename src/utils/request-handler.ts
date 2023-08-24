@@ -159,7 +159,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       config.limits?.bodyMaxSize || '10mb',
     )
 
-    if (maxBodySize && bodySize > maxBodySize) {
+    if (bodySize > maxBodySize) {
       res.writeHead(StatusCodes.REQUEST_TOO_LONG, {
         'Content-Type': 'application/json',
       })
@@ -176,10 +176,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     if (!/^get$/i.test(method)) {
       // x-www-form-urlencoded and multipart/form-data
       try {
-        if (
-          contentType &&
-          regexpPatterns.isBusboyContentType.test(contentType)
-        ) {
+        if (regexpPatterns.isBusboyContentType.test(contentType)) {
           await new Promise<void>((resolve, reject) => {
             const bb = busboy({ headers: req.headers })
             bb.on('file', (name, file, info) => {
@@ -218,12 +215,13 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
           })
           const encoding = req.headers['content-encoding'] || 'identity'
 
-          const bodyString = (
-            await parseDecompressBuffer(
-              buffer,
-              encoding.split(/, */) as IntREST.RequestEncoding[],
-            )
-          ).toString()
+          const bodyString =
+            (
+              await parseDecompressBuffer(
+                buffer,
+                encoding.split(/, */) as IntREST.RequestEncoding[],
+              )
+            ).toString() || '{}' // default to empty object
 
           if (regexpPatterns.isJSONContentType.test(contentType)) {
             body = JSON.parse(bodyString)
