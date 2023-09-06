@@ -4,5 +4,11 @@ export async function GET({}: IntRequest): Promise<IntResponse> {
   return {
     status: 200,
     body: 'Hello World!',
+    cookies: {
+      a: {
+        value: '',
+        options: {},
+      },
+    },
   }
 }

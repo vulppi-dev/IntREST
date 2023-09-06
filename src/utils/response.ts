@@ -96,6 +96,13 @@ export async function sendResponseParser(
     })
   }
 
+  // Send the status code to the client
+  sendMessage({
+    requestId,
+    state: 'status',
+    data: res.status || StatusCodes.OK,
+  })
+
   // Check if the response has a body to send to the client
   if (res.body) {
     // If the response body is a buffer or string
@@ -214,13 +221,6 @@ export async function sendResponseParser(
       }
     }
   }
-
-  // Send the status code to the client
-  sendMessage({
-    requestId,
-    state: 'status',
-    data: res.status || StatusCodes.OK,
-  })
 
   // Send the end of the response to the client
   sendMessage({

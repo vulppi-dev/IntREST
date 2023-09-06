@@ -82,7 +82,9 @@ export async function tunnel(
           )
         )
         return {
-          handler: routeModule[method] as IntREST.RequestHandler | undefined,
+          handler: (routeModule[method] ||
+            routeModule['ALL'] ||
+            routeModule.default) as IntREST.RequestHandler | undefined,
           identity: i,
         }
       }),
@@ -239,7 +241,7 @@ async function getMiddlewares(pathname: string) {
     validMiddlewarePaths.map(async (p) => ({
       handler: await import(
         encapsulateModule(pathToFileURL(p).toString())
-      ).then((m) => m.middleware as IntREST.MiddlewareHandler),
+      ).then((m) => (m.middleware || m.default) as IntREST.MiddlewareHandler),
       pathname: p.replace(basePath, ''),
     })),
   )

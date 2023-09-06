@@ -18,9 +18,10 @@ const bootstrapPath = await globFind(
   globPatterns.bootstrapCompiled,
 )
 const bootstrap = await getModule(bootstrapPath)
-if (bootstrap.bootstrap && typeof bootstrap.bootstrap === 'function') {
+const bootstrapHandler = bootstrap.bootstrap || bootstrap.default
+if (bootstrapHandler && typeof bootstrapHandler === 'function') {
   console.log('\n    Bootstrapping...\n')
-  await bootstrap.bootstrap(config)
+  await bootstrapHandler(config)
 }
 
 const appPort = config.port || +(process.env.PORT || 4000)

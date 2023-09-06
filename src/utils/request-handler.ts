@@ -17,6 +17,7 @@ import {
   parseStringToAutoDetectValue,
 } from './parser'
 import { getModule, globFind } from './path'
+import ms from 'ms'
 
 interface TunnelFunction {
   (
@@ -278,13 +279,24 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
         (state, data) => {
           if (state === 'cookie') {
             const { name, value, options } = data as ResponseDataMap['cookie']
+            if (options?.maxAge && typeof options?.maxAge === 'string') {
+              options.maxAge = ms(options.maxAge)
+            }
+
             res.appendHeader(
               'Set-Cookie',
-              cookie.serialize(name, value, options),
+              cookie.serialize(name, value, options as any),
             )
           } else if (state === 'clear-cookie') {
             const { name, options } = data as ResponseDataMap['clear-cookie']
-            res.appendHeader('Set-Cookie', cookie.serialize(name, '', options))
+            if (options?.maxAge && typeof options?.maxAge === 'string') {
+              options.maxAge = ms(options.maxAge)
+            }
+
+            res.appendHeader(
+              'Set-Cookie',
+              cookie.serialize(name, '', options as any),
+            )
           } else if (state === 'set') {
             const [name, value] = data as ResponseDataMap['set']
             res.setHeader(name, value || '')

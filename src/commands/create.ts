@@ -27,14 +27,14 @@ export const handler = async (): Promise<void> => {
   })
   writeFileSync(
     join(projectPath, '.gitignore'),
-    `# Vulppi
+    `# Vulppi ignore template
+
 # package
 node_modules/
 npm-debug.log
 
 # IDE
 .idea/
-.vscode/
 
 # OS files
 .DS_Store
@@ -65,7 +65,8 @@ dist/
 *.swp
 *temp/
 *tmp/
-*env.*
+*.env.*
+*.env
 
 # test
 coverage/

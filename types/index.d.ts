@@ -1,6 +1,5 @@
 import type { CookieSerializeOptions } from 'cookie'
 import type { IncomingHttpHeaders } from 'http'
-import type { OpenAPIV3_1 } from 'openapi-types'
 import type { Readable } from 'stream'
 
 export * from './lib'
@@ -22,8 +21,6 @@ export type MiddlewareNext = IntREST.MiddlewareNext
 
 export type RequestHandler = IntREST.RequestHandler
 export type MiddlewareHandler = IntREST.MiddlewareHandler
-
-export type ValidationHandler = IntREST.ValidationHandler
 
 declare global {
   namespace NodeJS {
@@ -163,18 +160,6 @@ declare global {
        * ```
        */
       env?: Record<string, string>
-      /**
-       * The definition of the OpenAPI specification for this application
-       */
-      openapi?: {
-        title?: string
-        termsOfService?: string
-        license?: string
-        licenseUrl?: string
-        summary?: string
-        contact?: OpenAPIV3_1.ContactObject
-        server?: OpenAPIV3_1.ServerObject
-      }
     }
 
     /**
@@ -285,7 +270,25 @@ declare global {
       clearCookies?: Record<string, CookieOptions>
     }
 
-    type CookieOptions = CookieSerializeOptions
+    type CookieOptions = Omit<CookieSerializeOptions, 'maxAge'> & {
+      /**
+       * Specifies the number (in seconds) to be the value for the `Max-Age`
+       * `Set-Cookie` attribute. The given number will be converted to an integer
+       * by rounding down. By default, no maximum age is set.
+       *
+       * *Note* the {@link https://tools.ietf.org/html/rfc6265#section-5.3|cookie storage model specification}
+       * states that if both `expires` and `maxAge` are set, then `maxAge` takes precedence, but it is
+       * possible not all clients by obey this, so if both are set, they should
+       * point to the same date and time.
+       *
+       * The max age of the cookie using time string format too
+       *
+       * @example 60 * 60 * 24 * 7 // 7d
+       * @example '1d', '1h', '1m', '1s', '1ms'
+       * @example '1 day', '2 hrs', '1 hour', '1 minute', '1 second'
+       */
+      maxAge?: number | string | undefined
+    }
 
     /**
      * The cookie content to set in the response
@@ -336,11 +339,6 @@ declare global {
     } & {
       [x: string]: XMLBody | XMLBody[] | undefined
     }
-
-    /**
-     * Type of validation handler using openapi v3.1 schemas
-     */
-    type ValidationHandler<T extends {} = {}> = OpenAPIV3_1.OperationObject<T>
   }
 
   interface CustomRequestData {
