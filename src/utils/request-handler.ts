@@ -114,8 +114,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       'Content-Type',
       'Authorization',
       'Range',
-      'X-*',
-      'x-*',
+      '*',
     ])
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     res.setHeader('Access-Control-Max-Age', '86400')
