@@ -94,6 +94,10 @@ declare global {
          */
         cors?: undefined | null | false | string | string[]
         /**
+         * The allowed headers for CORS
+         */
+        allowHeaders?: string[]
+        /**
          * The minimum number of workers to keep alive
          *
          * @default 5
