@@ -11,6 +11,7 @@ export type SetCookie = IntREST.SetCookie
 export type ClearCookie = IntREST.ClearCookie
 export type RequestMethods = IntREST.RequestMethods
 export type XMLBody = IntREST.XMLBody
+export type CookieMeta = IntREST.CookieMeta
 
 export type IntRequest<
   Params extends Record<string, string> = Record<string, string>,
@@ -194,6 +195,19 @@ declare global {
       | 'gzip, deflate'
       | 'deflate, gzip'
 
+    /**
+     * The cookie meta data
+     */
+    interface CookieMeta {
+      path?: string
+      expires?: Date
+      maxAge?: number
+      domain?: string
+      secure?: boolean
+      httpOnly?: boolean
+      sameSite?: 'lax' | 'strict' | 'none'
+    }
+
     type IntRequest<
       Params extends Record<string, string> = Record<string, string>,
       Body extends Record<string, any> = Record<string, any>,
@@ -210,6 +224,10 @@ declare global {
        * The cookies of the request
        */
       cookies: Record<string, string>
+      /**
+       * The cookies of the request
+       */
+      cookiesMeta: Record<string, CookieMeta>
       /**
        * The params of the request, match with the route patterns
        */
@@ -267,11 +285,11 @@ declare global {
       /**
        * The cookies to set in the response
        */
-      cookies?: Record<string, SetCookie>
+      cookies?: Record<string, SetCookie | SetCookie[]>
       /**
        * The cookies to clear in the response
        */
-      clearCookies?: Record<string, CookieOptions>
+      clearCookies?: Record<string, CookieOptions | CookieOptions[]>
     }
 
     type CookieOptions = Omit<CookieSerializeOptions, 'maxAge'> & {
@@ -331,7 +349,7 @@ declare global {
      * The function to call the next middleware
      */
     interface MiddlewareNext {
-      (custom?: CustomRequestData): void
+      (custom?: Partial<CustomRequestData>): void
     }
 
     /**

@@ -1,4 +1,4 @@
-import { build } from 'esbuild'
+import { context } from 'esbuild'
 import { glob } from 'glob'
 import { dirname, isAbsolute, resolve } from 'path'
 import { join, normalize } from 'path/posix'
@@ -64,7 +64,7 @@ async function callBuild() {
     }),
     {},
   )
-  await build({
+  const ctx = await context({
     entryPoints: entries,
     bundle: true,
     minify: true,
@@ -75,8 +75,9 @@ async function callBuild() {
     format: 'esm',
     outExtension: { '.js': '.mjs' },
     outdir: 'dist',
-    logLevel: 'info',
+    logLevel: 'warning',
   })
+  ctx.watch()
 }
 
 callBuild()

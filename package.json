@@ -1,6 +1,6 @@
 {
   "name": "@vulppi/intrest",
-  "version": "0.15.3",
+  "version": "0.16.1",
   "description": "Backend kit make by Vulppi",
   "license": "MIT",
   "author": {
@@ -67,7 +67,7 @@
     }
   },
   "scripts": {
-    "dev": "nodemon --watch src -e js,cjs,mjs,ts,json scripts/build.mjs",
+    "dev": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "bench": "node scripts/bench.mjs",
     "test": "run-s build test:start",
@@ -78,6 +78,7 @@
     "@vulppi/toolbelt": "^0.6.3",
     "busboy": "^1.6.0",
     "chalk": "^5.3.0",
+    "chokidar": "^3.5.3",
     "concat-stream": "^2.0.0",
     "cookie": "^0.5.0",
     "dotenv": "^16.3.1",
@@ -92,22 +93,23 @@
     "mime-types": "^2.1.35",
     "ms": "^2.1.3",
     "range-parser": "^1.2.1",
+    "set-cookie-parser": "^2.6.0",
     "typescript": "^5.2.2",
     "valibot": "^0.15.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.0",
-    "@types/cookie": "^0.5.2",
     "@types/concat-stream": "^2.0.0",
+    "@types/cookie": "^0.5.2",
     "@types/inquirer": "^9.0.3",
     "@types/lodash": "^4.14.198",
     "@types/mime-types": "^2.1.1",
     "@types/ms": "^0.7.31",
-    "@types/node": "^20.6.0",
+    "@types/node": "^20.6.1",
     "@types/range-parser": "^1.2.4",
+    "@types/set-cookie-parser": "^2.4.3",
     "@types/yargs": "^17.0.24",
-    "nodemon": "^3.0.1",
     "npm-run-all": "^4.1.5"
   }
 }

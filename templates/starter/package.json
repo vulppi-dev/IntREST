@@ -10,11 +10,11 @@
     "test": "intrest build && mocha src/**/*.test.mjs"
   },
   "dependencies": {
-    "@vulppi/intrest": "^0.15.3"
+    "@vulppi/intrest": "^0.16.1"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.6.0",
+    "@types/node": "^20.6.1",
     "@types/supertest": "^2.0.12",
     "mocha": "^10.2.0",
     "supertest": "^6.3.3"

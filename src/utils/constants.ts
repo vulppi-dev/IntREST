@@ -1,11 +1,12 @@
 export const isDev = () => process.env.NODE_ENV === 'development'
 
 export const globPatterns = {
-  env: ['.env', '.env.*'],
+  env: ['.env', '.env{.local,.development,.production}'],
   entryFolder: ['routes', 'src/routes'],
   assetsFolder: ['assets', 'src/assets'],
   staticFolder: ['static', 'src/static'],
   configFile: 'intrest.config.{mjs,cjs,js}',
+  envFile: '.env{.local,.development,.production}',
   bootstrapEntry: 'bootstrap.ts',
   bootstrapCompiled: 'bootstrap.mjs',
   entryPoints: '**/{route,middleware,validation}.ts',

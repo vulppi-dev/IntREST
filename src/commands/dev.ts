@@ -1,7 +1,8 @@
 import ck from 'chalk'
 import dotenv, { type DotenvConfigOutput, type DotenvParseOutput } from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
-import { existsSync, lstatSync, rmSync, watch } from 'fs'
+import { existsSync, lstatSync, rmSync } from 'fs'
+import chokidar from 'chokidar'
 import _ from 'lodash'
 import { join } from 'path/posix'
 import { Worker } from 'worker_threads'
@@ -70,7 +71,7 @@ export async function handler({ singleWorker }: Args): Promise<void> {
   restartServer(projectPath, configPath, envPath, singleWorker)
 
   // If root dependencies (env, config) are changed, restart the application
-  watch(projectPath, async (_, filename) => {
+  async function watchRootDirectory(filename: string) {
     if (!filename) return
     let changeConfig = false
     let changeEnv = false
@@ -124,7 +125,23 @@ export async function handler({ singleWorker }: Args): Promise<void> {
     if (changeConfig || changeEnv) {
       restartServer(projectPath, configPath, envPath, singleWorker)
     }
-  })
+  }
+
+  chokidar
+    .watch(
+      [
+        join(projectPath, globPatterns.configFile),
+        join(projectPath, globPatterns.envFile),
+      ],
+      {
+        ignoreInitial: true,
+        awaitWriteFinish: true,
+        cwd: projectPath,
+      },
+    )
+    .on('add', watchRootDirectory)
+    .on('change', watchRootDirectory)
+    .on('unlink', watchRootDirectory)
 }
 
 let app: Worker | null = null
@@ -215,8 +232,8 @@ async function startRouterBuilder(
     ck.cyan.bold(escapePath(entryFolder, basePath)),
   )
   // Main watcher for find new entry points and add to build context
-  watch(entryFolder, { recursive: true }, async (state, filename) => {
-    if (!filename || state === 'change') return
+  async function watchSourceCode(filename: string) {
+    if (!filename) return
     const normalizedFilename = normalizePath(filename)
     const absolute = join(entryFolder, normalizedFilename)
     const exists = existsSync(absolute)
@@ -256,7 +273,23 @@ async function startRouterBuilder(
         restart,
       })
     }
-  })
+  }
+
+  console.log(basePath)
+
+  chokidar
+    .watch(
+      [
+        join(entryFolder, globPatterns.entryPoints),
+        join(entryFolder, globPatterns.bootstrapEntry),
+      ],
+      {
+        awaitWriteFinish: true,
+        ignoreInitial: true,
+        cwd: entryFolder,
+      },
+    )
+    .on('add', watchSourceCode)
 
   // Start the first build
 
