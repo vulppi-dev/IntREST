@@ -240,6 +240,13 @@ declare global {
        * Data merged from middleware handlers when call `next()`
        */
       custom: CustomRequestData
+      /**
+       *
+       */
+      origin: {
+        url?: URL
+        ip?: string
+      }
     } & (
       | {
           /**

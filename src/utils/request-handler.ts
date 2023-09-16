@@ -65,6 +65,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
 
     // Prepare origin for CORS
     const pureOrigin = req.headers.origin || req.headers.host || ''
+    const ipOrigin = req.socket.remoteAddress
     const origin = (req.headers.origin || req.headers.host || '').replace(
       /^[a-z]+:\/\//,
       '',
@@ -72,8 +73,10 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     const originWithProtocol = /^[a-z]+:\/\//.test(pureOrigin)
       ? pureOrigin
       : pureOrigin.includes('localhost') || isDev()
-      ? `http://${pureOrigin}`
-      : `https://${pureOrigin}`
+      ? `http://${pureOrigin || 'localhost'}`
+      : pureOrigin
+      ? `https://${pureOrigin}`
+      : '*'
 
     // Validate cors
     if (config.limits?.cors) {
@@ -301,6 +304,13 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
             cookiesMeta,
             body,
             query: query || '',
+            origin: {
+              url:
+                originWithProtocol === '*'
+                  ? undefined
+                  : new URL(originWithProtocol),
+              ip: ipOrigin,
+            },
           },
         },
         (state, data) => {
