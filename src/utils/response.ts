@@ -73,27 +73,54 @@ export async function sendResponseParser(
     })
   }
   // Check if the response has cookies to send to the client
-  for (const entry of Object.entries(res.cookies || {})) {
-    sendMessage({
-      requestId,
-      state: 'cookie',
-      data: {
-        name: entry[0],
-        value: entry[1].value,
-        options: entry[1].options,
-      },
-    })
+  for (const [key, cookieData] of Object.entries(res.cookies || {})) {
+    if (Array.isArray(cookieData)) {
+      for (const cookie of cookieData) {
+        sendMessage({
+          requestId,
+          state: 'cookie',
+          data: {
+            name: key,
+            value: cookie.value,
+            options: cookie.options,
+          },
+        })
+      }
+    } else {
+      sendMessage({
+        requestId,
+        state: 'cookie',
+        data: {
+          name: key,
+          value: cookieData.value,
+          options: cookieData.options,
+        },
+      })
+    }
   }
   // Check if the response has cookies to clear in the client
-  for (const entry of Object.entries(res.clearCookies || {})) {
-    sendMessage({
-      requestId,
-      state: 'clear-cookie',
-      data: {
-        name: entry[0],
-        options: entry[1],
-      },
-    })
+  for (const [key, cookieData] of Object.entries(res.clearCookies || {})) {
+    if (Array.isArray(cookieData)) {
+      for (const cookie of cookieData) {
+        sendMessage({
+          requestId,
+          state: 'clear-cookie',
+          data: {
+            name: key,
+            options: cookie,
+          },
+        })
+      }
+    } else {
+      sendMessage({
+        requestId,
+        state: 'clear-cookie',
+        data: {
+          name: key,
+          options: cookieData,
+        },
+      })
+    }
   }
 
   // Send the status code to the client
