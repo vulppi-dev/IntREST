@@ -93,7 +93,7 @@ declare global {
          *
          * @default undefined
          */
-        cors?: undefined | null | false | string | string[]
+        allowOrigin?: undefined | null | false | string | string[]
         /**
          * The allowed headers for CORS
          */
@@ -356,7 +356,10 @@ declare global {
      * The function to call the next middleware
      */
     interface MiddlewareNext {
-      (custom?: Partial<CustomRequestData>): void
+      (custom?: Partial<CustomRequestData>):
+        | Promise<IntResponse | void>
+        | IntResponse
+        | void
     }
 
     /**

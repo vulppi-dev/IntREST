@@ -72,7 +72,7 @@ The `IntResponse` interface is the output interface of IntREST. It contains all 
 
 ## MiddlewareNext
 
-The `MiddlewareNext` interface call the next middleware or route handler. If you send object in this function, the object will be merged with the property `custom` of the `IntRequest` interface.
+The `MiddlewareNext` interface call the next middleware or route handler. If you send object in this function, the object will be merged with the property `custom` of the `IntRequest` interface. The `MiddlewareNext` return a `Promise` with the `IntResponse` interface and this **response must be returned** in the middleware.
 
 ### Properties
 

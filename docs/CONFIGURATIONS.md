@@ -13,12 +13,17 @@ export default {
   removeUploadFilesAfterResponse: false,
   folders: {
     uploadTemp: '.tmp',
+    tsConfig: 'tsconfig.json',
   },
   limits: {
     bodyMaxSize: '10mb',
-    cors: undefined, // Can be enable by setting `string` or `string[]`
+    allowOrigin: undefined, // Can be enable by setting `string` or `string[]`
+    allowHeaders: undefined, // Can be enable by setting `string[]`
     minWorkerPoolSize: 5
     maxWorkerPoolSize: 20,
+    middleware: {
+      timeout: 5000,
+    }
   },
   messages: {
     INTERNAL_SERVER_ERROR: 'Internal server error',

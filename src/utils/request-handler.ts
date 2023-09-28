@@ -65,10 +65,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     // Prepare origin for CORS
     const pureOrigin = req.headers.origin || req.headers.host || ''
     const ipOrigin = req.socket.remoteAddress
-    const origin = (req.headers.origin || req.headers.host || '').replace(
-      /^[a-z]+:\/\//,
-      '',
-    )
+    const origin = pureOrigin.replace(/^[a-z]+:\/\//, '')
     const originWithProtocol = /^[a-z]+:\/\//.test(pureOrigin)
       ? pureOrigin
       : pureOrigin.includes('localhost') || isDev()
@@ -77,16 +74,17 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       ? `https://${pureOrigin}`
       : '*'
 
-    // Validate cors
-    if (config.limits?.cors) {
-      const cors = (
-        Array.isArray(config.limits.cors)
-          ? config.limits.cors
-          : [config.limits.cors]
+    // Validate allowOrigin
+    if (config.limits?.allowOrigin && !isDev()) {
+      const allowOrigin = (
+        Array.isArray(config.limits.allowOrigin)
+          ? config.limits.allowOrigin
+          : [config.limits.allowOrigin]
       ).map((d) => d.replace(/^[a-z]+:\/\//, ''))
 
-      if (cors.some((o) => o === origin)) {
-        res.setHeader('Access-Control-Allow-Origin', originWithProtocol)
+      const allowOriginItem = allowOrigin.find((o) => origin.endsWith(o))
+      if (allowOriginItem) {
+        res.setHeader('Access-Control-Allow-Origin', allowOriginItem)
       } else {
         res.setHeader('Access-Control-Allow-Origin', '*')
       }

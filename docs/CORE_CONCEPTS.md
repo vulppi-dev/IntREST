@@ -91,7 +91,7 @@ You can define route groups by creating a folder with the group name prefixed wi
 
 Middleware is a entry too in the `routes` folder. You can define middleware for a route by creating a file named `middleware.ts` inside the route's folder. For example, the `routes/my-route/middleware.ts` file defines middleware for the `/my-route` route.
 
-The middleware behavior is different from route handlers. Middleware is executed in chain order, and the route handler is executed after all middleware has been executed and call `next` method. If a middleware returns a response, the route handler will not be executed. And if the `next` method is not called, it's throw an error of timeout. The default timeout is 5 seconds.
+The middleware behavior is different from route handlers. Middleware is executed in chain order, and the route handler is executed after all middleware has been executed and call `next` method. **The middleware must be return a response**, came from `next` method or not. When middleware not call `next` method, the chain is broken and the route handler is not executed. And if the `next` method is not called, it's throw an error of timeout. The default timeout is `5` seconds, but you can change it in the `intrest.config.mjs` file.
 
 Simple middleware example:
 
@@ -111,9 +111,9 @@ export async function middleware(
     }
   }
   // Call next middleware or route handler
-  next()
+  return next()
   // Or send custom data to next middleware or route handler
-  next({ user: { name: 'John' } })
+  return next({ user: { name: 'John' } })
 }
 ```
 
