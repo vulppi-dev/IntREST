@@ -2,7 +2,6 @@ import busboy from 'busboy'
 import ck from 'chalk'
 import concat from 'concat-stream'
 import cookie from 'cookie'
-import setCookie from 'set-cookie-parser'
 import { randomUUID } from 'crypto'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { createWriteStream, rmSync } from 'fs'
@@ -266,29 +265,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
       }
     }
 
-    const preCookies = setCookie.parse(req.headers.cookie || '', {
-      decodeValues: true,
-    })
-
-    const cookies = preCookies.reduce(
-      (acc, cur) => ({ ...acc, [cur.name]: cur.value }),
-      {} as Record<string, string>,
-    )
-    const cookiesMeta = preCookies.reduce(
-      (acc, cur) => ({
-        ...acc,
-        [cur.name]: {
-          domain: cur.domain,
-          expires: cur.expires,
-          httpOnly: cur.httpOnly,
-          maxAge: cur.maxAge,
-          path: cur.path,
-          sameSite: cur.sameSite as 'lax' | 'strict' | 'none',
-          secure: cur.secure,
-        },
-      }),
-      {} as Record<string, IntREST.CookieMeta>,
-    )
+    const cookies = cookie.parse(req.headers.cookie || '')
 
     try {
       await tunnel(
@@ -301,7 +278,8 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
             custom: {},
             headers: req.headers,
             cookies,
-            cookiesMeta,
+            // TODO: cookiesMeta
+            cookiesMeta: {},
             body,
             query: query || '',
             origin: {
