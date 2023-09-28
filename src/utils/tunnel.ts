@@ -124,17 +124,7 @@ export async function tunnel(
       requestHandler: route.handler,
     })
 
-    if (response) {
-      return await sendResponse(response, context.headers, endCallback)
-    }
-
-    return await sendResponse(
-      {
-        status: StatusCodes.NO_CONTENT,
-      },
-      context.headers,
-      endCallback,
-    )
+    return await sendResponse(response, context.headers, endCallback)
   } catch (error) {
     console.error(error)
     if (error instanceof Error) {
@@ -251,15 +241,21 @@ async function callRecursiveMiddlewares({
   context,
   config,
   requestHandler,
-}: CallRecursiveMiddlewaresArgs): Promise<void | IntREST.IntResponse> {
-  if (!middlewares.length) return requestHandler(context)
+}: CallRecursiveMiddlewaresArgs): Promise<IntREST.IntResponse> {
+  if (!middlewares.length)
+    return (
+      (await requestHandler(context)) || {
+        status: StatusCodes.NOT_FOUND,
+      }
+    )
+
   const middleware = middlewares[0]
 
   const timeoutId = setTimeout(() => {
     throw new Error(`Middleware handler timeout: ${middleware.pathname}`)
   }, config.limits?.middleware?.timeout || 5000)
 
-  return middleware.handler(context, (c?: CustomRequestData) => {
+  return middleware.handler(context, async (c?: CustomRequestData) => {
     clearTimeout(timeoutId)
     context.custom = _.merge(context.custom, c)
     return callRecursiveMiddlewares({

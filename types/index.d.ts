@@ -347,19 +347,15 @@ declare global {
      */
     interface MiddlewareHandler {
       (context: IntRequest, next: MiddlewareNext):
-        | Promise<IntResponse | void>
+        | Promise<IntResponse>
         | IntResponse
-        | void
     }
 
     /**
      * The function to call the next middleware
      */
     interface MiddlewareNext {
-      (custom?: Partial<CustomRequestData>):
-        | Promise<IntResponse | void>
-        | IntResponse
-        | void
+      (custom?: Partial<CustomRequestData>): Promise<IntResponse> | IntResponse
     }
 
     /**
