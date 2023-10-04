@@ -255,14 +255,19 @@ async function callRecursiveMiddlewares({
     throw new Error(`Middleware handler timeout: ${middleware.pathname}`)
   }, config.limits?.middleware?.timeout || 5000)
 
-  return middleware.handler(context, async (c?: CustomRequestData) => {
-    clearTimeout(timeoutId)
-    context.custom = _.merge(context.custom, c)
-    return callRecursiveMiddlewares({
-      middlewares: middlewares.slice(1),
-      context,
-      config,
-      requestHandler,
-    })
-  })
+  const response = await middleware.handler(
+    context,
+    async (c?: CustomRequestData) => {
+      clearTimeout(timeoutId)
+      context.custom = _.merge(context.custom, c)
+      return callRecursiveMiddlewares({
+        middlewares: middlewares.slice(1),
+        context,
+        config,
+        requestHandler,
+      })
+    },
+  )
+  clearTimeout(timeoutId)
+  return response
 }
