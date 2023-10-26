@@ -59,7 +59,9 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     // Get the request method, path, query and content type
     const method = (req.method?.toUpperCase() ||
       'GET') as IntREST.RequestMethods
-    const [path, query] = (req.url || '/').split('?')
+    const [prePath, preQuery] = (req.url || '/').split('?')
+    const path = decodeURIComponent(prePath)
+    const query = preQuery || ''
     const contentType = req.headers['content-type'] || 'application/json'
 
     // Prepare origin for CORS
@@ -279,7 +281,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
             // TODO: cookiesMeta
             cookiesMeta: {},
             body,
-            query: query || '',
+            query,
             origin: {
               url:
                 originWithProtocol === '*'

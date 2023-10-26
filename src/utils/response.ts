@@ -310,7 +310,7 @@ export function parseRoutePathname(pathname: string) {
   return (
     pathname
       // Remove groups
-      .replace(/[\/\\]?\([A-zÀ-ú0-9-_\$]+\)/gi, '')
+      .replace(/[\/\\]?\([A-zÀ-ú0-9-_$]+\)/gi, '')
       // Remove filename and extension
       .replace(/route\.(mj|cj|j|t)s$/, '')
       // Remove the '\' of end of the path
@@ -324,7 +324,7 @@ export function parseRoutePathnameToRegexp(pathname: string, basePath: string) {
   const escapedRoute = escapePath(pathname, basePath)
   const cleanedRoute = parseRoutePathname(escapedRoute)
 
-  if (/\[\.\.\.[A-zÀ-ú0-9-_\$]+\].+$/.test(cleanedRoute)) {
+  if (/\[\.\.\.[A-zÀ-ú0-9-_$]+\].+$/.test(cleanedRoute)) {
     throw new Error(`Invalid route path: ${escapedRoute}`)
   }
 
@@ -333,12 +333,12 @@ export function parseRoutePathnameToRegexp(pathname: string, basePath: string) {
     pathname,
     route: cleanedRoute,
     vars: Array.from(
-      cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_\$]+)\]/g),
+      cleanedRoute.matchAll(/\[(?:\.{3,3})?([A-zÀ-ú0-9-_$]+)\]/g),
     ).map((m) => m[1]),
     paramRegexp: new RegExp(
       cleanedRoute
-        .replace(/\[([A-zÀ-ú0-9-_\$]+)\]/g, '([A-zÀ-ú0-9-_:\\$%]+)')
-        .replace(/\[\.{3,3}([A-zÀ-ú0-9-_\$]+)\]/g, '?([A-zÀ-ú0-9-_:\\$%/]*)')
+        .replace(/\[([A-zÀ-ú0-9-_$]+)\]/g, '([A-zÀ-ú0-9-_:$.@%]+)')
+        .replace(/\[\.{3,3}([A-zÀ-ú0-9-_$]+)\]/g, '?([A-zÀ-ú0-9-_:$%.@/]*)')
         .replace(/[\/\\]/, '\\/')
         .replace(/^\^*/, '^')
         .replace(/\$*$/, '\\/?$'),
