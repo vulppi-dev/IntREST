@@ -52,8 +52,8 @@ export function parseStringToAutoDetectValue(val?: string | null) {
       return false
     case /^(yes|y|true|t|on)$/i.test(val!):
       return true
-    case !isNaN(+val!):
-      return +val!
+    case !isNaN(parseFloat(val!)):
+      return parseFloat(val!)
     default:
       return val
   }

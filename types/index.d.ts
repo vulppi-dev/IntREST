@@ -43,6 +43,13 @@ declare global {
        */
       port?: number
       /**
+       * The version of the HTTP protocol
+       *
+       * @default 1
+       * @deprecated is experimental
+       */
+      httpVersion?: 1 | 2
+      /**
        * When `true` and the request is uploading files,
        * the files will be removed after the response is sent
        *

@@ -132,6 +132,7 @@ export async function handler({ singleWorker }: Args): Promise<void> {
       [
         join(projectPath, globPatterns.configFile),
         join(projectPath, globPatterns.envFile),
+        join(projectPath, '.env'),
       ],
       {
         ignoreInitial: true,
@@ -197,15 +198,20 @@ async function restartServer(
     Object.assign(myEnv.parsed, _.get(config, 'env', {}))
     dotenvExpand.expand(myEnv)
 
+    const httpVersion = config.httpVersion || 1
+
     // Start the application worker
     app = new Worker(
       new URL(
         join(
           '..',
           'workers',
-          singleWorker
-            ? defaultPaths.workerSingleWorker
-            : defaultPaths.workerMultiWorker,
+          'v' +
+            httpVersion +
+            '-' +
+            (singleWorker
+              ? defaultPaths.workerSingleWorker
+              : defaultPaths.workerMultiWorker),
         ),
         import.meta.url,
       ),
@@ -274,8 +280,6 @@ async function startRouterBuilder(
       })
     }
   }
-
-  console.log(basePath)
 
   chokidar
     .watch(

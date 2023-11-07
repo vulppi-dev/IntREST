@@ -21,6 +21,8 @@ export {
 } from '../utils/parser'
 export * from '../utils/middleware-tools'
 
+export * from 'http-status-codes'
+
 async function assertFileExistsAndIsAFile(path: string) {
   const exists = existsSync(path)
   if (!exists) throw new Error(`File not found: ${path}`)

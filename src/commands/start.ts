@@ -1,8 +1,8 @@
 import ck from 'chalk'
 import { join } from 'path/posix'
 import type { CommandBuilder } from 'yargs'
-import { defaultPaths } from '../utils/constants'
-import { normalizePath } from '../utils/path'
+import { defaultPaths, globPatterns } from '../utils/constants'
+import { getModule, globFind, normalizePath } from '../utils/path'
 
 export const command = 'start'
 
@@ -40,13 +40,21 @@ export async function handler({ singleWorker }: Args): Promise<void> {
 }
 
 async function startServer(singleWorker?: boolean) {
+  const projectPath = normalizePath(process.cwd())
+  const configPath = await globFind(projectPath, globPatterns.configFile)
+  const config = ((await getModule(configPath)).default || {}) as IntREST.Config
+
+  const httpVersion = config.httpVersion || 1
   const url = new URL(
     join(
       '..',
       'workers',
-      singleWorker
-        ? defaultPaths.workerSingleWorker
-        : defaultPaths.workerMultiWorker,
+      'v' +
+        httpVersion +
+        '-' +
+        (singleWorker
+          ? httpVersion + defaultPaths.workerSingleWorker
+          : defaultPaths.workerMultiWorker),
     ),
     import.meta.url,
   )
