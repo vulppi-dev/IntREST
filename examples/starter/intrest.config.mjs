@@ -1,4 +1,4 @@
 /** @type { import('@vulppi/intrest').Config } */
 export default {
-  httpVersion: 2,
+  // httpVersion: 2,
 }

@@ -53,7 +53,7 @@ async function startServer(singleWorker?: boolean) {
         httpVersion +
         '-' +
         (singleWorker
-          ? httpVersion + defaultPaths.workerSingleWorker
+          ? defaultPaths.workerSingleWorker
           : defaultPaths.workerMultiWorker),
     ),
     import.meta.url,
