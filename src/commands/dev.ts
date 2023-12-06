@@ -4,10 +4,14 @@ import dotenvExpand from 'dotenv-expand'
 import { existsSync, lstatSync, rmSync } from 'fs'
 import chokidar from 'chokidar'
 import _ from 'lodash'
-import { join } from 'path/posix'
+import { join } from 'path'
 import { Worker } from 'worker_threads'
 import type { CommandBuilder } from 'yargs'
-import { defaultPaths, globPatterns, regexpPatterns } from '../utils/constants'
+import {
+  defaultPaths,
+  globPatterns,
+  regexpPatterns,
+} from '../controllers/constants'
 import {
   escapePath,
   getEnvPath,
@@ -16,7 +20,7 @@ import {
   globFind,
   globFindAll,
   normalizePath,
-} from '../utils/path'
+} from '../controllers/path'
 import { startWatchBuild } from './_builder'
 import { getChecksum } from './_common'
 

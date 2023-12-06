@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { Worker } from 'worker_threads'
 import { defaultPaths } from './constants'
-import { join } from 'path/posix'
+import { join } from 'path'
 
 function workerURL(path: string) {
   return new URL(join('.', path), import.meta.url)

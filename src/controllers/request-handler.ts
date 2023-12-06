@@ -5,11 +5,10 @@ import cookie from 'cookie'
 import { randomUUID } from 'crypto'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { createWriteStream, rmSync } from 'fs'
+import type { IncomingMessage, ServerResponse } from 'http'
 import { StatusCodes, getReasonPhrase } from 'http-status-codes'
-import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import _ from 'lodash'
-import ms from 'ms'
-import { join } from 'path/posix'
+import { join } from 'path'
 import { performance } from 'perf_hooks'
 import { globPatterns, isDev, regexpPatterns } from './constants'
 import {
@@ -18,6 +17,7 @@ import {
   parseStringToAutoDetectValue,
 } from './parser'
 import { getModule, globFind } from './path'
+import ms from 'ms'
 
 interface TunnelFunction {
   (
@@ -42,10 +42,10 @@ function debugRequest(
   )
 }
 
-export function buildRequestHandlerV2(tunnel: TunnelFunction) {
+export function buildRequestHandler(tunnel: TunnelFunction) {
   return async function requestHandler(
-    req: Http2ServerRequest,
-    res: Http2ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
   ) {
     // Get the root path of the project
     const basePath = process.cwd()
@@ -55,6 +55,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
       {}) as IntREST.Config
     // Get the temp path for upload files
     const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+
     // Get the request method, path, query and content type
     const method = (req.method?.toUpperCase() ||
       'GET') as IntREST.RequestMethods
@@ -62,6 +63,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
     const path = decodeURIComponent(prePath)
     const query = preQuery || ''
     const contentType = req.headers['content-type'] || 'application/json'
+
     // Prepare origin for CORS
     const pureOrigin = req.headers.origin || req.headers.host || ''
     const ipOrigin = req.socket.remoteAddress
@@ -73,6 +75,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
       : pureOrigin
       ? `https://${pureOrigin}`
       : '*'
+
     // Validate allowOrigin
     if (config.limits?.allowOrigin && !isDev()) {
       const allowOrigin = (
@@ -80,6 +83,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
           ? config.limits.allowOrigin
           : [config.limits.allowOrigin]
       ).map((d) => d.replace(/^[a-z]+:\/\//, ''))
+
       const allowOriginItem = allowOrigin.find((o) => origin.endsWith(o))
       if (allowOriginItem) {
         res.setHeader('Access-Control-Allow-Origin', allowOriginItem)
@@ -89,8 +93,10 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
     } else {
       res.setHeader('Access-Control-Allow-Origin', originWithProtocol)
     }
+
     // Set default headers
     res.setHeader('Server', 'IntREST')
+
     res.setHeader('Accept', [
       'application/json',
       'application/xml',
@@ -119,13 +125,16 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
     res.setHeader('Accept-Ranges', 'bytes')
     res.setHeader('Connection', 'keep-alive')
     res.setHeader('Keep-Alive', ['timeout=5', 'max=30'])
+
     // Start the request time
     const startRequestTime = performance.now()
+
     if (/^options$/i.test(method)) {
       res.statusCode = StatusCodes.NO_CONTENT
       res.end()
       return
     }
+
     // Check if the content type is acceptable
     if (!regexpPatterns.isAcceptableContentType.test(contentType)) {
       res.writeHead(StatusCodes.UNSUPPORTED_MEDIA_TYPE, {
@@ -144,6 +153,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
         }),
       )
     }
+
     let body = {} as Record<string, any>
     // Check if the body size is acceptable
     const bodySize =
@@ -153,6 +163,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
     const maxBodySize = parseStringBytesToNumber(
       config.limits?.bodyMaxSize || '10mb',
     )
+
     if (bodySize > maxBodySize) {
       res.writeHead(StatusCodes.REQUEST_TOO_LONG, {
         'Content-Type': 'application/json',
@@ -208,6 +219,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
             req.pipe(writer)
           })
           const encoding = req.headers['content-encoding'] || 'identity'
+
           const bodyString =
             (
               await parseDecompressBuffer(
@@ -215,6 +227,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
                 encoding.split(/, */) as IntREST.RequestEncoding[],
               )
             ).toString() || '{}' // default to empty object
+
           if (regexpPatterns.isJSONContentType.test(contentType)) {
             body = JSON.parse(bodyString)
           } else {
@@ -234,6 +247,7 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
             if (!XMLValidator.validate(bodyString)) {
               throw new Error('Invalid XML')
             }
+
             body = parser.parse(bodyString)
           }
         }
@@ -250,7 +264,9 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
         )
       }
     }
+
     const cookies = cookie.parse(req.headers.cookie || '')
+
     try {
       await tunnel(
         {
@@ -262,8 +278,6 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
             custom: {},
             headers: req.headers,
             cookies,
-            // TODO: cookiesMeta
-            cookiesMeta: {},
             body,
             query,
             origin: {
@@ -281,7 +295,8 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
             if (options?.maxAge && typeof options?.maxAge === 'string') {
               options.maxAge = ms(options.maxAge)
             }
-            res.setHeader(
+
+            res.appendHeader(
               'Set-Cookie',
               cookie.serialize(name, value, options as any),
             )
@@ -290,7 +305,8 @@ export function buildRequestHandlerV2(tunnel: TunnelFunction) {
             if (options?.maxAge && typeof options?.maxAge === 'string') {
               options.maxAge = ms(options.maxAge)
             }
-            res.setHeader(
+
+            res.appendHeader(
               'Set-Cookie',
               cookie.serialize(name, '', options as any),
             )

@@ -95,7 +95,7 @@
     "range-parser": "^1.2.1",
     "selfsigned": "^2.4.1",
     "set-cookie-parser": "^2.6.0",
-    "typescript": "^5.3.2",
+    "typescript": "^5.3.3",
     "valibot": "^0.22.0",
     "yargs": "^17.7.2"
   },

@@ -48,7 +48,6 @@ The `IntRequest` interface is the input interface of IntREST. It contains all th
   - If the request `Content-Type` is `multipart/form-data` and contains upload files, the `body` property will be contains a file metadata stored with name of the field. The metadata interface is `FileMetadata`.
   - If the request `Content-Type` is `application/xml`, the `body` property will be contains a object with the XML data following the type `import('@vulppi/intrest).XMLBody`.
 - `cookies`: The object of cookies of the request. Using `cookie` API.
-- `cookiesMeta`: The object of cookies metadata of the request. Using `cookie` API.
 - `custom`: The object of custom properties of the request. You can use this for share data between middlewares and route handlers.
 - `origin`: The origin of the request. It's a `object` containing the `url` and `ip` properties.
   - `url`: The origin URL of the request. It's a `URL` object.

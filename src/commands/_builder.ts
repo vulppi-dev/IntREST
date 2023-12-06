@@ -3,10 +3,10 @@ import ck from 'chalk'
 import { build, context, type BuildContext, type Plugin } from 'esbuild'
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { getTsconfig } from 'get-tsconfig'
-import { dirname, join } from 'path/posix'
-import { defaultPaths, regexpPatterns } from '../utils/constants'
-import { clearExtension, escapePath, normalizePath } from '../utils/path'
-import { parseRoutePathnameToRegexp } from '../utils/response'
+import { dirname, join } from 'path'
+import { defaultPaths, regexpPatterns } from '../controllers/constants'
+import { clearExtension, escapePath, normalizePath } from '../controllers/path'
+import { parseRoutePathnameToRegexp } from '../controllers/response'
 
 interface StartBuildProps {
   input: string

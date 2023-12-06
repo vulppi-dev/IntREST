@@ -1,5 +1,5 @@
 import type { CookieSerializeOptions } from 'cookie'
-import type { IncomingHttpHeaders } from 'http'
+import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'http'
 import type { Readable } from 'stream'
 
 export * from './lib'
@@ -22,6 +22,11 @@ export type MiddlewareNext = IntREST.MiddlewareNext
 
 export type RequestHandler = IntREST.RequestHandler
 export type MiddlewareHandler = IntREST.MiddlewareHandler
+export type Handler<
+  Req extends IncomingMessage = IncomingMessage,
+  Res extends ServerResponse = ServerResponse,
+> = IntREST.Handler<Req, Res>
+export type BeforeHandlerConfig = IntREST.BeforeHandlerConfig
 
 declare global {
   namespace NodeJS {
@@ -36,7 +41,7 @@ declare global {
     /**
      * The configuration for the application
      */
-    interface Config {
+    type Config = {
       /**
        * The port where the application will be running
        * @default 4000
@@ -177,7 +182,7 @@ declare global {
     /**
      * The upload files metadata
      */
-    interface FileMetadata {
+    type FileMetadata = {
       absolutePath: string
       /**
        * The original filename
@@ -205,7 +210,7 @@ declare global {
     /**
      * The cookie meta data
      */
-    interface CookieMeta {
+    type CookieMeta = {
       path?: string
       expires?: Date
       maxAge?: number
@@ -231,10 +236,6 @@ declare global {
        * The cookies of the request
        */
       cookies: Record<string, string>
-      /**
-       * The cookies of the request
-       */
-      cookiesMeta: Record<string, CookieMeta>
       /**
        * The params of the request, match with the route patterns
        */
@@ -277,7 +278,7 @@ declare global {
         }
     )
 
-    interface IntResponse {
+    type IntResponse = {
       /**
        * The body of the response
        */
@@ -329,7 +330,7 @@ declare global {
     /**
      * The cookie content to set in the response
      */
-    interface SetCookie {
+    type SetCookie = {
       value: string
       options?: CookieOptions
     }
@@ -337,7 +338,7 @@ declare global {
     /**
      * The cookie to clear in the response
      */
-    interface ClearCookie {
+    type ClearCookie = {
       name: string
       options?: CookieOptions
     }
@@ -345,25 +346,24 @@ declare global {
     /**
      * The function to handle the request
      */
-    interface RequestHandler {
-      (context: IntRequest): Promise<IntResponse | void> | IntResponse | void
-    }
+    type RequestHandler = (
+      context: IntRequest,
+    ) => Promise<IntResponse | void> | IntResponse | void
 
     /**
      * The function to handle the middleware
      */
-    interface MiddlewareHandler {
-      (context: IntRequest, next: MiddlewareNext):
-        | Promise<IntResponse>
-        | IntResponse
-    }
+    type MiddlewareHandler = (
+      context: IntRequest,
+      next: MiddlewareNext,
+    ) => Promise<IntResponse> | IntResponse
 
     /**
      * The function to call the next middleware
      */
-    interface MiddlewareNext {
-      (custom?: Partial<CustomRequestData>): Promise<IntResponse> | IntResponse
-    }
+    type MiddlewareNext = (
+      custom?: Partial<CustomRequestData>,
+    ) => Promise<IntResponse> | IntResponse
 
     /**
      * Type if request body content-type is XML
@@ -374,6 +374,23 @@ declare global {
     } & {
       [x: string]: XMLBody | XMLBody[] | undefined
     }
+
+    type Handler<
+      Req extends IncomingMessage = IncomingMessage,
+      Res extends ServerResponse = ServerResponse,
+    > = (req: Req, res: Res) => void | Promise<void>
+
+    /**
+     *
+     */
+    type BeforeHandlerConfig = (
+      | Handler
+      | [string, Handler | Handler[]]
+      | {
+          pathname: string
+          handler: Handler | Handler[]
+        }
+    )[]
   }
 
   interface CustomRequestData {

@@ -1,11 +1,11 @@
 import ck from 'chalk'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createServer } from 'http'
-import { join } from 'path/posix'
-import { defaultPaths, globPatterns } from '../utils/constants'
-import { startWorker, workerTunnel } from '../utils/multi-tools'
-import { getModule, globFind } from '../utils/path'
-import { buildRequestHandler } from '../utils/request-handler'
+import { join } from 'path'
+import { defaultPaths, globPatterns } from '../controllers/constants'
+import { startWorker, workerTunnel } from '../controllers/multi-tools'
+import { getModule, globFind } from '../controllers/path'
+import { buildRequestHandler } from '../controllers/request-handler'
 
 const basePath = process.cwd()
 const configPath = await globFind(basePath, globPatterns.configFile)

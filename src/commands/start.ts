@@ -1,8 +1,8 @@
 import ck from 'chalk'
-import { join } from 'path/posix'
+import { join } from 'path'
 import type { CommandBuilder } from 'yargs'
-import { defaultPaths, globPatterns } from '../utils/constants'
-import { getModule, globFind, normalizePath } from '../utils/path'
+import { defaultPaths, globPatterns } from '../controllers/constants'
+import { getModule, globFind, normalizePath } from '../controllers/path'
 
 export const command = 'start'
 

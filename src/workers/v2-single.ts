@@ -2,11 +2,11 @@ import ck from 'chalk'
 import { certificateFor } from 'devcert'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createSecureServer, createServer } from 'http2'
-import { join } from 'path/posix'
-import { defaultPaths, globPatterns, isDev } from '../utils/constants'
-import { getModule, globFind } from '../utils/path'
-import { buildRequestHandlerV2 } from '../utils/request-handler-v2'
-import { tunnel } from '../utils/tunnel'
+import { join } from 'path'
+import { defaultPaths, globPatterns, isDev } from '../controllers/constants'
+import { getModule, globFind } from '../controllers/path'
+import { buildRequestHandlerV2 } from '../controllers/request-handler-v2'
+import { tunnel } from '../controllers/tunnel'
 
 const basePath = process.cwd()
 const configPath = await globFind(basePath, globPatterns.configFile)

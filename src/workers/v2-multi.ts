@@ -2,11 +2,11 @@ import ck from 'chalk'
 import selfSigned from 'selfsigned'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createSecureServer, createServer } from 'http2'
-import { join } from 'path/posix'
-import { defaultPaths, globPatterns, isDev } from '../utils/constants'
-import { startWorker, workerTunnel } from '../utils/multi-tools'
-import { getModule, globFind } from '../utils/path'
-import { buildRequestHandlerV2 } from '../utils/request-handler-v2'
+import { join } from 'path'
+import { defaultPaths, globPatterns, isDev } from '../controllers/constants'
+import { startWorker, workerTunnel } from '../controllers/multi-tools'
+import { getModule, globFind } from '../controllers/path'
+import { buildRequestHandlerV2 } from '../controllers/request-handler-v2'
 
 const basePath = process.cwd()
 const configPath = await globFind(basePath, globPatterns.configFile)

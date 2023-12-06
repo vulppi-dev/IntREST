@@ -1,5 +1,5 @@
 import { parentPort } from 'worker_threads'
-import { tunnel } from '../utils/tunnel'
+import { tunnel } from '../controllers/tunnel'
 
 parentPort!.on(
   'message',

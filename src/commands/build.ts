@@ -1,8 +1,8 @@
 import ck from 'chalk'
 import { existsSync, rmSync } from 'fs'
-import { join } from 'path/posix'
+import { join } from 'path'
 import type { Options } from 'yargs'
-import { defaultPaths, globPatterns } from '../utils/constants'
+import { defaultPaths, globPatterns } from '../controllers/constants'
 import {
   escapePath,
   getFolderPath,
@@ -10,7 +10,7 @@ import {
   globFind,
   globFindAll,
   normalizePath,
-} from '../utils/path'
+} from '../controllers/path'
 import { callBuild } from './_builder'
 
 export const command = 'build'

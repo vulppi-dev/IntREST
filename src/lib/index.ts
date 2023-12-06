@@ -7,19 +7,19 @@ import {
 } from 'fs'
 import { join } from 'path'
 import type { Readable } from 'stream'
-import { parseCompressBuffer, parseCompressStream } from '../utils/parser'
-import { getFolderPath } from '../utils/path'
-import { globPatterns } from '../utils/constants'
-import { buildRequestHandler } from '../utils/request-handler'
-import { tunnel } from '../utils/tunnel'
+import { parseCompressBuffer, parseCompressStream } from '../controllers/parser'
+import { getFolderPath } from '../controllers/path'
+import { globPatterns } from '../controllers/constants'
+import { buildRequestHandler } from '../controllers/request-handler'
+import { tunnel } from '../controllers/tunnel'
 
 export {
   parseCompressBuffer,
   parseCompressStream,
   parseDecompressBuffer,
   parseDecompressStream,
-} from '../utils/parser'
-export * from '../utils/middleware-tools'
+} from '../controllers/parser'
+export * from '../controllers/middleware-tools'
 
 export * from 'http-status-codes'
 

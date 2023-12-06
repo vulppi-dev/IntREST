@@ -1,5 +1,5 @@
 import { glob } from 'glob'
-import { join, normalize } from 'path/posix'
+import { join, normalize } from 'path'
 import { pathToFileURL } from 'url'
 import { globPatterns, isDev } from './constants'
 

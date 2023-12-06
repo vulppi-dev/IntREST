@@ -1,8 +1,8 @@
 import ck from 'chalk'
 import { cpSync, writeFileSync } from 'fs'
-import { join } from 'path/posix'
+import { join } from 'path'
 import { fileURLToPath } from 'url'
-import { normalizePath } from '../utils/path'
+import { normalizePath } from '../controllers/path'
 
 export const command = 'create'
 
