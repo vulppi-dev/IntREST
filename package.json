@@ -83,7 +83,7 @@
     "devcert": "^1.2.2",
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0",
-    "esbuild": "^0.19.8",
+    "esbuild": "^0.19.9",
     "fast-xml-parser": "^4.3.2",
     "get-tsconfig": "^4.7.2",
     "glob": "^10.3.10",
@@ -96,7 +96,7 @@
     "selfsigned": "^2.4.1",
     "set-cookie-parser": "^2.6.0",
     "typescript": "^5.3.3",
-    "valibot": "^0.22.0",
+    "valibot": "^0.24.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -107,7 +107,7 @@
     "@types/lodash": "^4.14.202",
     "@types/mime-types": "^2.1.4",
     "@types/ms": "^0.7.34",
-    "@types/node": "^20.10.3",
+    "@types/node": "^20.10.4",
     "@types/range-parser": "^1.2.7",
     "@types/set-cookie-parser": "^2.4.7",
     "@types/yargs": "^17.0.32",
