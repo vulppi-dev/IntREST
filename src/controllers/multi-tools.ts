@@ -2,9 +2,10 @@ import { randomUUID } from 'crypto'
 import { Worker } from 'worker_threads'
 import { defaultPaths } from './constants'
 import { join } from 'path'
+import { normalizePath } from './path'
 
 function workerURL(path: string) {
-  return new URL(join('.', path), import.meta.url)
+  return new URL(normalizePath(join('.', path)), import.meta.url)
 }
 
 interface WorkerPool {

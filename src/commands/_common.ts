@@ -1,6 +1,5 @@
 import crypto from 'crypto'
 import fs, { existsSync } from 'fs'
-import _ from 'lodash'
 
 /**
  * Get the checksum of a file

@@ -145,7 +145,20 @@ Are they: [assetsStream](./API_REFERENCE.md), [assetsRawContent](./API_REFERENCE
 
 ## Static files
 
-The `static` folder contains all of your application's static files. For example, the `static/file.txt` or `src/static/file.txt` file defines the `/file.txt` route.
+You can define static files by creating a folder named `static` or `public` inside root folder or in `src` folder.
+
+The `static` folder contains all of your application's static files. For example, the `static/file.txt` file defines the `/file.txt` route.
+
+List of valid static files:
+
+- `static/file.txt`
+- `static/image.png`
+- `public/file.txt`
+- `public/image.jpg`
+- `src/static/file.txt`
+- `src/static/image.svg`
+- `src/public/file.txt`
+- `src/public/image.gif`
 
 ## Next Steps
 

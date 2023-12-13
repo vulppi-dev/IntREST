@@ -17,7 +17,10 @@ export const handler = async (): Promise<void> => {
 
   // Get the template project folder
   const templateFolder = fileURLToPath(
-    new URL(join('../..', 'templates', 'starter'), import.meta.url),
+    new URL(
+      normalizePath(join('../..', 'templates', 'starter')),
+      import.meta.url,
+    ),
   )
 
   // Copy the template project folder to the project root path
@@ -26,7 +29,7 @@ export const handler = async (): Promise<void> => {
     filter: () => true,
   })
   writeFileSync(
-    join(projectPath, '.gitignore'),
+    normalizePath(join(projectPath, '.gitignore')),
     `# Vulppi ignore template
 
 # package

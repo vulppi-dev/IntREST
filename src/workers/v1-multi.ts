@@ -4,7 +4,7 @@ import { createServer } from 'http'
 import { join } from 'path'
 import { defaultPaths, globPatterns } from '../controllers/constants'
 import { startWorker, workerTunnel } from '../controllers/multi-tools'
-import { getModule, globFind } from '../controllers/path'
+import { getModule, globFind, normalizePath } from '../controllers/path'
 import { buildRequestHandler } from '../controllers/request-handler'
 
 const basePath = process.cwd()
@@ -25,7 +25,9 @@ if (bootstrapHandler && typeof bootstrapHandler === 'function') {
 }
 
 const appPort = config.port || +(process.env.PORT || 4000)
-const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+const appTempPath = normalizePath(
+  join(basePath, config.paths?.uploadTemp || '.tmp'),
+)
 
 if (existsSync(appTempPath)) {
   rmSync(appTempPath, { recursive: true })

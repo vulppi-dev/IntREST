@@ -23,9 +23,9 @@ export async function callBuild({
   config,
 }: StartBuildProps) {
   // Generate the output path for the compiled app
-  const appPath = join(output, defaultPaths.compiledRoutes)
+  const appPath = normalizePath(join(output, defaultPaths.compiledRoutes))
   // Generate the absolute path for the entry file
-  const absoluteEntry = join(input, entry)
+  const absoluteEntry = normalizePath(join(input, entry))
 
   await build({
     entryPoints: {
@@ -65,9 +65,9 @@ export async function startWatchBuild({
   restart,
 }: StartBuildProps) {
   // Generate the output path for the compiled app
-  const appPath = join(output, defaultPaths.compiledRoutes)
+  const appPath = normalizePath(join(output, defaultPaths.compiledRoutes))
   // Generate the absolute path for the entry file
-  const absoluteEntry = join(input, entry)
+  const absoluteEntry = normalizePath(join(input, entry))
   // If the entry file is already being watched, do nothing
   if (contextMap.has(absoluteEntry)) {
     return
@@ -140,16 +140,19 @@ function IntRESTPlugin({
         async ({ path, kind }) => {
           if (kind !== 'entry-point') return null
 
-          const identityFilePath = join(
-            escapePath(path, input).replace(/\/?route\.ts$/, ''),
-            defaultPaths.routeIdentity,
+          const identityFilePath = normalizePath(
+            join(
+              escapePath(path, input).replace(/\/?route\.ts$/, ''),
+              defaultPaths.routeIdentity,
+            ),
           )
-          const absoluteIdentityFilePath = join(
-            output,
-            defaultPaths.compiledRoutes,
-            identityFilePath,
+
+          const absoluteIdentityFilePath = normalizePath(
+            join(output, defaultPaths.compiledRoutes, identityFilePath),
           )
+
           const dir = dirname(absoluteIdentityFilePath)
+
           if (!existsSync(dir)) {
             mkdirSync(dir, { recursive: true })
           }
@@ -182,17 +185,18 @@ function IntRESTPlugin({
       // Remove the compiled file when the build is disposed
       build.onDispose(async () => {
         if (!restart) return
-        const absoluteOutEntry = join(
-          output,
-          defaultPaths.compiledRoutes,
-          clearExtension(entry) + '.mjs',
+        const absoluteOutEntry = normalizePath(
+          join(
+            output,
+            defaultPaths.compiledRoutes,
+            clearExtension(entry) + '.mjs',
+          ),
         )
         const existsApp = existsSync(absoluteOutEntry)
         existsApp && rmSync(absoluteOutEntry)
 
-        const identityFilePath = join(
-          dirname(absoluteOutEntry),
-          defaultPaths.routeIdentity,
+        const identityFilePath = normalizePath(
+          join(dirname(absoluteOutEntry), defaultPaths.routeIdentity),
         )
         const existsIdentity = existsSync(identityFilePath)
         existsIdentity && rmSync(identityFilePath)

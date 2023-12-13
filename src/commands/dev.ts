@@ -1,9 +1,8 @@
 import ck from 'chalk'
+import chokidar from 'chokidar'
 import dotenv, { type DotenvConfigOutput, type DotenvParseOutput } from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
 import { existsSync, lstatSync, rmSync } from 'fs'
-import chokidar from 'chokidar'
-import _ from 'lodash'
 import { join } from 'path'
 import { Worker } from 'worker_threads'
 import type { CommandBuilder } from 'yargs'
@@ -134,9 +133,9 @@ export async function handler({ singleWorker }: Args): Promise<void> {
   chokidar
     .watch(
       [
-        join(projectPath, globPatterns.configFile),
-        join(projectPath, globPatterns.envFile),
-        join(projectPath, '.env'),
+        normalizePath(join(projectPath, globPatterns.configFile)),
+        normalizePath(join(projectPath, globPatterns.envFile)),
+        normalizePath(join(projectPath, '.env')),
       ],
       {
         ignoreInitial: true,
@@ -199,7 +198,7 @@ async function restartServer(
         } as DotenvConfigOutput)
 
     if (!myEnv.parsed) myEnv.parsed = {} as DotenvParseOutput
-    Object.assign(myEnv.parsed, _.get(config, 'env', {}))
+    Object.assign(myEnv.parsed, config?.env || {})
     dotenvExpand.expand(myEnv)
 
     const httpVersion = config.httpVersion || 1
@@ -207,15 +206,17 @@ async function restartServer(
     // Start the application worker
     app = new Worker(
       new URL(
-        join(
-          '..',
-          'workers',
-          'v' +
-            httpVersion +
-            '-' +
-            (singleWorker
-              ? defaultPaths.workerSingleWorker
-              : defaultPaths.workerMultiWorker),
+        normalizePath(
+          join(
+            '..',
+            'workers',
+            'v' +
+              httpVersion +
+              '-' +
+              (singleWorker
+                ? defaultPaths.workerSingleWorker
+                : defaultPaths.workerMultiWorker),
+          ),
         ),
         import.meta.url,
       ),
@@ -245,7 +246,7 @@ async function startRouterBuilder(
   async function watchSourceCode(filename: string) {
     if (!filename) return
     const normalizedFilename = normalizePath(filename)
-    const absolute = join(entryFolder, normalizedFilename)
+    const absolute = normalizePath(join(entryFolder, normalizedFilename))
     const exists = existsSync(absolute)
 
     // If the file is a directory, try to find the entry points
@@ -261,7 +262,9 @@ async function startRouterBuilder(
             if (stat.isDirectory()) return
             await startWatchBuild({
               input: entryFolder,
-              output: join(basePath, defaultPaths.compiledFolder),
+              output: normalizePath(
+                join(basePath, defaultPaths.compiledFolder),
+              ),
               entry: escapedPath,
               config,
               restart,
@@ -277,7 +280,7 @@ async function startRouterBuilder(
     ) {
       await startWatchBuild({
         input: entryFolder,
-        output: join(basePath, defaultPaths.compiledFolder),
+        output: normalizePath(join(basePath, defaultPaths.compiledFolder)),
         entry: normalizedFilename,
         config,
         restart,
@@ -288,8 +291,8 @@ async function startRouterBuilder(
   chokidar
     .watch(
       [
-        join(entryFolder, globPatterns.entryPoints),
-        join(entryFolder, globPatterns.bootstrapEntry),
+        normalizePath(join(entryFolder, globPatterns.entryPoints)),
+        normalizePath(join(entryFolder, globPatterns.bootstrapEntry)),
       ],
       {
         awaitWriteFinish: true,
@@ -302,7 +305,9 @@ async function startRouterBuilder(
   // Start the first build
 
   // Remove the old compiled folder
-  const compiledFolder = join(basePath, defaultPaths.compiledFolder)
+  const compiledFolder = normalizePath(
+    join(basePath, defaultPaths.compiledFolder),
+  )
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
   const entryFiles = await globFindAll(entryFolder, globPatterns.entryPoints)
@@ -321,7 +326,7 @@ async function startRouterBuilder(
       }
       await startWatchBuild({
         input: entryFolder,
-        output: join(basePath, defaultPaths.compiledFolder),
+        output: normalizePath(join(basePath, defaultPaths.compiledFolder)),
         entry: escapedPath,
         config,
         restart,

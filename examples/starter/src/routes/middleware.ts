@@ -2,7 +2,7 @@ export function middleware(
   ctx: IntREST.IntRequest,
   next: IntREST.MiddlewareNext,
 ) {
-  next({
+  return next({
     root: 'middleware',
   })
 }

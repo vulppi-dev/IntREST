@@ -269,21 +269,29 @@ export async function findMiddlewarePathnames(
   const dir = dirname(
     escapePath(
       routeFilePath,
-      join(basePath, defaultPaths.compiledFolder, defaultPaths.compiledRoutes),
+      normalizePath(
+        join(
+          basePath,
+          defaultPaths.compiledFolder,
+          defaultPaths.compiledRoutes,
+        ),
+      ),
     ),
   )
   // Get all directories from the route file path recursively
   const directories = recursiveDirectoryList(dir)
   // Create a list of possible middleware paths
   const searchList = directories.map((r) =>
-    join(
-      ...[
-        basePath,
-        defaultPaths.compiledFolder,
-        defaultPaths.compiledRoutes,
-        r,
-        'middleware.mjs',
-      ].filter(Boolean),
+    normalizePath(
+      join(
+        ...[
+          basePath,
+          defaultPaths.compiledFolder,
+          defaultPaths.compiledRoutes,
+          r,
+          'middleware.mjs',
+        ].filter(Boolean),
+      ),
     ),
   )
   // Filter the list to get only the existing paths
@@ -354,7 +362,13 @@ export async function findRoutePathnames(basePath: string, route?: string) {
   const maps = routesPathnames.map((r) =>
     parseRoutePathnameToRegexp(
       r,
-      join(basePath, defaultPaths.compiledFolder, defaultPaths.compiledRoutes),
+      normalizePath(
+        join(
+          basePath,
+          defaultPaths.compiledFolder,
+          defaultPaths.compiledRoutes,
+        ),
+      ),
     ),
   )
 

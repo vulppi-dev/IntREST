@@ -38,7 +38,7 @@ export async function getModule(configPath?: string) {
 export async function globFind(
   ...pattern: string[]
 ): Promise<string | undefined> {
-  const res = await glob(join(...pattern), {
+  const res = await glob(normalizePath(join(...pattern)), {
     ignore: ['**/node_modules/**'],
     windowsPathsNoEscape: true,
   })
@@ -51,7 +51,7 @@ export async function globFind(
 export async function globFindList(
   ...pattern: string[][]
 ): Promise<string | undefined> {
-  const list = pattern.map((p) => join(...p))
+  const list = pattern.map((p) => normalizePath(join(...p)))
   const res = await glob(list, {
     ignore: ['**/node_modules/**'],
     windowsPathsNoEscape: true,
@@ -63,7 +63,7 @@ export async function globFindList(
  * Find all files that match the glob pattern
  */
 export async function globFindAll(...pattern: string[]): Promise<string[]> {
-  const res = await glob(join(...pattern), {
+  const res = await glob(normalizePath(join(...pattern)), {
     ignore: ['**/node_modules/**'],
     windowsPathsNoEscape: true,
   })
@@ -76,7 +76,7 @@ export async function globFindAll(...pattern: string[]): Promise<string[]> {
 export async function globFindAllList(
   ...pattern: string[][]
 ): Promise<string[]> {
-  const list = pattern.map((p) => join(...p))
+  const list = pattern.map((p) => normalizePath(join(...p)))
   const res = await glob(list.reverse(), {
     ignore: ['**/node_modules/**'],
     windowsPathsNoEscape: true,
@@ -89,7 +89,7 @@ export async function globFindAllList(
  */
 export function escapePath(pathname: string, ...escape: string[]) {
   return normalizePath(pathname)
-    .replace(join(...escape), '')
+    .replace(normalizePath(join(...escape)), '')
     .replace(/^\//, '')
 }
 

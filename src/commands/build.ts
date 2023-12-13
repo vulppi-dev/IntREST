@@ -43,7 +43,9 @@ export async function handler(): Promise<void> {
     appFiles.push(bootstrapFile)
   }
   // Get the compiled folder
-  const compiledFolder = join(projectPath, defaultPaths.compiledFolder)
+  const compiledFolder = normalizePath(
+    join(projectPath, defaultPaths.compiledFolder),
+  )
   // If the compiled folder exists, delete it
   if (existsSync(compiledFolder)) rmSync(compiledFolder, { recursive: true })
 
@@ -53,7 +55,7 @@ export async function handler(): Promise<void> {
       const escapedPath = escapePath(filename, entryFolder)
       await callBuild({
         input: entryFolder,
-        output: join(projectPath, defaultPaths.compiledFolder),
+        output: normalizePath(join(projectPath, defaultPaths.compiledFolder)),
         entry: escapedPath,
         config,
       })

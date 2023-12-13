@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, rmSync } from 'fs'
 import { createSecureServer, createServer } from 'http2'
 import { join } from 'path'
 import { defaultPaths, globPatterns, isDev } from '../controllers/constants'
-import { getModule, globFind } from '../controllers/path'
+import { getModule, globFind, normalizePath } from '../controllers/path'
 import { buildRequestHandlerV2 } from '../controllers/request-handler-v2'
 import { tunnel } from '../controllers/tunnel'
 
@@ -26,7 +26,9 @@ if (bootstrapHandler && typeof bootstrapHandler === 'function') {
 }
 
 const appPort = config.port || +(process.env.PORT || 4000)
-const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+const appTempPath = normalizePath(
+  join(basePath, config.paths?.uploadTemp || '.tmp'),
+)
 
 if (existsSync(appTempPath)) {
   rmSync(appTempPath, { recursive: true })

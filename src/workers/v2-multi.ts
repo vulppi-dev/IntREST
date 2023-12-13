@@ -5,7 +5,7 @@ import { createSecureServer, createServer } from 'http2'
 import { join } from 'path'
 import { defaultPaths, globPatterns, isDev } from '../controllers/constants'
 import { startWorker, workerTunnel } from '../controllers/multi-tools'
-import { getModule, globFind } from '../controllers/path'
+import { getModule, globFind, normalizePath } from '../controllers/path'
 import { buildRequestHandlerV2 } from '../controllers/request-handler-v2'
 
 const basePath = process.cwd()
@@ -26,7 +26,9 @@ if (bootstrapHandler && typeof bootstrapHandler === 'function') {
 }
 
 const appPort = config.port || +(process.env.PORT || 4000)
-const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+const appTempPath = normalizePath(
+  join(basePath, config.paths?.uploadTemp || '.tmp'),
+)
 
 if (existsSync(appTempPath)) {
   rmSync(appTempPath, { recursive: true })

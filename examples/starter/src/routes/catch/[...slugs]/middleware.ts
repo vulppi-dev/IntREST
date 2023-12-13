@@ -1,8 +1,10 @@
-export function middleware(
-  ctx: IntREST.IntRequest,
-  next: IntREST.MiddlewareNext,
-): void {
-  next({
+import type { IntRequest, IntResponse, MiddlewareNext } from '@vulppi/intrest'
+
+export async function middleware(
+  {}: IntRequest,
+  next: MiddlewareNext,
+): Promise<IntResponse> {
+  return next({
     catch: 'middleware',
   })
 }

@@ -46,15 +46,17 @@ async function startServer(singleWorker?: boolean) {
 
   const httpVersion = config.httpVersion || 1
   const url = new URL(
-    join(
-      '..',
-      'workers',
-      'v' +
-        httpVersion +
-        '-' +
-        (singleWorker
-          ? defaultPaths.workerSingleWorker
-          : defaultPaths.workerMultiWorker),
+    normalizePath(
+      join(
+        '..',
+        'workers',
+        'v' +
+          httpVersion +
+          '-' +
+          (singleWorker
+            ? defaultPaths.workerSingleWorker
+            : defaultPaths.workerMultiWorker),
+      ),
     ),
     import.meta.url,
   )

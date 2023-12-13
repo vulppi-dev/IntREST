@@ -96,13 +96,3 @@ export function globalRequestHandler(
  * @param path The path of the file
  */
 export function assetsStats(path: string): Promise<Stats>
-
-/**
- * Encapsulate the middleware chain
- * if you want to use many middlewares in same location
- *
- * @param middlewares
- */
-export function middlewareChain(
-  ...middlewares: IntREST.MiddlewareHandler[]
-): Promise<IntREST.MiddlewareHandler>

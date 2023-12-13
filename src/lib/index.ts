@@ -8,7 +8,7 @@ import {
 import { join } from 'path'
 import type { Readable } from 'stream'
 import { parseCompressBuffer, parseCompressStream } from '../controllers/parser'
-import { getFolderPath } from '../controllers/path'
+import { getFolderPath, normalizePath } from '../controllers/path'
 import { globPatterns } from '../controllers/constants'
 import { buildRequestHandler } from '../controllers/request-handler'
 import { tunnel } from '../controllers/tunnel'
@@ -19,7 +19,6 @@ export {
   parseDecompressBuffer,
   parseDecompressStream,
 } from '../controllers/parser'
-export * from '../controllers/middleware-tools'
 
 export * from 'http-status-codes'
 
@@ -42,11 +41,11 @@ export async function assetsStream(
     process.cwd(),
     globPatterns.assetsFolder,
   )
-  await assertFileExistsAndIsAFile(join(assetsPath, path))
+  await assertFileExistsAndIsAFile(normalizePath(join(assetsPath, path)))
 
   const encoding = (options?.compress?.split(/, */g) ||
     []) as IntREST.RequestEncoding[]
-  const stream = createReadStream(join(assetsPath, path), {
+  const stream = createReadStream(normalizePath(join(assetsPath, path)), {
     autoClose: true,
   })
   return parseCompressStream(stream, encoding)
@@ -60,10 +59,10 @@ export async function assetsRawContent(
     process.cwd(),
     globPatterns.assetsFolder,
   )
-  await assertFileExistsAndIsAFile(join(assetsPath, path))
+  await assertFileExistsAndIsAFile(normalizePath(join(assetsPath, path)))
 
   const encoding = (compress?.split(/, */g) || []) as IntREST.RequestEncoding[]
-  const data = readFileSync(join(assetsPath, path))
+  const data = readFileSync(normalizePath(join(assetsPath, path)))
 
   return parseCompressBuffer(data, encoding)
 }
@@ -79,7 +78,7 @@ export async function assetsStats(path: string): Promise<Stats> {
     process.cwd(),
     globPatterns.assetsFolder,
   )
-  await assertFileExistsAndIsAFile(join(assetsPath, path))
+  await assertFileExistsAndIsAFile(normalizePath(join(assetsPath, path)))
 
-  return lstatSync(join(assetsPath, path))
+  return lstatSync(normalizePath(join(assetsPath, path)))
 }

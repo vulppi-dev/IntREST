@@ -16,7 +16,7 @@ import {
   parseStringBytesToNumber,
   parseStringToAutoDetectValue,
 } from './parser'
-import { getModule, globFind } from './path'
+import { getModule, globFind, normalizePath } from './path'
 import ms from 'ms'
 
 interface TunnelFunction {
@@ -54,7 +54,9 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
     const config = ((await getModule(configPath)).default ||
       {}) as IntREST.Config
     // Get the temp path for upload files
-    const appTempPath = join(basePath, config.paths?.uploadTemp || '.tmp')
+    const appTempPath = normalizePath(
+      join(basePath, config.paths?.uploadTemp || '.tmp'),
+    )
 
     // Get the request method, path, query and content type
     const method = (req.method?.toUpperCase() ||
@@ -187,7 +189,7 @@ export function buildRequestHandler(tunnel: TunnelFunction) {
             bb.on('file', (name, file, info) => {
               const { filename, encoding, mimeType: mimetype } = info
               const fileHash = randomUUID()
-              const filePath = join(appTempPath, fileHash)
+              const filePath = normalizePath(join(appTempPath, fileHash))
               const fileMetadata = {
                 absolutePath: filePath,
                 filename,

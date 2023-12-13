@@ -68,16 +68,15 @@ export async function tunnel(
     }
 
     const method = context.method
-    const basePathCompiled = join(
-      defaultPaths.compiledFolder,
-      defaultPaths.compiledRoutes,
+    const basePathCompiled = normalizePath(
+      join(defaultPaths.compiledFolder, defaultPaths.compiledRoutes),
     )
     const routes = await Promise.all(
       identities.map(async (i) => {
         const routeModule = await import(
           encapsulateModule(
             pathToFileURL(
-              join(basePathCompiled, i.pathname, 'route.mjs'),
+              normalizePath(join(basePathCompiled, i.pathname, 'route.mjs')),
             ).toString(),
           )
         )
@@ -124,6 +123,8 @@ export async function tunnel(
       requestHandler: route.handler,
     })
 
+    if (!response) throw new Error('Response not found')
+
     return await sendResponse(response, context.headers, endCallback)
   } catch (error) {
     console.error(error)
@@ -161,10 +162,12 @@ async function sendResponse(
 }
 
 async function getIdentities(route: string) {
-  const basePath = join(
-    process.cwd(),
-    defaultPaths.compiledFolder,
-    defaultPaths.compiledRoutes,
+  const basePath = normalizePath(
+    join(
+      process.cwd(),
+      defaultPaths.compiledFolder,
+      defaultPaths.compiledRoutes,
+    ),
   )
   const identitiesPaths = await globFindAll(
     basePath,
@@ -184,10 +187,12 @@ async function getIdentities(route: string) {
 }
 
 async function getMiddlewares(pathname: string) {
-  const basePath = join(
-    process.cwd(),
-    defaultPaths.compiledFolder,
-    defaultPaths.compiledRoutes,
+  const basePath = normalizePath(
+    join(
+      process.cwd(),
+      defaultPaths.compiledFolder,
+      defaultPaths.compiledRoutes,
+    ),
   )
   const pathnames = pathname
     .split('/')
